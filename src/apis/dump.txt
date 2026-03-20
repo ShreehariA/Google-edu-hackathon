@@ -1,4 +1,8 @@
 {
     "email": "mei.lin@example.com",
     "password": "meilin"
+},
+{
+  "email": "fatima.alhassan@example.com",
+  "password": "fatimaalhassan"
 }

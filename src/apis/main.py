@@ -65,7 +65,7 @@ def register(user: UserRequest):
     if get_user(user.email):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="A user with this email already exists.",
+            detail=f"User already exists: {user.email}",
         )
 
     row = {
