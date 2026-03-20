@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeltaEd — AI Coach</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="chat.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="index.html" class="topbar-brand">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M3 20 L12 4 L21 20 H14 L12 16 L10 20 Z"/></svg>
+      </div>
+      <span><span class="d">Delta</span>Ed</span>
+    </a>
+    <nav class="topbar-nav">
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="dashboard.html">My Progress</a>
+      <a href="chat.html" class="active">AI Coach</a>
+    </nav>
+    <div class="topbar-right">
+      <a href="dashboard.html" class="btn btn-ghost btn-sm">← My Progress</a>
+      <div class="topbar-avatar">AM</div>
+    </div>
+  </header>
+
+  <div class="chat-page">
+
+    <!-- ── Sidebar: context ── -->
+    <aside class="chat-sidebar">
+      <div class="sidebar-section">
+        <p class="sidebar-label">Your Gaps This Week</p>
+        <ul class="sidebar-gaps">
+          <li class="sg-item sg-high">
+            <span class="sg-dot"></span>
+            <span>BST Deletion — 38%</span>
+          </li>
+          <li class="sg-item sg-med">
+            <span class="sg-dot"></span>
+            <span>Nested Loops — 55%</span>
+          </li>
+          <li class="sg-item sg-low">
+            <span class="sg-dot"></span>
+            <span>BFS vs DFS — 70%</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Quick Asks</p>
+        <div class="chip-list" id="chipList">
+          <button class="chip" data-msg="What is my biggest weakness this week?">Biggest weakness?</button>
+          <button class="chip" data-msg="How do I improve my BST Deletion score?">Fix BST Deletion</button>
+          <button class="chip" data-msg="How am I doing vs the group average?">Me vs group avg</button>
+          <button class="chip" data-msg="What should I study next?">What to study next</button>
+          <button class="chip" data-msg="Give me a study plan for this week.">Study plan</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-label">Your Stats</p>
+        <div class="sidebar-stat">
+          <span>Growth this week</span><strong class="s-green">+14%</strong>
+        </div>
+        <div class="sidebar-stat">
+          <span>Group average</span><strong class="s-blue">+8%</strong>
+        </div>
+        <div class="sidebar-stat">
+          <span>Current rank</span><strong>#12</strong>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── Main chat ── -->
+    <div class="chat-main">
+
+      <!-- Chat header -->
+      <div class="chat-header">
+        <div class="chat-av">🤖</div>
+        <div class="chat-hinfo">
+          <span class="chat-hname">Delta Coach</span>
+          <span class="chat-hstatus">
+            <span class="status-dot"></span> AI-powered · Always available
+          </span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="clearBtn">Clear chat</button>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite">
+
+        <div class="ctx-pill">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          Coach has access to your quiz scores, study logs &amp; curriculum
+        </div>
+
+        <!-- Opening bot message -->
+        <div class="msg msg-bot">
+          <div class="msg-av-bot">🤖</div>
+          <div class="bubble bubble-bot">
+            <p>Hi Alex! 👋 I've reviewed your Week 12 data.</p>
+            <p style="margin-top:7px">Your <strong>growth rate of +14%</strong> is ahead of the group average (+8%) — that's great progress! I've found your <strong>highest-impact gap</strong> for next week. Want me to walk you through it?</p>
+            <span class="msg-time">9:02 AM</span>
+          </div>
+        </div>
+
+        <div class="msg msg-user">
+          <div class="bubble bubble-user">
+            <p>Yes! What's my main weakness?</p>
+            <span class="msg-time">9:03 AM</span>
+          </div>
+          <div class="msg-av-user">AM</div>
+        </div>
+
+        <div class="msg msg-bot">
+          <div class="msg-av-bot">🤖</div>
+          <div class="bubble bubble-bot">
+            <p>Your biggest gap is <span class="inline-tag-red">BST Deletion</span>.</p>
+            <ul class="chat-ul">
+              <li>📊 Your accuracy: <strong>38%</strong> (group avg: 62%)</li>
+              <li>❌ 3 of 8 deletion questions answered incorrectly</li>
+              <li>⏱ You spent only 12 min on this topic (recommended: 40 min)</li>
+            </ul>
+            <p style="margin-top:8px">Closing this gap alone is projected to boost your rank by <strong>~10 positions</strong>.</p>
+            <span class="msg-time">9:03 AM</span>
+          </div>
+        </div>
+
+        <div class="msg msg-user">
+          <div class="bubble bubble-user">
+            <p>What exactly should I do?</p>
+            <span class="msg-time">9:04 AM</span>
+          </div>
+          <div class="msg-av-user">AM</div>
+        </div>
+
+        <div class="msg msg-bot">
+          <div class="msg-av-bot">🤖</div>
+          <div class="bubble bubble-bot">
+            <p>Here's your <strong>3-step plan</strong>:</p>
+            <div class="action-list">
+              <div class="action-item">
+                <span class="action-n">1</span>
+                <div>
+                  <strong>Watch Lesson 4.3 — BST Deletion</strong>
+                  <p>14-min video. Focus on the case where the deleted node has two children — that's what you're getting wrong.</p>
+                </div>
+              </div>
+              <div class="action-item">
+                <span class="action-n">2</span>
+                <div>
+                  <strong>Complete BST Drill Quiz</strong>
+                  <p>10 targeted questions. Do this immediately after the video.</p>
+                </div>
+              </div>
+              <div class="action-item">
+                <span class="action-n">3</span>
+                <div>
+                  <strong>30-min session Thu or Fri</strong>
+                  <p>Use the BST Visualiser in the lesson library to practice deletions by hand.</p>
+                </div>
+              </div>
+            </div>
+            <p style="margin-top:10px;font-size:.82rem;color:var(--ink-3)">Estimated total time: ~55 minutes.</p>
+            <span class="msg-time">9:04 AM</span>
+          </div>
+        </div>
+
+      </div><!-- /.chat-messages -->
+
+      <!-- Input -->
+      <form class="chat-input-bar" id="chatForm" novalidate>
+        <input
+          type="text"
+          class="chat-input"
+          id="chatInput"
+          placeholder="Ask your coach anything…"
+          autocomplete="off"
+          aria-label="Message"
+        />
+        <button type="submit" class="btn btn-primary chat-send" aria-label="Send">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </form>
+
+    </div><!-- /.chat-main -->
+
+  </div><!-- /.chat-page -->
+
+  <div class="toast" id="toast"><span id="toastMsg"></span></div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DeltaEd — Most Improved</title>
+  <title>DeltaEd — My Progress</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="leaderboard.css" />
+  <link rel="stylesheet" href="dashboard.css" />
 </head>
 <body>
 
@@ -17,8 +17,8 @@
       <span><span class="d">Delta</span>Ed</span>
     </a>
     <nav class="topbar-nav">
-      <a href="leaderboard.html" class="active">Leaderboard</a>
-      <a href="dashboard.html">My Progress</a>
+      <a href="leaderboard.html">Leaderboard</a>
+      <a href="dashboard.html" class="active">My Progress</a>
       <a href="chat.html">AI Coach</a>
     </nav>
     <div class="topbar-right">
@@ -26,104 +26,182 @@
     </div>
   </header>
 
-  <main class="lb-page">
-
-    <!-- Header -->
-    <div class="lb-header afu">
+  <!-- Intro banner -->
+  <div class="dash-banner">
+    <div class="banner-inner">
       <div>
-        <p class="lb-eyebrow">Week 12 · June 9–15</p>
-        <h1>Top 5 Most Improved</h1>
-        <p class="lb-sub">Ranked by <strong>growth rate</strong> — your improvement vs your personal baseline. Resets every Monday.</p>
+        <h2 class="banner-greeting">Good morning, Alex 👋</h2>
+        <p>Week 12 snapshot — you're growing faster than the group average.</p>
       </div>
-      <a href="dashboard.html" class="btn btn-primary">
-        View My Progress →
+      <a href="chat.html" class="btn btn-primary">
+        Talk to AI Coach 🤖
       </a>
     </div>
+  </div>
 
-    <!-- List -->
-    <ol class="lb-list" id="leaderboardList">
+  <main class="dash-page">
 
-      <li class="lb-row lb-row-1 afu" style="animation-delay:.07s">
-        <div class="lb-rank rank-gold">
-          <span>1</span>
-          <svg class="crown" viewBox="0 0 20 14" fill="none">
-            <path d="M1 13 L3.5 5 L8 10 L10 1 L12 10 L16.5 5 L19 13 Z" fill="#F1C40F" stroke="#d4a017" stroke-width=".8"/>
-          </svg>
-        </div>
-        <div class="lb-av av-1">SR</div>
-        <div class="lb-info">
-          <div class="lb-name-row">
-            <span class="lb-name">Samira Reyes</span>
-            <span class="badge badge-green">+47%</span>
-          </div>
-          <span class="lb-course">Data Structures &amp; Algorithms</span>
-        </div>
-        <span class="lb-delta afu-num" style="animation-delay:.4s">+47%</span>
-      </li>
-
-      <li class="lb-row lb-row-2 afu" style="animation-delay:.13s">
-        <div class="lb-rank rank-silver"><span>2</span></div>
-        <div class="lb-av av-2">JK</div>
-        <div class="lb-info">
-          <div class="lb-name-row">
-            <span class="lb-name">James Kowalski</span>
-            <span class="badge badge-green">+39%</span>
-          </div>
-          <span class="lb-course">Web Development Fundamentals</span>
-        </div>
-        <span class="lb-delta afu-num" style="animation-delay:.5s">+39%</span>
-      </li>
-
-      <li class="lb-row lb-row-3 afu" style="animation-delay:.19s">
-        <div class="lb-rank rank-bronze"><span>3</span></div>
-        <div class="lb-av av-3">LP</div>
-        <div class="lb-info">
-          <div class="lb-name-row">
-            <span class="lb-name">Layla Pham</span>
-            <span class="badge badge-green">+31%</span>
-          </div>
-          <span class="lb-course">UI/UX Design Principles</span>
-        </div>
-        <span class="lb-delta afu-num" style="animation-delay:.6s">+31%</span>
-      </li>
-
-      <li class="lb-row afu" style="animation-delay:.25s">
-        <div class="lb-rank rank-plain"><span>4</span></div>
-        <div class="lb-av av-4">MC</div>
-        <div class="lb-info">
-          <div class="lb-name-row">
-            <span class="lb-name">Marcus Chen</span>
-            <span class="badge badge-green">+26%</span>
-          </div>
-          <span class="lb-course">Python for Data Science</span>
-        </div>
-        <span class="lb-delta afu-num" style="animation-delay:.7s">+26%</span>
-      </li>
-
-      <li class="lb-row afu" style="animation-delay:.31s">
-        <div class="lb-rank rank-plain"><span>5</span></div>
-        <div class="lb-av av-5">AT</div>
-        <div class="lb-info">
-          <div class="lb-name-row">
-            <span class="lb-name">Anika Torres</span>
-            <span class="badge badge-green">+22%</span>
-          </div>
-          <span class="lb-course">Machine Learning Basics</span>
-        </div>
-        <span class="lb-delta afu-num" style="animation-delay:.8s">+22%</span>
-      </li>
-
-    </ol>
-
-    <!-- Your position -->
-    <div class="your-row card afu" style="animation-delay:.38s">
-      <div class="your-rank">#12</div>
-      <div class="your-info">
-        <span class="your-name">You — Alex Morgan</span>
-        <span class="your-detail">+14% this week · 8 pts to reach rank #11 🚀</span>
+    <!-- ── Stat tiles ── -->
+    <div class="stat-row afu" style="animation-delay:.05s">
+      <div class="stat-tile">
+        <span class="tile-ico">📈</span>
+        <div><span class="tile-val">+14%</span><span class="tile-lbl">Your Growth</span></div>
       </div>
-      <a href="dashboard.html" class="btn btn-ghost btn-sm">Improve →</a>
+      <div class="stat-tile">
+        <span class="tile-ico">👥</span>
+        <div><span class="tile-val" style="color:var(--blue)">+8%</span><span class="tile-lbl">Group Average</span></div>
+      </div>
+      <div class="stat-tile">
+        <span class="tile-ico">🏅</span>
+        <div><span class="tile-val" style="color:#8E44AD">#12</span><span class="tile-lbl">Current Rank</span></div>
+      </div>
+      <div class="stat-tile">
+        <span class="tile-ico">⏱</span>
+        <div><span class="tile-val">26h</span><span class="tile-lbl">Study Time</span></div>
+      </div>
     </div>
+
+    <!-- ── Growth chart ── -->
+    <section class="card dash-card afu" style="animation-delay:.1s">
+      <div class="card-hd">
+        <h3>Weekly Score Progress</h3>
+        <span class="badge badge-green">vs group avg</span>
+      </div>
+
+      <div class="chart-wrap">
+        <!-- Bar chart -->
+        <div class="bar-chart" aria-label="Weekly scores chart">
+          <div class="bc-col">
+            <div class="bc-bar" style="--h:42%"><span class="bc-tip">36</span></div>
+            <span class="bc-lbl">W8</span>
+          </div>
+          <div class="bc-col">
+            <div class="bc-bar" style="--h:50%"><span class="bc-tip">44</span></div>
+            <span class="bc-lbl">W9</span>
+          </div>
+          <div class="bc-col">
+            <div class="bc-bar" style="--h:55%"><span class="bc-tip">49</span></div>
+            <span class="bc-lbl">W10</span>
+          </div>
+          <div class="bc-col">
+            <div class="bc-bar" style="--h:57%"><span class="bc-tip">51</span></div>
+            <span class="bc-lbl">W11</span>
+          </div>
+          <div class="bc-col bc-current">
+            <div class="bc-bar bc-bar-current" style="--h:65%"><span class="bc-tip">58</span></div>
+            <span class="bc-lbl">W12 ◀</span>
+          </div>
+        </div>
+
+        <!-- Rings -->
+        <div class="ring-pair">
+          <div class="ring-item">
+            <svg class="ring-svg" viewBox="0 0 90 90">
+              <circle class="ring-bg"   cx="45" cy="45" r="36" stroke-width="8"/>
+              <circle class="ring-fill" cx="45" cy="45" r="36" stroke-width="8"
+                stroke-dasharray="226" stroke-dashoffset="79" id="myRing"/>
+            </svg>
+            <div class="ring-lbl"><strong>58</strong><span>you</span></div>
+          </div>
+          <div class="ring-item">
+            <svg class="ring-svg" viewBox="0 0 90 90">
+              <circle class="ring-bg"   cx="45" cy="45" r="36" stroke-width="8"/>
+              <circle class="ring-fill ring-blue" cx="45" cy="45" r="36" stroke-width="8"
+                stroke-dasharray="226" stroke-dashoffset="135" id="avgRing"/>
+            </svg>
+            <div class="ring-lbl"><strong style="color:var(--blue)">40</strong><span>avg</span></div>
+          </div>
+          <div class="vs-tag">+45%<br/><small>above avg</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Learning gaps ── -->
+    <section class="card dash-card afu" style="animation-delay:.15s">
+      <div class="card-hd">
+        <h3>📍 Learning Gaps</h3>
+        <span class="badge badge-blue">3 identified</span>
+      </div>
+
+      <ul class="gap-list">
+        <li class="gap-item">
+          <div class="gap-left">
+            <span class="gap-pill gap-high">High</span>
+            <div>
+              <h4>BST Deletion</h4>
+              <p>38% accuracy · group avg 62%</p>
+            </div>
+          </div>
+          <div class="gap-right">
+            <span class="gap-pct" style="color:var(--red)">38%</span>
+            <div class="bar-track" style="width:120px">
+              <div class="bar-fill" style="width:38%;background:var(--red)"></div>
+            </div>
+          </div>
+        </li>
+        <li class="gap-item">
+          <div class="gap-left">
+            <span class="gap-pill gap-med">Med</span>
+            <div>
+              <h4>Time Complexity — Nested Loops</h4>
+              <p>55% accuracy · group avg 68%</p>
+            </div>
+          </div>
+          <div class="gap-right">
+            <span class="gap-pct" style="color:var(--amber)">55%</span>
+            <div class="bar-track" style="width:120px">
+              <div class="bar-fill" style="width:55%;background:var(--amber)"></div>
+            </div>
+          </div>
+        </li>
+        <li class="gap-item">
+          <div class="gap-left">
+            <span class="gap-pill gap-low">Low</span>
+            <div>
+              <h4>Graph Traversal — BFS vs DFS</h4>
+              <p>70% accuracy · group avg 72%</p>
+            </div>
+          </div>
+          <div class="gap-right">
+            <span class="gap-pct" style="color:var(--green-dark)">70%</span>
+            <div class="bar-track" style="width:120px">
+              <div class="bar-fill" style="width:70%"></div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ── Next steps ── -->
+    <section class="card dash-card afu" style="animation-delay:.2s">
+      <div class="card-hd">
+        <h3>✅ This Week's Action Steps</h3>
+      </div>
+      <ul class="steps-list" id="stepsList">
+        <li class="step-row" data-step="1">
+          <button class="step-cb" aria-label="Mark complete"></button>
+          <span><strong>Watch Lesson 4.3</strong> — BST Deletion (14 min)</span>
+          <span class="step-tag">Start Here</span>
+        </li>
+        <li class="step-row" data-step="2">
+          <button class="step-cb" aria-label="Mark complete"></button>
+          <span><strong>Complete</strong> BST Quiz Drill (10 questions)</span>
+        </li>
+        <li class="step-row" data-step="3">
+          <button class="step-cb" aria-label="Mark complete"></button>
+          <span><strong>Watch Lesson 5.1</strong> — Big-O Nested Loops (11 min)</span>
+        </li>
+        <li class="step-row" data-step="4">
+          <button class="step-cb" aria-label="Mark complete"></button>
+          <span><strong>Review</strong> BFS vs DFS Flashcards (5 min)</span>
+        </li>
+      </ul>
+
+      <a href="chat.html" class="coach-cta">
+        <span>Need help with any of these?</span>
+        <strong>Ask your AI Coach →</strong>
+      </a>
+    </section>
 
   </main>
 
