@@ -9,176 +9,149 @@
 </head>
 <body class="login-body">
 
-  <!-- ── Left Panel: Branding ─────────────────── -->
-  <aside class="login-panel login-brand-panel" aria-hidden="true">
-    <div class="brand-content">
-
-      <div class="brand-logo animate-fadeup" style="animation-delay:.05s">
+  <!-- ── Left: Branding ── -->
+  <aside class="brand-panel" aria-hidden="true">
+    <div class="brand-inner">
+      <div class="brand-logo afu" style="animation-delay:.05s">
         <div class="logo-mark">
-          <!-- Delta / growth arrow icon -->
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 20 L12 4 L21 20 H14 L12 16 L10 20 Z" fill="white" opacity=".9"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><path d="M3 20 L12 4 L21 20 H14 L12 16 L10 20 Z"/></svg>
         </div>
-        <span class="brand-name"><span class="delta">Delta</span>Ed</span>
+        <span class="brand-name"><span>Delta</span>Ed</span>
       </div>
 
-      <div class="brand-headline animate-fadeup" style="animation-delay:.15s">
-        <h1>Growth is your <br/><em>real</em> score.</h1>
-        <p>DeltaEd measures what actually matters — how much <em>you</em> improve, not where you rank against everyone else.</p>
+      <div class="brand-copy afu" style="animation-delay:.12s">
+        <h1>Growth is your<br/><em>real</em> score.</h1>
+        <p>DeltaEd ranks students by how much <em>they personally improve</em> — not by who was already the best.</p>
       </div>
 
-      <!-- Decorative feature pills -->
-      <ul class="feature-list animate-fadeup" style="animation-delay:.25s">
-        <li>
-          <span class="feature-icon">📈</span>
-          <span>Growth-rate leaderboard, not raw scores</span>
-        </li>
-        <li>
-          <span class="feature-icon">🤖</span>
-          <span>AI Coach that identifies your exact gaps</span>
-        </li>
-        <li>
-          <span class="feature-icon">🗓️</span>
-          <span>Weekly actionable next steps for you</span>
-        </li>
+      <ul class="feat-list afu" style="animation-delay:.2s">
+        <li><span class="feat-dot">📈</span> Growth-rate leaderboard, not raw scores</li>
+        <li><span class="feat-dot">🤖</span> AI Coach identifies your exact gaps</li>
+        <li><span class="feat-dot">✅</span> Weekly actionable next steps for you</li>
       </ul>
 
-      <!-- Floating stat cards -->
-      <div class="stat-cards animate-fadeup" style="animation-delay:.35s">
-        <div class="stat-card">
-          <span class="stat-value">+34%</span>
-          <span class="stat-label">Avg. improvement this week</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value">2,400</span>
-          <span class="stat-label">Students growing daily</span>
-        </div>
+      <div class="brand-stats afu" style="animation-delay:.28s">
+        <div class="stat-chip"><strong>+34%</strong><span>avg improvement this week</span></div>
+        <div class="stat-chip"><strong>2,400</strong><span>students growing daily</span></div>
       </div>
     </div>
 
-    <!-- Background decorations -->
-    <div class="bg-circle bg-circle-1" aria-hidden="true"></div>
-    <div class="bg-circle bg-circle-2" aria-hidden="true"></div>
-    <div class="bg-circle bg-circle-3" aria-hidden="true"></div>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
   </aside>
 
-  <!-- ── Right Panel: Login Form ───────────────── -->
-  <main class="login-panel login-form-panel">
-    <div class="form-card animate-fadeup" style="animation-delay:.1s">
+  <!-- ── Right: Form ── -->
+  <main class="form-panel">
+    <div class="form-card afu" style="animation-delay:.08s">
 
-      <!-- Mobile-only logo -->
-      <div class="mobile-brand">
-        <div class="logo-mark" style="width:32px;height:32px;">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 20 L12 4 L21 20 H14 L12 16 L10 20 Z" fill="white" opacity=".9"/>
-          </svg>
+      <!-- Mobile logo -->
+      <div class="mob-logo">
+        <div class="logo-mark" style="width:28px;height:28px;">
+          <svg viewBox="0 0 24 24"><path d="M3 20 L12 4 L21 20 H14 L12 16 L10 20 Z"/></svg>
         </div>
-        <span class="brand-name" style="font-size:1.2rem;"><span class="delta">Delta</span>Ed</span>
+        <span class="brand-name" style="font-size:1.1rem"><span>Delta</span>Ed</span>
       </div>
 
-      <div class="form-header">
-        <h2>Welcome back</h2>
-        <p>Sign in to continue your growth journey.</p>
+      <!-- Tabs: Login / Register -->
+      <div class="auth-tabs" role="tablist">
+        <button class="tab active" id="tabLogin"    role="tab" data-tab="login">Sign In</button>
+        <button class="tab"        id="tabRegister" role="tab" data-tab="register">Create Account</button>
       </div>
 
-      <form id="loginForm" class="login-form" novalidate>
+      <!-- API error banner -->
+      <div class="api-error hidden" id="apiError" role="alert"></div>
 
-        <!-- Email -->
+      <!-- ── LOGIN FORM ── -->
+      <form id="loginForm" class="auth-form" novalidate>
         <div class="form-group">
-          <label class="form-label" for="email">Email address</label>
-          <div class="input-wrapper">
+          <label class="form-label" for="loginEmail">Email</label>
+          <div class="input-wrap">
             <span class="input-icon">
-              <!-- envelope -->
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="2" y="4" width="20" height="16" rx="2"/>
-                <path d="M2 7l10 7 10-7"/>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
               </svg>
             </span>
-            <input
-              class="form-input"
-              type="email"
-              id="email"
-              name="email"
-              placeholder="you@university.edu"
-              autocomplete="email"
-              required
-            />
+            <input class="form-input" type="email" id="loginEmail" placeholder="you@university.edu" autocomplete="email" required/>
           </div>
-          <span class="field-error" id="emailError" role="alert"></span>
+          <span class="field-err" id="loginEmailErr"></span>
         </div>
 
-        <!-- Password -->
         <div class="form-group">
-          <label class="form-label" for="password">Password</label>
-          <div class="input-wrapper">
+          <label class="form-label" for="loginPass">Password</label>
+          <div class="input-wrap">
             <span class="input-icon">
-              <!-- lock -->
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
             </span>
-            <input
-              class="form-input"
-              type="password"
-              id="password"
-              name="password"
-              placeholder="••••••••"
-              autocomplete="current-password"
-              required
-            />
-            <button type="button" class="pwd-toggle" id="pwdToggle" aria-label="Toggle password visibility">
-              <!-- eye icon -->
-              <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
+            <input class="form-input" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" required/>
+            <button type="button" class="eye-btn" id="loginEye" aria-label="Toggle password">
+              <svg id="loginEyeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
               </svg>
             </button>
           </div>
-          <span class="field-error" id="passwordError" role="alert"></span>
+          <span class="field-err" id="loginPassErr"></span>
         </div>
 
-        <!-- Row: remember me + forgot -->
         <div class="form-row">
-          <label class="checkbox-label">
-            <input type="checkbox" id="rememberMe" class="checkbox-input"/>
-            <span class="checkbox-custom"></span>
+          <label class="cb-label">
+            <input type="checkbox" class="cb-input" id="rememberMe"/>
+            <span class="cb-box"></span>
             Remember me
           </label>
-          <a href="#" class="forgot-link">Forgot password?</a>
+          <a href="#" class="link-blue">Forgot password?</a>
         </div>
 
-        <!-- Submit -->
-        <button type="submit" class="btn btn-primary btn-full btn-lg" id="signInBtn">
-          <span id="btnText">Sign In</span>
-          <span id="btnSpinner" class="btn-spinner hidden" aria-hidden="true"></span>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="loginBtn">
+          <span id="loginBtnText">Sign In</span>
+          <span id="loginSpinner" class="spinner hidden"></span>
         </button>
-
-        <div class="section-divider">or</div>
-
-        <!-- Demo access -->
-        <button type="button" class="btn btn-secondary btn-full" id="demoBtn">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          Try Demo Access
-        </button>
-
       </form>
 
-      <p class="signup-prompt">
-        New to DeltaEd?
-        <a href="#" class="signup-link">Create a free account →</a>
-      </p>
+      <!-- ── REGISTER FORM ── -->
+      <form id="registerForm" class="auth-form hidden" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="regEmail">Email</label>
+          <div class="input-wrap">
+            <span class="input-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/>
+              </svg>
+            </span>
+            <input class="form-input" type="email" id="regEmail" placeholder="you@university.edu" autocomplete="email" required/>
+          </div>
+          <span class="field-err" id="regEmailErr"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="regPass">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input class="form-input" type="password" id="regPass" placeholder="At least 6 characters" autocomplete="new-password" required/>
+            <button type="button" class="eye-btn" id="regEye" aria-label="Toggle password">
+              <svg id="regEyeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span class="field-err" id="regPassErr"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="regBtn">
+          <span id="regBtnText">Create Account</span>
+          <span id="regSpinner" class="spinner hidden"></span>
+        </button>
+      </form>
 
     </div>
   </main>
 
+  <div class="toast" id="toast"><span id="toastMsg"></span></div>
   <script src="script.js"></script>
 </body>
 </html>
