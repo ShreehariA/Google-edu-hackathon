@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeltaEd — Most Improved</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="leaderboard.css" />
+</head>
+<body>
+
+  <!-- ── Top Bar ───────────────────────────────── -->
+  <header class="topbar">
+    <a href="index.html" class="topbar-brand">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 20 L12 4 L21 20 H14 L12 16 L10 20 Z" fill="white" opacity=".9"/>
+        </svg>
+      </div>
+      <span><span class="delta">Delta</span>Ed</span>
+    </a>
+    <nav class="topbar-nav" aria-label="Main navigation">
+      <a href="leaderboard.html" class="active">🏆 Leaderboard</a>
+      <a href="dashboard.html">📊 My Progress</a>
+      <a href="dashboard.html">🤖 AI Coach</a>
+    </nav>
+    <div class="topbar-user">
+      <span class="week-badge">Week 12</span>
+      <div class="topbar-avatar" title="Alex Morgan">AM</div>
+    </div>
+  </header>
+
+  <!-- ── Page Body ─────────────────────────────── -->
+  <main class="lb-main">
+
+    <!-- Hero header -->
+    <section class="lb-hero animate-fadeup">
+      <div class="lb-hero-text">
+        <p class="lb-eyebrow">📅 Week of June 9 – 15</p>
+        <h1>Top 5 Most Improved</h1>
+        <p class="lb-subtitle">Ranked by <strong>growth rate</strong> — the % improvement in quiz scores vs. your personal baseline. Everyone starts fresh each week.</p>
+      </div>
+      <div class="lb-hero-cta">
+        <a href="dashboard.html" class="btn btn-primary btn-lg">
+          View My Progress &amp; Coach
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+        <p class="lb-cta-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+          </svg>
+          Refreshes every Monday at 9:00 AM
+        </p>
+      </div>
+    </section>
+
+    <!-- Leaderboard list -->
+    <section class="lb-section">
+      <ol class="lb-list" id="leaderboardList">
+
+        <!-- ── Rank 1 ── -->
+        <li class="lb-card lb-card-1 animate-fadeup" style="animation-delay:.08s" data-rank="1">
+          <div class="rank-indicator rank-gold">
+            <span class="rank-number">1</span>
+            <svg class="crown" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 17 L4 6 L9 12 L12 2 L15 12 L20 6 L23 17 Z" fill="#F1C40F" stroke="#F39C12" stroke-width="1"/>
+            </svg>
+          </div>
+
+          <div class="lb-avatar lb-avatar-1">SR</div>
+
+          <div class="lb-info">
+            <div class="lb-name-row">
+              <h3 class="lb-name">Samira Reyes</h3>
+              <span class="badge badge-green">⬆ +47% Improvement</span>
+            </div>
+            <p class="lb-meta">Data Structures &amp; Algorithms · 42 study hours</p>
+            <div class="lb-bar-wrap">
+              <div class="progress-bar-track lb-track">
+                <div class="progress-bar-fill" style="width:94%"></div>
+              </div>
+              <span class="lb-bar-label">94 / 100 pts this week</span>
+            </div>
+          </div>
+
+          <div class="lb-delta">
+            <span class="delta-number">+47%</span>
+            <span class="delta-label">vs baseline</span>
+          </div>
+        </li>
+
+        <!-- ── Rank 2 ── -->
+        <li class="lb-card lb-card-2 animate-fadeup" style="animation-delay:.15s" data-rank="2">
+          <div class="rank-indicator rank-silver">
+            <span class="rank-number">2</span>
+          </div>
+
+          <div class="lb-avatar lb-avatar-2">JK</div>
+
+          <div class="lb-info">
+            <div class="lb-name-row">
+              <h3 class="lb-name">James Kowalski</h3>
+              <span class="badge badge-green">⬆ +39% Improvement</span>
+            </div>
+            <p class="lb-meta">Web Development Fundamentals · 38 study hours</p>
+            <div class="lb-bar-wrap">
+              <div class="progress-bar-track lb-track">
+                <div class="progress-bar-fill" style="width:88%"></div>
+              </div>
+              <span class="lb-bar-label">88 / 100 pts this week</span>
+            </div>
+          </div>
+
+          <div class="lb-delta">
+            <span class="delta-number">+39%</span>
+            <span class="delta-label">vs baseline</span>
+          </div>
+        </li>
+
+        <!-- ── Rank 3 ── -->
+        <li class="lb-card lb-card-3 animate-fadeup" style="animation-delay:.22s" data-rank="3">
+          <div class="rank-indicator rank-bronze">
+            <span class="rank-number">3</span>
+          </div>
+
+          <div class="lb-avatar lb-avatar-3">LP</div>
+
+          <div class="lb-info">
+            <div class="lb-name-row">
+              <h3 class="lb-name">Layla Pham</h3>
+              <span class="badge badge-green">⬆ +31% Improvement</span>
+            </div>
+            <p class="lb-meta">UI/UX Design Principles · 29 study hours</p>
+            <div class="lb-bar-wrap">
+              <div class="progress-bar-track lb-track">
+                <div class="progress-bar-fill" style="width:82%"></div>
+              </div>
+              <span class="lb-bar-label">82 / 100 pts this week</span>
+            </div>
+          </div>
+
+          <div class="lb-delta">
+            <span class="delta-number">+31%</span>
+            <span class="delta-label">vs baseline</span>
+          </div>
+        </li>
+
+        <!-- ── Rank 4 ── -->
+        <li class="lb-card animate-fadeup" style="animation-delay:.29s" data-rank="4">
+          <div class="rank-indicator rank-normal">
+            <span class="rank-number">4</span>
+          </div>
+
+          <div class="lb-avatar lb-avatar-4">MC</div>
+
+          <div class="lb-info">
+            <div class="lb-name-row">
+              <h3 class="lb-name">Marcus Chen</h3>
+              <span class="badge badge-green">⬆ +26% Improvement</span>
+            </div>
+            <p class="lb-meta">Python for Data Science · 33 study hours</p>
+            <div class="lb-bar-wrap">
+              <div class="progress-bar-track lb-track">
+                <div class="progress-bar-fill" style="width:76%"></div>
+              </div>
+              <span class="lb-bar-label">76 / 100 pts this week</span>
+            </div>
+          </div>
+
+          <div class="lb-delta">
+            <span class="delta-number">+26%</span>
+            <span class="delta-label">vs baseline</span>
+          </div>
+        </li>
+
+        <!-- ── Rank 5 ── -->
+        <li class="lb-card animate-fadeup" style="animation-delay:.36s" data-rank="5">
+          <div class="rank-indicator rank-normal">
+            <span class="rank-number">5</span>
+          </div>
+
+          <div class="lb-avatar lb-avatar-5">AT</div>
+
+          <div class="lb-info">
+            <div class="lb-name-row">
+              <h3 class="lb-name">Anika Torres</h3>
+              <span class="badge badge-green">⬆ +22% Improvement</span>
+            </div>
+            <p class="lb-meta">Machine Learning Basics · 26 study hours</p>
+            <div class="lb-bar-wrap">
+              <div class="progress-bar-track lb-track">
+                <div class="progress-bar-fill" style="width:71%"></div>
+              </div>
+              <span class="lb-bar-label">71 / 100 pts this week</span>
+            </div>
+          </div>
+
+          <div class="lb-delta">
+            <span class="delta-number">+22%</span>
+            <span class="delta-label">vs baseline</span>
+          </div>
+        </li>
+
+      </ol>
+    </section>
+
+    <!-- ── Your position card ── -->
+    <section class="lb-your-position animate-fadeup" style="animation-delay:.45s">
+      <div class="your-pos-card card">
+        <div class="your-pos-left">
+          <div class="your-pos-rank">
+            <span class="pos-label">Your Rank</span>
+            <span class="pos-number">#12</span>
+          </div>
+          <div class="your-pos-info">
+            <h4>Alex Morgan</h4>
+            <p>+14% improvement this week · You're climbing! 🚀</p>
+          </div>
+        </div>
+        <div class="your-pos-right">
+          <div class="progress-bar-track" style="width:180px; margin-bottom:6px;">
+            <div class="progress-bar-fill" style="width:58%"></div>
+          </div>
+          <span style="font-size:.8rem;color:var(--text-muted)">58 / 100 pts · 8 pts to reach rank #11</span>
+        </div>
+        <a href="dashboard.html" class="btn btn-primary btn-sm">Improve Now →</a>
+      </div>
+      <p class="your-pos-note">
+        💡 <strong>Remember:</strong> This board resets weekly. Every new week is a fresh chance to be #1 — regardless of where you started.
+      </p>
+    </section>
+
+    <!-- ── How it works strip ── -->
+    <section class="lb-how animate-fadeup" style="animation-delay:.5s">
+      <h3>How Growth Rate is Calculated</h3>
+      <div class="how-steps">
+        <div class="how-step">
+          <span class="how-num">1</span>
+          <div>
+            <h4>Your Baseline</h4>
+            <p>Your average quiz score from the previous week becomes your personal starting point.</p>
+          </div>
+        </div>
+        <div class="how-arrow">→</div>
+        <div class="how-step">
+          <span class="how-num">2</span>
+          <div>
+            <h4>This Week's Score</h4>
+            <p>We track every quiz attempt and study session logged during the current week.</p>
+          </div>
+        </div>
+        <div class="how-arrow">→</div>
+        <div class="how-step">
+          <span class="how-num">3</span>
+          <div>
+            <h4>Growth Delta (Δ)</h4>
+            <p>Growth Rate = <em>(This Week − Baseline) ÷ Baseline × 100%</em>. That's your rank score.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <svg class="toast-icon" viewBox="0 0 24 24" fill="none"
+         stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+    </svg>
+    <span id="toastMsg">Leaderboard refreshed!</span>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

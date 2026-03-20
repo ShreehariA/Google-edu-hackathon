@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeltaEd — My Progress &amp; AI Coach</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+
+  <!-- ── Top Bar ───────────────────────────────── -->
+  <header class="topbar">
+    <a href="index.html" class="topbar-brand">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 20 L12 4 L21 20 H14 L12 16 L10 20 Z" fill="white" opacity=".9"/>
+        </svg>
+      </div>
+      <span><span class="delta">Delta</span>Ed</span>
+    </a>
+    <nav class="topbar-nav" aria-label="Main navigation">
+      <a href="leaderboard.html">🏆 Leaderboard</a>
+      <a href="dashboard.html" class="active">📊 My Progress</a>
+      <a href="dashboard.html" class="active">🤖 AI Coach</a>
+    </nav>
+    <div class="topbar-user">
+      <span class="week-badge">Week 12</span>
+      <div class="topbar-avatar" title="Alex Morgan">AM</div>
+    </div>
+  </header>
+
+  <!-- ── Page intro bar ─────────────────────────── -->
+  <div class="dash-intro animate-fadeup">
+    <div class="dash-intro-inner">
+      <div>
+        <h1 class="dash-greeting">Good morning, Alex 👋</h1>
+        <p>Here's your personal growth snapshot for <strong>Week 12</strong>. Keep going — you're trending upward!</p>
+      </div>
+      <a href="leaderboard.html" class="btn btn-secondary btn-sm">← Back to Leaderboard</a>
+    </div>
+  </div>
+
+  <!-- ── Dashboard Two-Column Layout ──────────────── -->
+  <main class="dash-main">
+
+    <!-- ════════════════════════════════════════════
+         LEFT COLUMN — Progress Dashboard
+    ═════════════════════════════════════════════ -->
+    <section class="dash-col dash-left animate-fadeup" style="animation-delay:.08s">
+
+      <!-- ── Summary row ── -->
+      <div class="stat-row">
+        <div class="stat-tile stat-tile-green">
+          <span class="tile-icon">📈</span>
+          <div>
+            <span class="tile-value">+14%</span>
+            <span class="tile-label">Your Growth This Week</span>
+          </div>
+        </div>
+        <div class="stat-tile stat-tile-blue">
+          <span class="tile-icon">👥</span>
+          <div>
+            <span class="tile-value">+8%</span>
+            <span class="tile-label">Group Average Growth</span>
+          </div>
+        </div>
+        <div class="stat-tile stat-tile-purple">
+          <span class="tile-icon">🏅</span>
+          <div>
+            <span class="tile-value">#12</span>
+            <span class="tile-label">Current Rank</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Circular progress + weekly bars ── -->
+      <div class="card progress-overview-card">
+        <div class="card-header">
+          <h3>Weekly Growth Overview</h3>
+          <span class="badge badge-green">Week 12</span>
+        </div>
+
+        <div class="progress-overview-body">
+
+          <!-- Ring charts -->
+          <div class="rings-wrap">
+            <!-- Your improvement ring -->
+            <div class="ring-item">
+              <div class="ring-chart">
+                <svg width="110" height="110" viewBox="0 0 110 110">
+                  <circle class="ring-bg" cx="55" cy="55" r="46" stroke-width="10"/>
+                  <!-- 58% of circumference = 289 * 0.58 = 167.6 → dashoffset = 289 - 167.6 -->
+                  <circle class="ring-fill" cx="55" cy="55" r="46"
+                    stroke-width="10"
+                    stroke-dasharray="289"
+                    stroke-dashoffset="121"
+                    id="myRing"/>
+                </svg>
+                <div class="ring-label">
+                  <span class="ring-main">58</span>
+                  <span class="ring-sub">pts</span>
+                </div>
+              </div>
+              <p class="ring-title">Your Score</p>
+            </div>
+
+            <!-- Group avg ring -->
+            <div class="ring-item">
+              <div class="ring-chart">
+                <svg width="110" height="110" viewBox="0 0 110 110">
+                  <circle class="ring-bg" cx="55" cy="55" r="46" stroke-width="10"/>
+                  <circle class="ring-fill" cx="55" cy="55" r="46"
+                    stroke-width="10"
+                    stroke="#3498DB"
+                    stroke-dasharray="289"
+                    stroke-dashoffset="173"
+                    id="avgRing"/>
+                </svg>
+                <div class="ring-label">
+                  <span class="ring-main" style="color:var(--blue)">40</span>
+                  <span class="ring-sub">pts</span>
+                </div>
+              </div>
+              <p class="ring-title">Group Avg</p>
+            </div>
+
+            <!-- You vs avg pill -->
+            <div class="vs-pill">
+              <span class="vs-label">You're</span>
+              <span class="vs-value">+45% above</span>
+              <span class="vs-label">the group average</span>
+            </div>
+          </div>
+
+          <!-- Weekly history bars -->
+          <div class="weekly-bars">
+            <h4 class="bars-title">Your Score by Week</h4>
+            <div class="bars-chart">
+              <div class="bar-col">
+                <div class="bar" style="height:42%"><span class="bar-tip">36</span></div>
+                <span class="bar-label">W8</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar" style="height:50%"><span class="bar-tip">44</span></div>
+                <span class="bar-label">W9</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar" style="height:55%"><span class="bar-tip">49</span></div>
+                <span class="bar-label">W10</span>
+              </div>
+              <div class="bar-col">
+                <div class="bar" style="height:57%"><span class="bar-tip">51</span></div>
+                <span class="bar-label">W11</span>
+              </div>
+              <div class="bar-col current-week">
+                <div class="bar bar-current" style="height:65%">
+                  <span class="bar-tip">58</span>
+                </div>
+                <span class="bar-label">W12 ◀</span>
+              </div>
+            </div>
+            <div class="avg-line-label">
+              <span class="avg-dot avg-dot-blue"></span> Group avg this week: 40 pts
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Learning gaps ── -->
+      <div class="card gaps-card">
+        <div class="card-header">
+          <h3>📍 Identified Learning Gaps</h3>
+          <span class="badge badge-blue">This Week</span>
+        </div>
+        <p class="gaps-intro">Your AI Coach has identified <strong>3 areas</strong> where focused practice will unlock the most growth.</p>
+
+        <ul class="gap-list">
+
+          <li class="gap-item gap-high">
+            <div class="gap-priority">High</div>
+            <div class="gap-details">
+              <h4>Binary Search Trees — Deletion</h4>
+              <p>Quiz accuracy: 38% (group avg: 62%). You answered 3/8 deletion questions correctly.</p>
+              <div class="progress-bar-track" style="margin-top:8px">
+                <div class="progress-bar-fill" style="width:38%; background: linear-gradient(90deg,#E74C3C,#C0392B)"></div>
+              </div>
+            </div>
+            <span class="gap-score">38%</span>
+          </li>
+
+          <li class="gap-item gap-medium">
+            <div class="gap-priority">Medium</div>
+            <div class="gap-details">
+              <h4>Time Complexity — Nested Loops</h4>
+              <p>Quiz accuracy: 55% (group avg: 68%). Close — one focused session should close this gap.</p>
+              <div class="progress-bar-track" style="margin-top:8px">
+                <div class="progress-bar-fill" style="width:55%; background: linear-gradient(90deg,#F39C12,#E67E22)"></div>
+              </div>
+            </div>
+            <span class="gap-score">55%</span>
+          </li>
+
+          <li class="gap-item gap-low">
+            <div class="gap-priority">Low</div>
+            <div class="gap-details">
+              <h4>Graph Traversal — BFS vs DFS</h4>
+              <p>Quiz accuracy: 70% (group avg: 72%). Minor gap — a quick review lesson will lock this in.</p>
+              <div class="progress-bar-track" style="margin-top:8px">
+                <div class="progress-bar-fill" style="width:70%"></div>
+              </div>
+            </div>
+            <span class="gap-score">70%</span>
+          </li>
+
+        </ul>
+      </div>
+
+      <!-- ── Next steps ── -->
+      <div class="card next-steps-card">
+        <div class="card-header">
+          <h3>✅ Your Actionable Next Steps</h3>
+        </div>
+        <ul class="steps-list">
+          <li class="step-item" id="step1">
+            <button class="step-check" aria-label="Mark complete" data-step="1"></button>
+            <div class="step-content">
+              <strong>Watch Lesson 4.3:</strong> BST Deletion (Video · 14 min)
+              <span class="step-tag step-tag-red">Start Here</span>
+            </div>
+          </li>
+          <li class="step-item" id="step2">
+            <button class="step-check" aria-label="Mark complete" data-step="2"></button>
+            <div class="step-content">
+              <strong>Complete Practice Set:</strong> BST Quiz Drill (10 questions)
+            </div>
+          </li>
+          <li class="step-item" id="step3">
+            <button class="step-check" aria-label="Mark complete" data-step="3"></button>
+            <div class="step-content">
+              <strong>Watch Lesson 5.1:</strong> Big-O for Nested Loops (Video · 11 min)
+            </div>
+          </li>
+          <li class="step-item" id="step4">
+            <button class="step-check" aria-label="Mark complete" data-step="4"></button>
+            <div class="step-content">
+              <strong>Review:</strong> BFS vs DFS Flashcard Set (5 min)
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </section>
+
+    <!-- ════════════════════════════════════════════
+         RIGHT COLUMN — AI Coach Chatbot
+    ═════════════════════════════════════════════ -->
+    <aside class="dash-col dash-right animate-fadeup" style="animation-delay:.14s">
+      <div class="chat-container card">
+
+        <!-- Chat header -->
+        <div class="chat-header">
+          <div class="chat-avatar">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,.2)"/>
+              <path d="M8 12h.01M12 12h.01M16 12h.01" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M12 3C7.03 3 3 7.03 3 12c0 1.64.42 3.18 1.15 4.52L3 21l4.48-1.15A9 9 0 1012 3z" stroke="#fff" stroke-width="1.6" fill="none"/>
+            </svg>
+          </div>
+          <div class="chat-header-info">
+            <h3>Delta Coach</h3>
+            <div class="chat-status">
+              <span class="status-dot"></span>
+              <span>AI-Powered · Always available</span>
+            </div>
+          </div>
+          <button class="chat-clear-btn btn btn-sm btn-secondary" id="clearChatBtn" title="Clear chat">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>
+            </svg>
+            Clear
+          </button>
+        </div>
+
+        <!-- Message history -->
+        <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-label="Chat messages">
+
+          <!-- System context message -->
+          <div class="chat-context-pill">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+            </svg>
+            Coach has access to your quiz scores, study logs &amp; curriculum
+          </div>
+
+          <!-- Bot message 1 -->
+          <div class="msg msg-bot">
+            <div class="msg-avatar msg-avatar-bot">🤖</div>
+            <div class="msg-bubble msg-bubble-bot">
+              <p>Hi Alex! 👋 I've reviewed your Week 12 data. Great news — you're improving faster than the group average!</p>
+              <p style="margin-top:8px">I've spotted <strong>your biggest growth opportunity</strong> for next week. Want me to walk you through it?</p>
+              <span class="msg-time">9:02 AM</span>
+            </div>
+          </div>
+
+          <!-- User message 1 -->
+          <div class="msg msg-user">
+            <div class="msg-bubble msg-bubble-user">
+              <p>Yes please! What's my main weakness right now?</p>
+              <span class="msg-time">9:03 AM</span>
+            </div>
+            <div class="msg-avatar msg-avatar-user">AM</div>
+          </div>
+
+          <!-- Bot message 2 — detailed gap analysis -->
+          <div class="msg msg-bot">
+            <div class="msg-avatar msg-avatar-bot">🤖</div>
+            <div class="msg-bubble msg-bubble-bot">
+              <p>Your <strong>highest-impact gap</strong> is <span class="inline-tag inline-tag-red">BST Deletion</span>.</p>
+              <ul class="chat-list">
+                <li>📊 Your accuracy: <strong>38%</strong> (group avg: 62%)</li>
+                <li>❌ You got 3 of 8 deletion questions wrong</li>
+                <li>⏱ You spent only 12 min on this topic (recommended: 40 min)</li>
+              </ul>
+              <p style="margin-top:10px">This one gap is likely costing you <strong>~12 rank positions</strong>. Let's fix it!</p>
+              <span class="msg-time">9:03 AM</span>
+            </div>
+          </div>
+
+          <!-- User message 2 -->
+          <div class="msg msg-user">
+            <div class="msg-bubble msg-bubble-user">
+              <p>Ok that's really helpful. What exactly should I do this week?</p>
+              <span class="msg-time">9:04 AM</span>
+            </div>
+            <div class="msg-avatar msg-avatar-user">AM</div>
+          </div>
+
+          <!-- Bot message 3 — action plan -->
+          <div class="msg msg-bot">
+            <div class="msg-avatar msg-avatar-bot">🤖</div>
+            <div class="msg-bubble msg-bubble-bot">
+              <p>Here's your <strong>personalised 3-step plan</strong> for this week:</p>
+              <div class="action-plan">
+                <div class="action-step">
+                  <span class="action-num">1</span>
+                  <div>
+                    <strong>Watch Lesson 4.3</strong> — BST Deletion
+                    <p>14-min video. Pay close attention to the case where the deleted node has two children.</p>
+                  </div>
+                </div>
+                <div class="action-step">
+                  <span class="action-num">2</span>
+                  <div>
+                    <strong>Complete BST Drill Quiz</strong>
+                    <p>10 targeted questions. Do this right after the video while it's fresh.</p>
+                  </div>
+                </div>
+                <div class="action-step">
+                  <span class="action-num">3</span>
+                  <div>
+                    <strong>30-min study session</strong> Thursday or Friday
+                    <p>Use the BST Visualiser tool in the lesson library to practice deletions by hand.</p>
+                  </div>
+                </div>
+              </div>
+              <p style="margin-top:10px; font-size:.85rem; color:var(--text-muted)">Estimated time: ~55 minutes total. Do you want me to add these to your schedule?</p>
+              <span class="msg-time">9:04 AM</span>
+            </div>
+          </div>
+
+        </div><!-- /.chat-messages -->
+
+        <!-- Suggestions chips -->
+        <div class="chat-chips" id="chatChips">
+          <span class="chip-label">Quick asks:</span>
+          <button class="chip" data-msg="What are my other gaps this week?">Other gaps?</button>
+          <button class="chip" data-msg="Add these steps to my schedule.">Add to schedule</button>
+          <button class="chip" data-msg="How am I doing vs the group average?">My vs avg?</button>
+          <button class="chip" data-msg="Show me Lesson 4.3">Open Lesson 4.3</button>
+        </div>
+
+        <!-- Input area -->
+        <form class="chat-input-form" id="chatForm" novalidate>
+          <input
+            type="text"
+            class="chat-input"
+            id="chatInput"
+            placeholder="Ask your coach anything…"
+            autocomplete="off"
+            aria-label="Message input"
+          />
+          <button type="submit" class="btn btn-primary chat-send-btn" id="sendBtn" aria-label="Send message">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </form>
+
+      </div><!-- /.chat-container -->
+    </aside>
+
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <svg class="toast-icon" viewBox="0 0 24 24" fill="none"
+         stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+    </svg>
+    <span id="toastMsg">Step marked complete!</span>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
