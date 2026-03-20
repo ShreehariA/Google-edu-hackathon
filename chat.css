@@ -194,3 +194,49 @@
   .chat-messages { padding: 14px 12px; }
   .bubble { max-width: 85%; }
 }
+
+/* ── Custom SVG bot face ── */
+.bot-face {
+  width: 100%; height: 100%;
+  color: var(--teal-dark);
+}
+[data-theme="dark"] .bot-face { color: var(--teal); }
+
+/* Override: chat header avatar uses the SVG */
+.chat-av {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--teal-dim);
+  display: flex; align-items: center; justify-content: center;
+  padding: 5px; flex-shrink: 0;
+}
+[data-theme="dark"] .chat-av { background: rgba(20,184,166,.2); }
+
+/* msg-av-bot: smaller version */
+.msg-av-bot {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--teal-dim);
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px; flex-shrink: 0;
+}
+[data-theme="dark"] .msg-av-bot { background: rgba(20,184,166,.2); }
+
+/* Teal send button */
+.chat-send {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  box-shadow: var(--shadow-teal);
+}
+
+/* Teal sidebar accent on active chip */
+.chip:active { background: var(--teal-dim); color: var(--teal-dark); }
+
+/* Dark mode: sidebar + main surfaces */
+[data-theme="dark"] .chat-sidebar { background: var(--surface-2); border-color: var(--border); }
+[data-theme="dark"] .chat-input   { background: var(--bg-alt); border-color: var(--border-2); color: var(--ink-1); }
+[data-theme="dark"] .bubble-bot   { background: var(--surface-2); border-color: var(--border-2); }
+[data-theme="dark"] .typing-dots  { background: var(--surface-2); border-color: var(--border-2); }
+[data-theme="dark"] .action-item  { background: var(--bg-alt); }
+[data-theme="dark"] .ctx-pill     { background: var(--bg-alt); border-color: var(--border-2); }
+[data-theme="dark"] .sg-item      { background: var(--bg-alt); }
+[data-theme="dark"] .chip         { background: var(--bg-alt); border-color: var(--border-2); color: var(--ink-2); }
+[data-theme="dark"] .chat-input-bar { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .chat-header  { /* gradient stays, no change needed */ }

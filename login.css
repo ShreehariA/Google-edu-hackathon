@@ -141,3 +141,15 @@
   .mob-logo { display: flex; }
   .form-panel { padding: 28px 16px; align-items: flex-start; padding-top: 40px; }
 }
+
+/* ── Dark mode ── */
+[data-theme="dark"] .form-panel  { background: var(--bg); }
+[data-theme="dark"] .auth-tabs   { background: var(--border); }
+[data-theme="dark"] .tab.active  { background: var(--surface-2); }
+[data-theme="dark"] .api-error   { background: rgba(231,76,60,.12); border-color: rgba(231,76,60,.3); }
+
+/* ── Floating toggle on login page ── */
+.theme-toggle-float {
+  position: fixed; top: 18px; right: 18px; z-index: 200;
+  box-shadow: var(--shadow-md);
+}

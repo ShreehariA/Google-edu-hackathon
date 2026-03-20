@@ -175,3 +175,12 @@
   .stat-row { grid-template-columns: 1fr 1fr; }
   .gap-right { display: none; }
 }
+
+/* ── Dark mode ── */
+[data-theme="dark"] .dash-banner { background: linear-gradient(135deg, #0a1f17, #0d2b20, #0e2035); }
+[data-theme="dark"] .stat-tile   { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .gap-item    { background: var(--bg-alt); border-color: var(--border); }
+[data-theme="dark"] .step-row    { background: var(--bg-alt); border-color: var(--border); }
+[data-theme="dark"] .coach-cta   { background: linear-gradient(to right, var(--teal-dim), var(--surface)); }
+[data-theme="dark"] .bc-bar      { background: rgba(20,184,166,.2); }
+[data-theme="dark"] .bar-track   { background: var(--border); }

@@ -22,6 +22,10 @@
       <a href="chat.html" class="active">AI Coach</a>
     </nav>
     <div class="topbar-right">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun"  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
       <a href="dashboard.html" class="btn btn-ghost btn-sm">← My Progress</a>
       <div class="topbar-avatar">AM</div>
     </div>
@@ -79,7 +83,37 @@
 
       <!-- Chat header -->
       <div class="chat-header">
-        <div class="chat-av">🤖</div>
+        <div class="chat-av"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer head circle -->
+  <circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/>
+  <!-- Stipple shading - top left quadrant dots -->
+  <circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/>
+  <circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/>
+  <circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/>
+  <circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/>
+  <circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/>
+  <circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/>
+  <!-- Flat hair (top band) -->
+  <rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/>
+  <!-- Round glasses - left -->
+  <circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
+  <circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/>
+  <circle cx="21" cy="29" r=".8" fill="currentColor"/>
+  <!-- Round glasses - right -->
+  <circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
+  <circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/>
+  <circle cx="37" cy="29" r=".8" fill="currentColor"/>
+  <!-- Bridge between glasses -->
+  <line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- L-shaped minimal nose -->
+  <path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Simple smile -->
+  <path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+</svg></div>
         <div class="chat-hinfo">
           <span class="chat-hname">Delta Coach</span>
           <span class="chat-hstatus">
@@ -102,7 +136,37 @@
 
         <!-- Opening bot message -->
         <div class="msg msg-bot">
-          <div class="msg-av-bot">🤖</div>
+          <div class="msg-av-bot"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer head circle -->
+  <circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/>
+  <!-- Stipple shading - top left quadrant dots -->
+  <circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/>
+  <circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/>
+  <circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/>
+  <circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/>
+  <circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/>
+  <circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/>
+  <!-- Flat hair (top band) -->
+  <rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/>
+  <!-- Round glasses - left -->
+  <circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
+  <circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/>
+  <circle cx="21" cy="29" r=".8" fill="currentColor"/>
+  <!-- Round glasses - right -->
+  <circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
+  <circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/>
+  <circle cx="37" cy="29" r=".8" fill="currentColor"/>
+  <!-- Bridge between glasses -->
+  <line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- L-shaped minimal nose -->
+  <path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Simple smile -->
+  <path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+</svg></div>
           <div class="bubble bubble-bot">
             <p>Hi Alex! 👋 I've reviewed your Week 12 data.</p>
             <p style="margin-top:7px">Your <strong>growth rate of +14%</strong> is ahead of the group average (+8%) — that's great progress! I've found your <strong>highest-impact gap</strong> for next week. Want me to walk you through it?</p>
@@ -119,7 +183,37 @@
         </div>
 
         <div class="msg msg-bot">
-          <div class="msg-av-bot">🤖</div>
+          <div class="msg-av-bot"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer head circle -->
+  <circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/>
+  <!-- Stipple shading - top left quadrant dots -->
+  <circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/>
+  <circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/>
+  <circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/>
+  <circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/>
+  <circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/>
+  <circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/>
+  <!-- Flat hair (top band) -->
+  <rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/>
+  <!-- Round glasses - left -->
+  <circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
+  <circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/>
+  <circle cx="21" cy="29" r=".8" fill="currentColor"/>
+  <!-- Round glasses - right -->
+  <circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
+  <circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/>
+  <circle cx="37" cy="29" r=".8" fill="currentColor"/>
+  <!-- Bridge between glasses -->
+  <line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- L-shaped minimal nose -->
+  <path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Simple smile -->
+  <path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+</svg></div>
           <div class="bubble bubble-bot">
             <p>Your biggest gap is <span class="inline-tag-red">BST Deletion</span>.</p>
             <ul class="chat-ul">
@@ -141,7 +235,37 @@
         </div>
 
         <div class="msg msg-bot">
-          <div class="msg-av-bot">🤖</div>
+          <div class="msg-av-bot"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer head circle -->
+  <circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/>
+  <!-- Stipple shading - top left quadrant dots -->
+  <circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/>
+  <circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/>
+  <circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/>
+  <circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/>
+  <circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/>
+  <circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/>
+  <circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/>
+  <!-- Flat hair (top band) -->
+  <rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/>
+  <!-- Round glasses - left -->
+  <circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
+  <circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/>
+  <circle cx="21" cy="29" r=".8" fill="currentColor"/>
+  <!-- Round glasses - right -->
+  <circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
+  <circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/>
+  <circle cx="37" cy="29" r=".8" fill="currentColor"/>
+  <!-- Bridge between glasses -->
+  <line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- L-shaped minimal nose -->
+  <path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Simple smile -->
+  <path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+</svg></div>
           <div class="bubble bubble-bot">
             <p>Here's your <strong>3-step plan</strong>:</p>
             <div class="action-list">

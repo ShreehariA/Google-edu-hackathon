@@ -107,3 +107,8 @@
   .lb-header { flex-direction: column; }
   .lb-delta { font-size: 1.1rem; }
 }
+
+/* ── Dark mode ── */
+[data-theme="dark"] .lb-row      { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .lb-row-1    { background: linear-gradient(to right, rgba(241,196,15,.06), var(--surface)); }
+[data-theme="dark"] .your-row    { background: linear-gradient(to right, rgba(20,184,166,.1), var(--surface)); }

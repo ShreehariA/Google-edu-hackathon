@@ -384,7 +384,7 @@ function appendMsg(role, content) {
 
   if (role === 'bot') {
     div.innerHTML = `
-      <div class="msg-av-bot">🤖</div>
+      <div class="msg-av-bot"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/><circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/><circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/><circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/><circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/><circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/><circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/><circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/><circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/><circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/><circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/><rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/><circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/><circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/><circle cx="21" cy="29" r=".8" fill="currentColor"/><circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/><circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/><circle cx="37" cy="29" r=".8" fill="currentColor"/><line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></div>
       <div class="bubble bubble-bot">
         ${content}
         <span class="msg-time">${timeNow()}</span>
@@ -409,7 +409,7 @@ function showTyping() {
   div.id = 'typing';
   div.className = 'typing-row';
   div.innerHTML = `
-    <div class="msg-av-bot">🤖</div>
+    <div class="msg-av-bot"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/><circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/><circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/><circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/><circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/><circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/><circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/><circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/><circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/><circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/><circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/><rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/><circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/><circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/><circle cx="21" cy="29" r=".8" fill="currentColor"/><circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/><circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/><circle cx="37" cy="29" r=".8" fill="currentColor"/><line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></div>
     <div class="typing-dots"><span></span><span></span><span></span></div>`;
   log.appendChild(div);
   scrollToBottom(log);
@@ -456,10 +456,32 @@ function initChat() {
   scrollToBottom(document.getElementById('chatMessages'));
 }
 
+
+/* ─────────────────────────────────────────────────
+   DARK MODE TOGGLE
+───────────────────────────────────────────────── */
+
+function initTheme() {
+  // Apply saved preference immediately
+  const saved = localStorage.getItem('deltaTheme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+
+  // Wire up every toggle button on the page
+  document.querySelectorAll('#themeToggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next    = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('deltaTheme', next);
+    });
+  });
+}
+
 /* ─────────────────────────────────────────────────
    BOOT
 ───────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
   initLogin();
   initLeaderboard();
   initDashboard();
