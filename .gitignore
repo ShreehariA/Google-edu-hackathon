@@ -14,3 +14,5 @@ deployments/.terraform/
 deployments/.terraform.lock.hcl
 *.tfstate
 *.tfstate.backup
+GoogleEd_hackathon.xlsx
+~$GoogleEd_hackathon.xlsx
