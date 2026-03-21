@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DeltaEd — My Progress</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="dashboard.css" />
 </head>
@@ -26,190 +28,161 @@
         <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun"  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
-      <div class="topbar-avatar" title="Alex Morgan">AM</div>
+      <div class="topbar-avatar" id="avatarInitials" title="Student">KB</div>
     </div>
   </header>
 
-  <!-- Intro banner -->
-  <div class="dash-banner">
-    <div class="banner-inner">
-      <div>
-        <h2 class="banner-greeting">Good morning, Alex 👋</h2>
-        <p>Week 12 snapshot — you're growing faster than the group average.</p>
+  <main class="dash-page" id="dashPage">
+
+    <!-- ── Page Header ── -->
+    <div class="dash-hero" id="dashHero">
+      <div class="dash-hero-left">
+        <!-- Skeleton or real name -->
+        <div class="sk sk-hero-name" id="skHeroName"></div>
+        <h1 class="hero-name hidden" id="heroName">Alex Morgan</h1>
+        <div class="sk sk-hero-badge" id="skHeroBadge"></div>
+        <div class="growth-badge hidden" id="growthBadge" aria-label="Growth percentile badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <span id="growthBadgeText">Improving faster than 72% of peers this week</span>
+        </div>
       </div>
       <a href="chat.html" class="btn btn-primary">
-        Talk to AI Coach 🤖
+        Ask AI Coach 🤖
       </a>
     </div>
-  </div>
 
-  <main class="dash-page">
-
-    <!-- ── Stat tiles ── -->
-    <div class="stat-row afu" style="animation-delay:.05s">
-      <div class="stat-tile">
-        <span class="tile-ico">📈</span>
-        <div><span class="tile-val">+14%</span><span class="tile-lbl">Your Growth</span></div>
-      </div>
-      <div class="stat-tile">
-        <span class="tile-ico">👥</span>
-        <div><span class="tile-val" style="color:var(--blue)">+8%</span><span class="tile-lbl">Group Average</span></div>
-      </div>
-      <div class="stat-tile">
-        <span class="tile-ico">🏅</span>
-        <div><span class="tile-val" style="color:#8E44AD">#12</span><span class="tile-lbl">Current Rank</span></div>
-      </div>
-      <div class="stat-tile">
-        <span class="tile-ico">⏱</span>
-        <div><span class="tile-val">26h</span><span class="tile-lbl">Study Time</span></div>
-      </div>
+    <!-- ── Subject Switcher ── -->
+    <div class="subject-switcher" id="subjectSwitcher" role="tablist" aria-label="Subject switcher">
+      <!-- Skeleton tabs -->
+      <div class="sk sk-tab" id="skTab1"></div>
+      <div class="sk sk-tab" id="skTab2"></div>
+      <!-- Real tabs injected by JS -->
     </div>
 
-    <!-- ── Growth chart ── -->
-    <section class="card dash-card afu" style="animation-delay:.1s">
-      <div class="card-hd">
-        <h3>Weekly Score Progress</h3>
-        <span class="badge badge-green">vs group avg</span>
-      </div>
+    <!-- ── Dashboard Body ── -->
+    <div id="dashBody">
 
-      <div class="chart-wrap">
-        <!-- Bar chart -->
-        <div class="bar-chart" aria-label="Weekly scores chart">
-          <div class="bc-col">
-            <div class="bc-bar" style="--h:42%"><span class="bc-tip">36</span></div>
-            <span class="bc-lbl">W8</span>
+      <!-- SECTION 1: SCORES -->
+      <section class="dash-section" id="scoresSection">
+        <div class="section-label">
+          <span class="section-icon">📊</span>
+          Assessment Scores
+        </div>
+
+        <!-- Skeleton tiles -->
+        <div class="tiles-row sk-tiles" id="skScoreTiles">
+          <div class="sk-tile-card"><div class="sk sk-tile-val"></div><div class="sk sk-tile-lbl"></div></div>
+          <div class="sk-tile-card"><div class="sk sk-tile-val"></div><div class="sk sk-tile-lbl"></div></div>
+          <div class="sk-tile-card"><div class="sk sk-tile-val"></div><div class="sk sk-tile-lbl"></div></div>
+        </div>
+
+        <!-- Real tiles -->
+        <div class="tiles-row hidden" id="scoreTiles">
+          <div class="tile-card">
+            <span class="tile-label">Till Date Average</span>
+            <span class="tile-value" id="scoreTillDate">—</span>
           </div>
-          <div class="bc-col">
-            <div class="bc-bar" style="--h:50%"><span class="bc-tip">44</span></div>
-            <span class="bc-lbl">W9</span>
+          <div class="tile-card tile-card--accent">
+            <span class="tile-label">Previous Week</span>
+            <div class="tile-value-row">
+              <span class="tile-value" id="scorePrevWeek">—</span>
+              <span class="delta-pill" id="scoreDelta">—</span>
+            </div>
           </div>
-          <div class="bc-col">
-            <div class="bc-bar" style="--h:55%"><span class="bc-tip">49</span></div>
-            <span class="bc-lbl">W10</span>
-          </div>
-          <div class="bc-col">
-            <div class="bc-bar" style="--h:57%"><span class="bc-tip">51</span></div>
-            <span class="bc-lbl">W11</span>
-          </div>
-          <div class="bc-col bc-current">
-            <div class="bc-bar bc-bar-current" style="--h:65%"><span class="bc-tip">58</span></div>
-            <span class="bc-lbl">W12 ◀</span>
+          <div class="tile-card">
+            <span class="tile-label">Week Before</span>
+            <span class="tile-value" id="scoreWeekBefore">—</span>
           </div>
         </div>
 
-        <!-- Rings -->
-        <div class="ring-pair">
-          <div class="ring-item">
-            <svg class="ring-svg" viewBox="0 0 90 90">
-              <circle class="ring-bg"   cx="45" cy="45" r="36" stroke-width="8"/>
-              <circle class="ring-fill" cx="45" cy="45" r="36" stroke-width="8"
-                stroke-dasharray="226" stroke-dashoffset="79" id="myRing"/>
-            </svg>
-            <div class="ring-lbl"><strong>58</strong><span>you</span></div>
-          </div>
-          <div class="ring-item">
-            <svg class="ring-svg" viewBox="0 0 90 90">
-              <circle class="ring-bg"   cx="45" cy="45" r="36" stroke-width="8"/>
-              <circle class="ring-fill ring-blue" cx="45" cy="45" r="36" stroke-width="8"
-                stroke-dasharray="226" stroke-dashoffset="135" id="avgRing"/>
-            </svg>
-            <div class="ring-lbl"><strong style="color:var(--blue)">40</strong><span>avg</span></div>
-          </div>
-          <div class="vs-tag">+45%<br/><small>above avg</small></div>
+        <!-- Skeleton bars -->
+        <div class="bars-wrap sk-bars" id="skScoreBars">
+          <div class="sk-bar-row"><div class="sk sk-bar-label"></div><div class="sk sk-bar-track"></div></div>
+          <div class="sk-bar-row"><div class="sk sk-bar-label"></div><div class="sk sk-bar-track"></div></div>
+          <div class="sk-bar-row"><div class="sk sk-bar-label"></div><div class="sk sk-bar-track"></div></div>
+          <div class="sk-bar-row"><div class="sk sk-bar-label"></div><div class="sk sk-bar-track"></div></div>
         </div>
-      </div>
-    </section>
 
-    <!-- ── Learning gaps ── -->
-    <section class="card dash-card afu" style="animation-delay:.15s">
-      <div class="card-hd">
-        <h3>📍 Learning Gaps</h3>
-        <span class="badge badge-blue">3 identified</span>
-      </div>
+        <!-- Real bars -->
+        <div class="bars-wrap hidden" id="scoreBars">
+          <!-- Injected by JS -->
+        </div>
 
-      <ul class="gap-list">
-        <li class="gap-item">
-          <div class="gap-left">
-            <span class="gap-pill gap-high">High</span>
-            <div>
-              <h4>BST Deletion</h4>
-              <p>38% accuracy · group avg 62%</p>
-            </div>
-          </div>
-          <div class="gap-right">
-            <span class="gap-pct" style="color:var(--red)">38%</span>
-            <div class="bar-track" style="width:120px">
-              <div class="bar-fill" style="width:38%;background:var(--red)"></div>
-            </div>
-          </div>
-        </li>
-        <li class="gap-item">
-          <div class="gap-left">
-            <span class="gap-pill gap-med">Med</span>
-            <div>
-              <h4>Time Complexity — Nested Loops</h4>
-              <p>55% accuracy · group avg 68%</p>
-            </div>
-          </div>
-          <div class="gap-right">
-            <span class="gap-pct" style="color:var(--amber)">55%</span>
-            <div class="bar-track" style="width:120px">
-              <div class="bar-fill" style="width:55%;background:var(--amber)"></div>
-            </div>
-          </div>
-        </li>
-        <li class="gap-item">
-          <div class="gap-left">
-            <span class="gap-pill gap-low">Low</span>
-            <div>
-              <h4>Graph Traversal — BFS vs DFS</h4>
-              <p>70% accuracy · group avg 72%</p>
-            </div>
-          </div>
-          <div class="gap-right">
-            <span class="gap-pct" style="color:var(--green-dark)">70%</span>
-            <div class="bar-track" style="width:120px">
-              <div class="bar-fill" style="width:70%"></div>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </section>
+        <!-- Empty state -->
+        <div class="empty-state hidden" id="scoresEmpty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <p id="scoresEmptyText">No assessments completed yet.</p>
+        </div>
+      </section>
 
-    <!-- ── Next steps ── -->
-    <section class="card dash-card afu" style="animation-delay:.2s">
-      <div class="card-hd">
-        <h3>✅ This Week's Action Steps</h3>
-      </div>
-      <ul class="steps-list" id="stepsList">
-        <li class="step-row" data-step="1">
-          <button class="step-cb" aria-label="Mark complete"></button>
-          <span><strong>Watch Lesson 4.3</strong> — BST Deletion (14 min)</span>
-          <span class="step-tag">Start Here</span>
-        </li>
-        <li class="step-row" data-step="2">
-          <button class="step-cb" aria-label="Mark complete"></button>
-          <span><strong>Complete</strong> BST Quiz Drill (10 questions)</span>
-        </li>
-        <li class="step-row" data-step="3">
-          <button class="step-cb" aria-label="Mark complete"></button>
-          <span><strong>Watch Lesson 5.1</strong> — Big-O Nested Loops (11 min)</span>
-        </li>
-        <li class="step-row" data-step="4">
-          <button class="step-cb" aria-label="Mark complete"></button>
-          <span><strong>Review</strong> BFS vs DFS Flashcards (5 min)</span>
-        </li>
-      </ul>
+      <!-- SECTION 2: PROGRESS -->
+      <section class="dash-section" id="progressSection">
+        <div class="section-label">
+          <span class="section-icon">📚</span>
+          Chapter Progress
+        </div>
 
-      <a href="chat.html" class="coach-cta">
-        <span>Need help with any of these?</span>
-        <strong>Ask your AI Coach →</strong>
+        <!-- Skeleton tiles -->
+        <div class="tiles-row sk-tiles" id="skProgressTiles">
+          <div class="sk-tile-card"><div class="sk sk-tile-val"></div><div class="sk sk-tile-lbl"></div></div>
+          <div class="sk-tile-card"><div class="sk sk-tile-val"></div><div class="sk sk-tile-lbl"></div></div>
+          <div class="sk-tile-card"><div class="sk sk-tile-val"></div><div class="sk sk-tile-lbl"></div></div>
+        </div>
+
+        <!-- Real tiles -->
+        <div class="tiles-row hidden" id="progressTiles">
+          <div class="tile-card">
+            <span class="tile-label">Overall Progress</span>
+            <span class="tile-value" id="progTillDate">—</span>
+          </div>
+          <div class="tile-card tile-card--progress">
+            <span class="tile-label">Gained Last Week</span>
+            <div class="tile-value-row">
+              <span class="tile-value" id="progPrevWeek">—</span>
+              <span class="delta-pill" id="progDelta">—</span>
+            </div>
+          </div>
+          <div class="tile-card">
+            <span class="tile-label">Gained Week Before</span>
+            <span class="tile-value" id="progWeekBefore">—</span>
+          </div>
+        </div>
+
+        <!-- Skeleton bars -->
+        <div class="bars-wrap sk-bars" id="skProgressBars">
+          <div class="sk-bar-row"><div class="sk sk-bar-label"></div><div class="sk sk-bar-track"></div></div>
+          <div class="sk-bar-row"><div class="sk sk-bar-label"></div><div class="sk sk-bar-track"></div></div>
+          <div class="sk-bar-row"><div class="sk sk-bar-label"></div><div class="sk sk-bar-track"></div></div>
+        </div>
+
+        <!-- Real bars -->
+        <div class="bars-wrap hidden" id="progressBars">
+          <!-- Injected by JS -->
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state hidden" id="progressEmpty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          <p id="progressEmptyText">No chapters started yet.</p>
+        </div>
+      </section>
+
+      <!-- Coach CTA -->
+      <a href="chat.html" class="coach-cta-bar">
+        <div>
+          <strong>Need to know what to do next?</strong>
+          <span>Your AI Coach has a personalised action plan ready.</span>
+        </div>
+        <span class="coach-cta-arrow">Ask Coach →</span>
       </a>
-    </section>
+
+    </div><!-- /#dashBody -->
 
   </main>
 
+  <div class="tooltip" id="tooltip" role="tooltip" aria-hidden="true"></div>
   <div class="toast" id="toast"><span id="toastMsg"></span></div>
   <script src="script.js"></script>
+  <script src="dashboard-data.js"></script>
 </body>
 </html>
