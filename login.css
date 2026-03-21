@@ -153,3 +153,18 @@
   position: fixed; top: 18px; right: 18px; z-index: 200;
   box-shadow: var(--shadow-md);
 }
+
+/* ── Dark mode overrides ── */
+[data-theme="dark"] .brand-panel    { background: linear-gradient(150deg, #0a1a14 0%, #0d2a1c 50%, #0c1e2e 100%); }
+[data-theme="dark"] .form-panel     { background: var(--bg); }
+[data-theme="dark"] .api-error      { background: rgba(231,76,60,.12); border-color: rgba(231,76,60,.3); color: #f87171; }
+[data-theme="dark"] .auth-tabs      { background: var(--border); }
+[data-theme="dark"] .tab.active     { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+[data-theme="dark"] .cb-box         { background: var(--surface); border-color: var(--border-2); }
+[data-theme="dark"] .stat-chip      { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.09); }
+[data-theme="dark"] .feat-dot       { background: rgba(255,255,255,.08); }
+
+/* Floating toggle on login — sits over the form panel */
+.theme-toggle-float {
+  position: fixed; top: 16px; right: 16px; z-index: 200;
+}

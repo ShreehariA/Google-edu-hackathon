@@ -184,3 +184,36 @@
 [data-theme="dark"] .coach-cta   { background: linear-gradient(to right, var(--teal-dim), var(--surface)); }
 [data-theme="dark"] .bc-bar      { background: rgba(20,184,166,.2); }
 [data-theme="dark"] .bar-track   { background: var(--border); }
+
+/* ── Teal accent fixes ── */
+.tile-val           { color: var(--teal-dark); }
+.vs-tag             { background: var(--teal-dim); color: var(--teal-dark); }
+.action-n           { background: var(--teal-dim); color: var(--teal-dark); }
+.ring-fill          { stroke: var(--teal); }
+.bc-bar-current     { background: linear-gradient(180deg, var(--teal), var(--teal-dark)); }
+.bc-current .bc-tip { color: var(--teal-dark); }
+.bc-current .bc-lbl { color: var(--teal-dark); }
+.ring-lbl strong    { color: var(--teal-dark); }
+.coach-cta          { border-color: var(--teal); background: linear-gradient(to right, var(--teal-dim), var(--surface)); }
+.coach-cta:hover    { box-shadow: var(--shadow-teal); }
+.coach-cta strong   { color: var(--teal-dark); }
+.gap-low            { background: var(--teal-dim); color: var(--teal-dark); }
+.step-cb:hover      { border-color: var(--teal); }
+.step-row.done      { background: var(--teal-dim); border-color: var(--teal); }
+.step-row.done .step-cb { background: var(--teal); border-color: var(--teal); }
+
+/* ── Dark mode overrides ── */
+[data-theme="dark"] .dash-banner    { background: linear-gradient(135deg, #0a1f17, #0d2b20, #0e2035); }
+[data-theme="dark"] .stat-tile      { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .dash-card      { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .gap-item       { background: var(--bg); border-color: var(--border); }
+[data-theme="dark"] .gap-high       { background: rgba(231,76,60,.08); border-left-color: var(--red); }
+[data-theme="dark"] .gap-med        { background: rgba(243,156,18,.07); border-left-color: var(--amber); }
+[data-theme="dark"] .gap-low        { background: rgba(29,158,117,.08); }
+[data-theme="dark"] .step-row       { background: var(--bg); border-color: var(--border); }
+[data-theme="dark"] .step-row.done  { background: rgba(29,158,117,.12); border-color: var(--teal-dark); }
+[data-theme="dark"] .action-item    { background: var(--bg); }
+[data-theme="dark"] .bar-track      { background: var(--border); }
+[data-theme="dark"] .bc-bar         { background: rgba(29,158,117,.2); }
+[data-theme="dark"] .banner-greeting{ color: #fff; }
+[data-theme="dark"] .coach-cta      { background: linear-gradient(to right, rgba(29,158,117,.12), var(--surface)); }

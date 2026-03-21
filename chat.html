@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +8,116 @@
   <link rel="stylesheet" href="chat.css" />
 </head>
 <body>
+
+  <!--
+   ══════════════════════════════════════════════
+   BOT FACE DEFINITIONS — three SVG states
+   JS swaps which is visible via .bot-face-active
+   ══════════════════════════════════════════════
+  -->
+
+  <!-- IDLE FACE: soft open eyes, gentle curved smile, cheek blush -->
+  <template id="tmpl-idle">
+    <svg class="bot-face-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- stipple halo -->
+      <circle cx="9"  cy="14" r=".9" fill="currentColor" opacity=".18"/>
+      <circle cx="12" cy="8"  r=".9" fill="currentColor" opacity=".15"/>
+      <circle cx="19" cy="5"  r=".9" fill="currentColor" opacity=".13"/>
+      <circle cx="7"  cy="22" r=".9" fill="currentColor" opacity=".18"/>
+      <circle cx="6"  cy="30" r=".9" fill="currentColor" opacity=".14"/>
+      <circle cx="47" cy="14" r=".9" fill="currentColor" opacity=".16"/>
+      <circle cx="50" cy="22" r=".9" fill="currentColor" opacity=".14"/>
+      <circle cx="38" cy="5"  r=".9" fill="currentColor" opacity=".12"/>
+      <!-- relaxed brows -->
+      <path d="M13 18 Q18 15.5 22 17.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      <path d="M34 17.5 Q38 15.5 43 18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      <!-- left eye + shine -->
+      <circle cx="19" cy="24" r="3.5" fill="currentColor"/>
+      <circle cx="20.4" cy="22.6" r="1.15" fill="white" opacity=".9"/>
+      <!-- right eye + shine -->
+      <circle cx="37" cy="24" r="3.5" fill="currentColor"/>
+      <circle cx="38.4" cy="22.6" r="1.15" fill="white" opacity=".9"/>
+      <!-- L-shaped nose -->
+      <path d="M28 30 L28 36 L31.5 36" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- gentle smile -->
+      <path d="M18 43 Q28 51 38 43" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
+      <!-- soft blush ellipses -->
+      <ellipse cx="13" cy="36" rx="5.5" ry="3" fill="currentColor" opacity=".08"/>
+      <ellipse cx="43" cy="36" rx="5.5" ry="3" fill="currentColor" opacity=".08"/>
+    </svg>
+  </template>
+
+  <!-- THINKING FACE: one squinted eye, raised brow, puckered mouth, thought bubbles rising -->
+  <template id="tmpl-thinking">
+    <svg class="bot-face-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- stipple -->
+      <circle cx="9"  cy="14" r=".9" fill="currentColor" opacity=".18"/>
+      <circle cx="12" cy="8"  r=".9" fill="currentColor" opacity=".15"/>
+      <circle cx="7"  cy="22" r=".9" fill="currentColor" opacity=".18"/>
+      <circle cx="47" cy="14" r=".9" fill="currentColor" opacity=".16"/>
+      <circle cx="50" cy="22" r=".9" fill="currentColor" opacity=".14"/>
+      <!-- left brow furrowed -->
+      <path d="M13 19.5 Q18 17 22 18.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      <!-- right brow raised high -->
+      <path d="M34 16 Q38 12.5 43 15.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      <!-- left eye squinted (thinking) -->
+      <path d="M15 24.5 Q19 21 23 24.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="19" cy="26" r="2.8" fill="currentColor"/>
+      <circle cx="20.2" cy="24.8" r=".95" fill="white" opacity=".9"/>
+      <!-- right eye wide open -->
+      <circle cx="37" cy="24" r="3.5" fill="currentColor"/>
+      <circle cx="38.4" cy="22.6" r="1.15" fill="white" opacity=".9"/>
+      <!-- L-shaped nose -->
+      <path d="M28 30 L28 36 L31.5 36" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- puckered thinking mouth (pulled to right) -->
+      <path d="M22 44 Q29 41.5 35 44.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <!-- thought bubbles rising top-right -->
+      <circle cx="44" cy="10" r="1.8" fill="currentColor" opacity=".45"/>
+      <circle cx="49" cy="5"  r="2.6" fill="currentColor" opacity=".35"/>
+      <circle cx="55" cy="1"  r="3.4" fill="currentColor" opacity=".25"/>
+    </svg>
+  </template>
+
+  <!-- WRITING FACE: both eyes slightly narrowed (focused), furrowed brows,
+       tongue tucked at corner of straight mouth, pencil at angle below chin -->
+  <template id="tmpl-writing">
+    <svg class="bot-face-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- stipple -->
+      <circle cx="9"  cy="14" r=".9" fill="currentColor" opacity=".18"/>
+      <circle cx="7"  cy="22" r=".9" fill="currentColor" opacity=".18"/>
+      <circle cx="47" cy="14" r=".9" fill="currentColor" opacity=".16"/>
+      <circle cx="50" cy="22" r=".9" fill="currentColor" opacity=".14"/>
+      <!-- focused brows pulled in -->
+      <path d="M13 18.5 Q18 15.5 22 17.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      <path d="M34 17.5 Q38 15.5 43 18.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+      <!-- inner brow crease lines -->
+      <path d="M22 17.5 L24 19.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".5"/>
+      <path d="M34 17.5 L32 19.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".5"/>
+      <!-- left eye narrowed (concentrated) -->
+      <path d="M15.5 23 Q19 20 22.5 23" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <circle cx="19" cy="25" r="2.9" fill="currentColor"/>
+      <circle cx="20.3" cy="23.7" r=".95" fill="white" opacity=".9"/>
+      <!-- right eye narrowed -->
+      <path d="M33.5 23 Q37 20 40.5 23" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+      <circle cx="37" cy="25" r="2.9" fill="currentColor"/>
+      <circle cx="38.3" cy="23.7" r=".95" fill="white" opacity=".9"/>
+      <!-- L-shaped nose -->
+      <path d="M28 30 L28 36 L31.5 36" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- straight flat mouth (focused) -->
+      <path d="M21 44 L35 44" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- small tongue peeking at corner -->
+      <path d="M32 44 Q35 50 38 44 Z" fill="currentColor" opacity=".75"/>
+      <!-- pencil: shaft + tip + eraser, rotated ~-35deg -->
+      <g transform="rotate(-35 44 50)">
+        <rect x="41" y="41" width="5.5" height="17" rx="1.4" fill="currentColor" opacity=".65"/>
+        <polygon points="41,58 46.5,58 43.75,65" fill="currentColor" opacity=".75"/>
+        <rect x="41" y="38" width="5.5" height="5" rx="1" fill="currentColor" opacity=".5"/>
+      </g>
+      <!-- motion lines from pencil tip -->
+      <path d="M37 53 Q30 57 23 53" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2.5 2.5" opacity=".35"/>
+      <path d="M37 57 Q30 63 22 58" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2.5 2.5" opacity=".25"/>
+    </svg>
+  </template>
 
   <header class="topbar">
     <a href="index.html" class="topbar-brand">
@@ -22,34 +132,36 @@
       <a href="chat.html" class="active">AI Coach</a>
     </nav>
     <div class="topbar-right">
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
         <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="icon-sun"  width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
-      <a href="dashboard.html" class="btn btn-ghost btn-sm">← My Progress</a>
+      <a href="dashboard.html" class="btn btn-ghost btn-sm">← Progress</a>
       <div class="topbar-avatar">AM</div>
     </div>
   </header>
 
   <div class="chat-page">
 
-    <!-- ── Sidebar: context ── -->
+    <!-- ── Sidebar ── -->
     <aside class="chat-sidebar">
+
+      <div class="sidebar-bot-preview">
+        <div class="bot-preview-face" id="sidebarFaceWrap">
+          <!-- JS inserts idle face here -->
+        </div>
+        <div>
+          <p class="bot-preview-name">Delta Coach</p>
+          <p class="bot-preview-status"><span class="status-dot"></span> Online</p>
+        </div>
+      </div>
+
       <div class="sidebar-section">
-        <p class="sidebar-label">Your Gaps This Week</p>
+        <p class="sidebar-label">Gaps This Week</p>
         <ul class="sidebar-gaps">
-          <li class="sg-item sg-high">
-            <span class="sg-dot"></span>
-            <span>BST Deletion — 38%</span>
-          </li>
-          <li class="sg-item sg-med">
-            <span class="sg-dot"></span>
-            <span>Nested Loops — 55%</span>
-          </li>
-          <li class="sg-item sg-low">
-            <span class="sg-dot"></span>
-            <span>BFS vs DFS — 70%</span>
-          </li>
+          <li class="sg-item sg-high"><span class="sg-dot"></span><span>BST Deletion — 38%</span></li>
+          <li class="sg-item sg-med"><span class="sg-dot"></span><span>Nested Loops — 55%</span></li>
+          <li class="sg-item sg-low"><span class="sg-dot"></span><span>BFS vs DFS — 70%</span></li>
         </ul>
       </div>
 
@@ -66,58 +178,25 @@
 
       <div class="sidebar-section">
         <p class="sidebar-label">Your Stats</p>
-        <div class="sidebar-stat">
-          <span>Growth this week</span><strong class="s-green">+14%</strong>
-        </div>
-        <div class="sidebar-stat">
-          <span>Group average</span><strong class="s-blue">+8%</strong>
-        </div>
-        <div class="sidebar-stat">
-          <span>Current rank</span><strong>#12</strong>
-        </div>
+        <div class="sidebar-stat"><span>Growth this week</span><strong class="s-teal">+14%</strong></div>
+        <div class="sidebar-stat"><span>Group average</span><strong class="s-blue">+8%</strong></div>
+        <div class="sidebar-stat"><span>Current rank</span><strong>#12</strong></div>
       </div>
+
     </aside>
 
     <!-- ── Main chat ── -->
     <div class="chat-main">
 
-      <!-- Chat header -->
+      <!-- Chat header with large bot face -->
       <div class="chat-header">
-        <div class="chat-av"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer head circle -->
-  <circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/>
-  <!-- Stipple shading - top left quadrant dots -->
-  <circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/>
-  <circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/>
-  <circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/>
-  <circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/>
-  <circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/>
-  <circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/>
-  <!-- Flat hair (top band) -->
-  <rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/>
-  <!-- Round glasses - left -->
-  <circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
-  <circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/>
-  <circle cx="21" cy="29" r=".8" fill="currentColor"/>
-  <!-- Round glasses - right -->
-  <circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
-  <circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/>
-  <circle cx="37" cy="29" r=".8" fill="currentColor"/>
-  <!-- Bridge between glasses -->
-  <line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <!-- L-shaped minimal nose -->
-  <path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Simple smile -->
-  <path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-</svg></div>
+        <div class="chat-header-face" id="headerFaceWrap">
+          <!-- JS inserts face here, swaps state dynamically -->
+        </div>
         <div class="chat-hinfo">
           <span class="chat-hname">Delta Coach</span>
           <span class="chat-hstatus">
-            <span class="status-dot"></span> AI-powered · Always available
+            <span class="status-dot"></span> AI-powered · always available
           </span>
         </div>
         <button class="btn btn-ghost btn-sm" id="clearBtn">Clear chat</button>
@@ -134,42 +213,12 @@
           Coach has access to your quiz scores, study logs &amp; curriculum
         </div>
 
-        <!-- Opening bot message -->
+        <!-- Opening bot message — IDLE face -->
         <div class="msg msg-bot">
-          <div class="msg-av-bot"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer head circle -->
-  <circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/>
-  <!-- Stipple shading - top left quadrant dots -->
-  <circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/>
-  <circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/>
-  <circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/>
-  <circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/>
-  <circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/>
-  <circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/>
-  <!-- Flat hair (top band) -->
-  <rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/>
-  <!-- Round glasses - left -->
-  <circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
-  <circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/>
-  <circle cx="21" cy="29" r=".8" fill="currentColor"/>
-  <!-- Round glasses - right -->
-  <circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
-  <circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/>
-  <circle cx="37" cy="29" r=".8" fill="currentColor"/>
-  <!-- Bridge between glasses -->
-  <line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <!-- L-shaped minimal nose -->
-  <path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Simple smile -->
-  <path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-</svg></div>
+          <div class="msg-av-bot" data-face="idle"><!-- face injected by JS --></div>
           <div class="bubble bubble-bot">
-            <p>Hi Alex! 👋 I've reviewed your Week 12 data.</p>
-            <p style="margin-top:7px">Your <strong>growth rate of +14%</strong> is ahead of the group average (+8%) — that's great progress! I've found your <strong>highest-impact gap</strong> for next week. Want me to walk you through it?</p>
+            <p>Hi Alex! I've reviewed your Week 12 data.</p>
+            <p style="margin-top:7px">Your <strong>growth rate of +14%</strong> is ahead of the group average (+8%) — great progress! I've spotted your <strong>highest-impact gap</strong> for next week. Want me to walk you through it?</p>
             <span class="msg-time">9:02 AM</span>
           </div>
         </div>
@@ -182,46 +231,17 @@
           <div class="msg-av-user">AM</div>
         </div>
 
+        <!-- Analysis message — THINKING face -->
         <div class="msg msg-bot">
-          <div class="msg-av-bot"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer head circle -->
-  <circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/>
-  <!-- Stipple shading - top left quadrant dots -->
-  <circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/>
-  <circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/>
-  <circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/>
-  <circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/>
-  <circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/>
-  <circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/>
-  <!-- Flat hair (top band) -->
-  <rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/>
-  <!-- Round glasses - left -->
-  <circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
-  <circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/>
-  <circle cx="21" cy="29" r=".8" fill="currentColor"/>
-  <!-- Round glasses - right -->
-  <circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
-  <circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/>
-  <circle cx="37" cy="29" r=".8" fill="currentColor"/>
-  <!-- Bridge between glasses -->
-  <line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <!-- L-shaped minimal nose -->
-  <path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Simple smile -->
-  <path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-</svg></div>
+          <div class="msg-av-bot" data-face="thinking"><!-- face injected by JS --></div>
           <div class="bubble bubble-bot">
             <p>Your biggest gap is <span class="inline-tag-red">BST Deletion</span>.</p>
             <ul class="chat-ul">
-              <li>📊 Your accuracy: <strong>38%</strong> (group avg: 62%)</li>
-              <li>❌ 3 of 8 deletion questions answered incorrectly</li>
-              <li>⏱ You spent only 12 min on this topic (recommended: 40 min)</li>
+              <li>Your accuracy: <strong>38%</strong> (group avg: 62%)</li>
+              <li>3 of 8 deletion questions answered incorrectly</li>
+              <li>Only 12 min spent on this topic (recommended: 40 min)</li>
             </ul>
-            <p style="margin-top:8px">Closing this gap alone is projected to boost your rank by <strong>~10 positions</strong>.</p>
+            <p style="margin-top:8px">Closing this gap is projected to boost your rank by <strong>~10 positions</strong>.</p>
             <span class="msg-time">9:03 AM</span>
           </div>
         </div>
@@ -234,64 +254,29 @@
           <div class="msg-av-user">AM</div>
         </div>
 
+        <!-- Action plan message — WRITING face -->
         <div class="msg msg-bot">
-          <div class="msg-av-bot"><svg class="bot-face" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Outer head circle -->
-  <circle cx="30" cy="30" r="27" stroke="currentColor" stroke-width="2.2"/>
-  <!-- Stipple shading - top left quadrant dots -->
-  <circle cx="16" cy="17" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="20" cy="14" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="24" cy="13" r=".9" fill="currentColor" opacity=".45"/>
-  <circle cx="13" cy="22" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="14" cy="27" r=".9" fill="currentColor" opacity=".4"/>
-  <circle cx="12" cy="32" r=".9" fill="currentColor" opacity=".35"/>
-  <circle cx="18" cy="20" r=".9" fill="currentColor" opacity=".55"/>
-  <circle cx="22" cy="17" r=".9" fill="currentColor" opacity=".5"/>
-  <circle cx="15" cy="35" r=".9" fill="currentColor" opacity=".3"/>
-  <circle cx="17" cy="40" r=".9" fill="currentColor" opacity=".25"/>
-  <!-- Flat hair (top band) -->
-  <rect x="9" y="10" width="42" height="10" rx="5" fill="currentColor"/>
-  <!-- Round glasses - left -->
-  <circle cx="22" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
-  <circle cx="22" cy="30" r="2" fill="currentColor" opacity=".15"/>
-  <circle cx="21" cy="29" r=".8" fill="currentColor"/>
-  <!-- Round glasses - right -->
-  <circle cx="38" cy="30" r="7" stroke="currentColor" stroke-width="2"/>
-  <circle cx="38" cy="30" r="2" fill="currentColor" opacity=".15"/>
-  <circle cx="37" cy="29" r=".8" fill="currentColor"/>
-  <!-- Bridge between glasses -->
-  <line x1="29" y1="30" x2="31" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-  <!-- L-shaped minimal nose -->
-  <path d="M30 36 L30 39 L33 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Simple smile -->
-  <path d="M23 46 Q30 51 37 46" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-</svg></div>
+          <div class="msg-av-bot" data-face="writing"><!-- face injected by JS --></div>
           <div class="bubble bubble-bot">
             <p>Here's your <strong>3-step plan</strong>:</p>
             <div class="action-list">
               <div class="action-item">
                 <span class="action-n">1</span>
-                <div>
-                  <strong>Watch Lesson 4.3 — BST Deletion</strong>
-                  <p>14-min video. Focus on the case where the deleted node has two children — that's what you're getting wrong.</p>
-                </div>
+                <div><strong>Watch Lesson 4.3 — BST Deletion</strong>
+                  <p>14-min video. Focus on the two-children deletion case — that's what you're missing.</p></div>
               </div>
               <div class="action-item">
                 <span class="action-n">2</span>
-                <div>
-                  <strong>Complete BST Drill Quiz</strong>
-                  <p>10 targeted questions. Do this immediately after the video.</p>
-                </div>
+                <div><strong>Complete BST Drill Quiz</strong>
+                  <p>10 targeted questions. Do this immediately after the video.</p></div>
               </div>
               <div class="action-item">
                 <span class="action-n">3</span>
-                <div>
-                  <strong>30-min session Thu or Fri</strong>
-                  <p>Use the BST Visualiser in the lesson library to practice deletions by hand.</p>
-                </div>
+                <div><strong>30-min session Thu or Fri</strong>
+                  <p>Use the BST Visualiser in the lesson library to practice by hand.</p></div>
               </div>
             </div>
-            <p style="margin-top:10px;font-size:.82rem;color:var(--ink-3)">Estimated total time: ~55 minutes.</p>
+            <p style="margin-top:10px;font-size:.82rem;color:var(--ink-3)">Estimated total: ~55 minutes.</p>
             <span class="msg-time">9:04 AM</span>
           </div>
         </div>
@@ -318,7 +303,6 @@
       </form>
 
     </div><!-- /.chat-main -->
-
   </div><!-- /.chat-page -->
 
   <div class="toast" id="toast"><span id="toastMsg"></span></div>
