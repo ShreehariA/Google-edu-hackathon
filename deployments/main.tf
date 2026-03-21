@@ -93,7 +93,22 @@ resource "google_bigquery_table" "chapter_table" {
 [
   { "name": "chapter_id",   "type": "STRING", "mode": "REQUIRED" },
   { "name": "chapter_name", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "subject_name", "type": "STRING", "mode": "NULLABLE" },
+  { "name": "subject_id",   "type": "STRING", "mode": "NULLABLE" }
+]
+EOF
+}
+
+resource "google_bigquery_table" "subject_table" {
+  dataset_id          = google_bigquery_dataset.educational_resources_db.dataset_id
+  table_id            = "subject_table"
+  deletion_protection = false
+
+  schema = <<EOF
+[
+  { "name": "subject_id",   "type": "STRING", "mode": "REQUIRED" },
   { "name": "subject_name", "type": "STRING", "mode": "NULLABLE" }
 ]
 EOF
 }
+
