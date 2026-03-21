@@ -245,6 +245,48 @@ Orchestrator Agent
 ```
 
 ---
+## Session Data Preloading
+
+The agent requires the student's dashboard payload at session start. Given the
+current stack (Terraform API → BigQuery), the following approach avoids an
+additional BigQuery round trip on agent open.
+
+### Current Recommendation — Frontend State Pass-through
+
+<!-- TODO(@https://github.com/KaeBee2003): implement frontend state pass-through
+     for session init — see Session Data Preloading section -->
+
+The dashboard payload is already fetched and held in memory by the Page 2
+component before the student opens the chatbot. On agent session init, the
+frontend passes this payload directly as the session context. No additional
+API call is made.
+
+**Requirement for frontend:** Page 2 must keep the dashboard payload in
+component state for the full duration of the session. When the agent panel
+opens, pass the payload as the initialisation context object.
+
+**Freshness:** Data reflects the state at Page 2 load time. Given that
+student scores and progress update at most a few times a day, this is
+acceptable at current scale.
+
+### Upgrade Path (when scale demands it)
+
+When the user base grows, move to preloading on login:
+- On student login, trigger a background job that fetches and caches the
+  dashboard payload
+- Store in a short-lived session store (Redis recommended) keyed on
+  `student_id`, TTL 60 minutes
+- Agent reads from cache on init; falls back to a fresh BigQuery pull if
+  cache is expired or missing
+- This is the pattern used by platforms like Khan Academy to make dashboards
+  and agents feel instant
+
+### Fallback
+
+If the frontend state pass-through fails for any reason (e.g. student
+navigates directly to the agent without passing through Page 2), the agent
+falls back to calling the dashboard API endpoint directly:
+`GET /student/:student_id/dashboard?subject_id=:subject_id`
 
 ## Open Questions / Future Considerations
 
