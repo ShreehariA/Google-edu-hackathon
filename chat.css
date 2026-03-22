@@ -290,3 +290,27 @@
   .chat-messages { padding: 14px 12px; }
   .bubble { max-width: 85%; }
 }
+
+/* ── Bot face: always white bg, dark teal features ── */
+.bot-face-svg { color: #134E4A !important; }
+.bot-preview-face, .chat-header-face, .msg-av-bot { background: #fff !important; }
+[data-theme="dark"] .bot-face-svg { color: #134E4A !important; }
+[data-theme="dark"] .bot-preview-face,
+[data-theme="dark"] .chat-header-face,
+[data-theme="dark"] .msg-av-bot { background: #fff !important; }
+
+/* Chat header teal */
+.chat-header { background: var(--teal, #14B8A6) !important; }
+[data-theme="dark"] .chat-header { background: #0D9488 !important; }
+.chat-hname { color: #fff !important; }
+.chat-hstatus { color: rgba(255,255,255,.8) !important; }
+.chat-header .status-dot { background: #fff !important; box-shadow: none !important; }
+.chat-header .btn-ghost { border-color: rgba(255,255,255,.5)!important; color:#fff!important; background:rgba(255,255,255,.15)!important; }
+
+/* Teal accents in chat */
+.bubble-user { background: var(--teal, #14B8A6) !important; }
+.bot-preview-face { border-color: var(--teal, #14B8A6) !important; }
+.msg-av-bot { border-color: var(--teal, #14B8A6) !important; }
+.chip:hover { background: var(--teal-dim,#CCFBF1)!important; border-color:var(--teal,#14B8A6)!important; color:var(--teal-deeper,#0F766E)!important; }
+.status-dot { background: var(--teal, #14B8A6) !important; }
+.chat-input:focus { border-color: var(--teal, #14B8A6) !important; }

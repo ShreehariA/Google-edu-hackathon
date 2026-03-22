@@ -37,13 +37,15 @@
     <!-- ── Page Header ── -->
     <div class="dash-hero" id="dashHero">
       <div class="dash-hero-left">
-        <!-- Skeleton or real name -->
-        <div class="sk sk-hero-name" id="skHeroName"></div>
-        <h1 class="hero-name hidden" id="heroName">Alex Morgan</h1>
-        <div class="sk sk-hero-badge" id="skHeroBadge"></div>
-        <div class="growth-badge hidden" id="growthBadge" aria-label="Growth percentile badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-          <span id="growthBadgeText">Improving faster than 72% of peers this week</span>
+        <!-- Skeleton -->
+        <div class="sk sk-hero-badge" id="skHeroBadge" style="width:340px;height:88px;border-radius:16px;"></div>
+        <!-- Hero box: name + badge combined -->
+        <div class="growth-badge-hero hidden" id="growthBadge" aria-label="Growth percentile badge">
+          <div class="hero-name-line" id="heroName">Alex Morgan</div>
+          <div class="hero-badge-line">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <span id="growthBadgeText">Improving faster than 72% of peers this week</span>
+          </div>
         </div>
       </div>
       <a href="chat.html" class="btn btn-primary">
@@ -89,10 +91,7 @@
               <span class="delta-pill" id="scoreDelta">—</span>
             </div>
           </div>
-          <div class="tile-card">
-            <span class="tile-label">Week Before</span>
-            <span class="tile-value" id="scoreWeekBefore">—</span>
-          </div>
+
         </div>
 
         <!-- Skeleton bars -->
@@ -142,10 +141,7 @@
               <span class="delta-pill" id="progDelta">—</span>
             </div>
           </div>
-          <div class="tile-card">
-            <span class="tile-label">Gained Week Before</span>
-            <span class="tile-value" id="progWeekBefore">—</span>
-          </div>
+
         </div>
 
         <!-- Skeleton bars -->

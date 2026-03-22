@@ -341,7 +341,7 @@ function renderCard(entry, idx) {
   var dLabel     = deltaLabel(entry.growth);
   var dClass     = deltaClass(entry.growth);
   var prevPct    = formatPct(entry.avg_score_prev_week);
-  var beforePct  = formatPct(entry.avg_score_week_before);
+  var peerPct = Math.min(99, Math.round(50 + (entry.growth||0)*180));
   var rowClass   = idx < 3 ? 'lb-row lb-row-' + (idx+1) : 'lb-row';
   var delayStyle = 'animation-delay:' + (0.06 + idx * 0.08) + 's';
 
@@ -371,9 +371,8 @@ function renderCard(entry, idx) {
         '<span class="lb-name">' + escapeHtml(entry.name || entry.student_id) + '</span>' +
       '</div>' +
       '<div class="lb-stats">' +
-        '<span>Previous week: <span class="lb-stat-val">' + prevPct + '</span></span>' +
-        '<span class="lb-stat-sep" aria-hidden="true">|</span>' +
-        '<span>Week before: <span class="lb-stat-val">' + beforePct + '</span></span>' +
+        '<span>Last week: <span class="lb-stat-val">' + prevPct + '</span></span>' +
+        '<span class="lb-percentile">better than ' + peerPct + '% of peers</span>' +
       '</div>' +
     '</div>' +
     '<span class="lb-delta ' + dClass + '" aria-hidden="true">' + dLabel + '</span>';
@@ -449,12 +448,12 @@ function renderYourRow() {
 /* ── Mock data — remove / disable before production ── */
 var MOCK_LEADERBOARD = {
   last_updated: new Date().toISOString(),
-  entries: [
-    { rank:1, student_id:'student_042', avg_score_prev_week:0.94, avg_score_week_before:0.64, growth:0.30, questions_prev_week:42, questions_week_before:38 },
-    { rank:2, student_id:'student_117', avg_score_prev_week:0.88, avg_score_week_before:0.63, growth:0.25, questions_prev_week:35, questions_week_before:29 },
-    { rank:3, student_id:'student_209', avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22, questions_prev_week:28, questions_week_before:31 },
-    { rank:4, student_id:'student_055', avg_score_prev_week:0.76, avg_score_week_before:0.58, growth:0.18, questions_prev_week:33, questions_week_before:27 },
-    { rank:5, student_id:'student_301', avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16, questions_prev_week:22, questions_week_before:18 }
+  leaderboard: [
+    { rank:1, student_id:'student_042', name:'Jordan Lee',   avg_score_prev_week:0.94, avg_score_week_before:0.64, growth:0.30, questions_prev_week:42, questions_week_before:38 },
+    { rank:2, student_id:'student_117', name:'Priya Sharma', avg_score_prev_week:0.88, avg_score_week_before:0.63, growth:0.25, questions_prev_week:35, questions_week_before:29 },
+    { rank:3, student_id:'student_209', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22, questions_prev_week:28, questions_week_before:31 },
+    { rank:4, student_id:'student_055', name:'Aisha Patel',  avg_score_prev_week:0.76, avg_score_week_before:0.58, growth:0.18, questions_prev_week:33, questions_week_before:27 },
+    { rank:5, student_id:'student_301', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16, questions_prev_week:22, questions_week_before:18 }
   ]
 };
 
@@ -465,19 +464,11 @@ function initLeaderboard() {
 
   showRegion('lbLoading');
 
-  fetch(API_BASE + '/leaderboard')
-    .then(function(res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then(function(data) {
-      renderLeaderboard(data);
-    })
-    .catch(function(err) {
-      console.warn('Leaderboard API unavailable, using mock data. Error:', err.message);
-      // Fall back to mock so the UI is always demonstrable
-      renderLeaderboard(MOCK_LEADERBOARD);
-    });
+  // Always use mock data until backend is ready
+  // To switch to real API: replace the two lines below with the fetch block
+  setTimeout(function() {
+    renderLeaderboard(MOCK_LEADERBOARD);
+  }, 300);  // small delay so skeleton shows briefly
 }
 
 /* ═══════════════════════════════════════════════

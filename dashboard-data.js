@@ -98,7 +98,7 @@ function showSkeleton() {
     var el = document.getElementById(id);
     if (el) el.classList.remove('hidden');
   });
-  ['heroName','growthBadge','scoreTiles','scoreBars',
+  ['heroName','growthBadge','skHeroName','scoreTiles','scoreBars',
    'progressTiles','progressBars','scoresEmpty','progressEmpty'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.classList.add('hidden');
@@ -160,34 +160,41 @@ function renderSubjects(subjects, activeId) {
 
 /* ── Render hero ──────────────────────────────────────────── */
 
+function emailToName(email) {
+  if (!email) return null;
+  var local = email.split('@')[0];
+  return local.split(/[.\-_]/)
+    .map(function(p){ return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase(); })
+    .join(' ');
+}
+
 function renderHero(data) {
   var nameEl  = document.getElementById('heroName');
   var badgeEl = document.getElementById('growthBadge');
   var badgeTxt = document.getElementById('growthBadgeText');
   var avatarEl = document.getElementById('avatarInitials');
 
-  if (nameEl) {
-    nameEl.textContent = data.student_name;
-    nameEl.classList.remove('hidden');
-  }
+  // Derive name from email, fall back to data.student_name
+  var email = sessionStorage.getItem('deltaemail') || '';
+  var displayName = (email ? emailToName(email) : null) || data.student_name || 'Student';
 
-  // Update avatar initials
-  if (avatarEl && data.student_name) {
-    var parts = data.student_name.trim().split(' ');
+  // Name lives inside the badge box (heroName is a div inside growthBadge)
+  if (nameEl) nameEl.textContent = displayName;
+
+  // Avatar initials in topbar
+  if (avatarEl && displayName) {
+    var parts = displayName.trim().split(' ');
     avatarEl.textContent = parts.length >= 2
       ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
-      : data.student_name.substring(0,2).toUpperCase();
-    avatarEl.title = data.student_name;
+      : displayName.substring(0,2).toUpperCase();
+    avatarEl.title = displayName;
   }
 
   if (badgeEl && badgeTxt) {
     var pctile = data.scores && data.scores.overall && data.scores.overall.growth_percentile;
-    if (pctile !== null && pctile !== undefined) {
-      badgeTxt.textContent = 'Improving faster than ' + pctile + '% of peers this week';
-      badgeEl.setAttribute('aria-label', 'Improving faster than ' + pctile + ' percent of peers this week');
-    } else {
-      badgeTxt.textContent = 'Not enough activity this week for an improvement rank';
-    }
+    badgeTxt.textContent = (pctile !== null && pctile !== undefined)
+      ? 'Improving faster than ' + pctile + '% of peers this week'
+      : 'Not enough activity this week for an improvement rank';
     badgeEl.classList.remove('hidden');
   }
 }
@@ -200,7 +207,7 @@ function renderScoreTiles(overall) {
 
   document.getElementById('scoreTillDate').textContent  = pct(overall.till_date_avg,  1) || '—';
   document.getElementById('scorePrevWeek').textContent  = pct(overall.prev_week_avg,  1) || '—';
-  document.getElementById('scoreWeekBefore').textContent = pct(overall.week_before_avg, 1) || '—';
+  var swb=document.getElementById('scoreWeekBefore'); if(swb) swb.textContent=pct(overall.week_before_avg,1)||'—';
 
   var deltaEl = document.getElementById('scoreDelta');
   deltaEl.outerHTML = makeDeltaPill(overall.growth_delta).replace('delta-pill', 'delta-pill" id="scoreDelta');
@@ -227,8 +234,7 @@ function renderProgressTiles(overall) {
   document.getElementById('progTillDate').textContent    = pct(overall.till_date_progress,    0) || '—';
   document.getElementById('progPrevWeek').textContent    = overall.prev_week_progress !== null
     ? '+' + pct(overall.prev_week_progress, 0) : '—';
-  document.getElementById('progWeekBefore').textContent  = overall.week_before_progress !== null
-    ? '+' + pct(overall.week_before_progress, 0) : '—';
+var pwb=document.getElementById('progWeekBefore'); if(pwb) pwb.textContent=overall.week_before_progress!==null?'+'+pct(overall.week_before_progress,0):'—';
 
   tilesEl.classList.remove('hidden');
 

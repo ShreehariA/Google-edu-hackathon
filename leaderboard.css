@@ -192,3 +192,12 @@
   .lb-stats  { flex-direction: column; gap: 2px; }
   .lb-stat-sep { display: none; }
 }
+
+/* ── v3 teal overrides ── */
+.delta-pos { color: #0F766E !important; }
+[data-theme="dark"] .delta-pos { color: #14B8A6 !important; }
+.your-row { border-left-color: #14B8A6 !important; background: linear-gradient(to right, #CCFBF1, var(--surface)) !important; }
+.your-rank { color: #0F766E !important; }
+[data-theme="dark"] .your-row { background: linear-gradient(to right, rgba(20,184,166,.12), var(--surface)) !important; }
+[data-theme="dark"] .your-rank { color: #14B8A6 !important; }
+.av-1 { background: linear-gradient(135deg, #14B8A6, #0D9488) !important; }

@@ -168,3 +168,11 @@
 .theme-toggle-float {
   position: fixed; top: 16px; right: 16px; z-index: 200;
 }
+
+/* ── v3 teal ── */
+.brand-name span { color: #14B8A6 !important; }
+.brand-copy h1 em { color: #14B8A6 !important; }
+.stat-chip strong { color: #14B8A6 !important; }
+.cb-input:checked + .cb-box { background: #14B8A6 !important; border-color: #14B8A6 !important; }
+.eye-btn:hover { color: #0F766E !important; }
+.link-blue { color: #0F766E !important; }
