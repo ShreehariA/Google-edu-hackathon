@@ -1,1 +1,0 @@
-# This agent can be used just to fetch details from either cache or bigQuery and format output to a JSON that other agents can use.

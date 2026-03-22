@@ -1,4 +1,3 @@
-
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -10,15 +9,11 @@ from vertexai import rag
 import os
 
 
-
-
 LOCATION = os.environ["GOOGLE_CLOUD_LOCATION"]
 PROJECT_ID = os.environ["GOOGLE_CLOUD_PROJECT"]
 RAG_CORPUS_URI = os.environ["GOOGLE_RAG_CORPUS"]
 
 
-
-# Configure Vertex RAG
 
 rag_retrieval_tool = VertexAiRagRetrieval(
     name='retrieve_rag_study_resources',
@@ -36,20 +31,3 @@ rag_retrieval_tool = VertexAiRagRetrieval(
     similarity_top_k=10,
     vector_distance_threshold=0.6,
 )
-
-# Create RAG Agent
-
-rag_agent = Agent(
-    model='gemini-2.5-flash',
-    name='ask_rag_agent',
-    instruction= "You are an AI Agent designed to clarify doubts specifically from the RAG using the rag_retrieval_tool. Do not answer any questions outside the scope of the RAG. ",
-    tools=[
-        rag_retrieval_tool,
-    ]
-)
-
-
-
-
-
-
