@@ -288,6 +288,152 @@ navigates directly to the agent without passing through Page 2), the agent
 falls back to calling the dashboard API endpoint directly:
 `GET /student/:student_id/dashboard?subject_id=:subject_id`
 
+## ADK Implementation — BaseAgent Framework Mapping
+
+> BaseAgent is the abstract base class provided by Google ADK.
+> It is never instantiated directly. All agent types below extend it.
+> Your Orchestrator and all sub-agents are instances of these extended types.
+
+### Agent Type Key
+- **A. LlmAgent** — natural language reasoning, tool calls, agent_transfer
+- **B. Workflow Agent** — deterministic control flow (Sequential / Parallel / Loop)
+- **C. CustomAgent** — deterministic Python logic, no LLM involved
+
+---
+
+### Full Agent Tree
+```
+BaseAgent (abstract — never instantiated directly)
+│
+│  Extended By
+│
+└── A. LlmAgent — LearningOrchestrator (root)
+        Responsibilities:
+        - Parse student intent from free text or chip selection
+        - Transfer control to the appropriate sub-agent
+        - Maintain session.state across all sub-agent calls
+        - Handle emotional signals before routing
+        - Enforce curriculum scope gate at intent level
+        - Open and close every session with personalised messaging
+        Holds in session.state:
+        - student_context (dashboard payload)
+        - chapter_vocabulary (list of chapter names for scope validation)
+        - selected_chapter_id (written by FocusAgent or Orchestrator)
+        sub_agents:
+
+        ├── A. LlmAgent — PerformanceAgent
+        │       Triggered by: chip "Explore my scores & progress"
+        │                     or free text about own results
+        │       Reasons over: session.state["student_context"]
+        │       Fallback tool: BigQueryFallbackTool (only if student asks
+        │                      beyond what the payload covers)
+        │       Never re-queries BigQuery if payload is sufficient
+        │
+        ├── B. SequentialAgent — FocusAndTutorPipeline
+        │       Triggered by: chip "Find what to focus on" when student
+        │                     immediately confirms they want to start tutoring
+        │       Runs steps in guaranteed order — no LLM re-routing between steps
+        │
+        │       step 1: A. LlmAgent — FocusAgent
+        │               ┌─ Standalone mode (default) ──────────────────────┐
+        │               │  Triggered by: Orchestrator direct transfer on    │
+        │               │  free text "what should I work on",              │
+        │               │  "where am I struggling", "what needs work"      │
+        │               │  Student sees recommendations, then CHOOSES      │
+        │               │  whether to proceed to tutoring.                 │
+        │               │  If yes → Orchestrator transfers to TutorAgent   │
+        │               │  If no  → conversation continues freely          │
+        │               └──────────────────────────────────────────────────┘
+        │               ┌─ Pipeline mode ───────────────────────────────────┐
+        │               │  Triggered by: SequentialAgent when student       │
+        │               │  selects chip + immediately confirms tutoring     │
+        │               │  Runs automatically into TutorAgent (step 2)     │
+        │               │  with no student decision point in between        │
+        │               └──────────────────────────────────────────────────┘
+        │               Reasons over: session.state["student_context"] only
+        │               Logic: ranks chapters by weakness_score
+        │                 weakness_score = (1 - till_date_avg) × 0.6
+        │                               + (1 - till_date_progress) × 0.4
+        │               Surfaces top 1-2 chapters, or full syllabus on request
+        │               Writes: session.state["selected_chapter_id"]
+        │                       session.state["selected_chapter_name"]
+        │
+        │       step 2: A. LlmAgent — TutorAgent
+        │               ┌─ Via pipeline ────────────────────────────────────┐
+        │               │  Receives selected_chapter_id from session.state  │
+        │               │  written by FocusAgent in step 1                  │
+        │               └──────────────────────────────────────────────────┘
+        │               ┌─ Direct transfer (bypasses FocusAgent entirely) ──┐
+        │               │  Triggered by: Orchestrator when student intent   │
+        │               │  is unambiguously "explain X to me",             │
+        │               │  "I don't understand X", "help me with X"        │
+        │               │  Orchestrator writes selected_chapter_id to       │
+        │               │  session.state directly — FocusAgent not invoked  │
+        │               └──────────────────────────────────────────────────┘
+        │               ┌─ Post standalone FocusAgent ──────────────────────┐
+        │               │  Triggered by: student confirms tutoring after    │
+        │               │  standalone FocusAgent session                    │
+        │               │  Orchestrator transfers with selected_chapter_id  │
+        │               │  already in session.state from FocusAgent         │
+        │               └──────────────────────────────────────────────────┘
+        │               tools: [RAGTool → Vertex AI Search, course material]
+        │               Scoped strictly to student's syllabus RAG corpus
+        │               Socratic by default — guides before giving answers
+        │
+        └── C. CustomAgent — ScopeGateAgent
+                Triggered by: any student message routed toward ExploreAgent
+                Type: deterministic Python logic — no LLM
+                Logic:
+                  1. Read query from session.state
+                  2. Check against session.state["chapter_vocabulary"]
+                  3. if semantically related to any chapter →
+                        rewrite query with chapter context
+                        transfer to ExploreAgent
+                     if no plausible connection →
+                        return redirect to LearningOrchestrator
+                        LearningOrchestrator responds:
+                        "I can only explore topics from your course —
+                         want to try something related to [nearest chapter]?"
+
+                └── A. LlmAgent — ExploreAgent
+                        Triggered by: ScopeGateAgent only — never directly
+                        tools: [GoogleSearchTool, GoogleNewsTool]
+                        Rewrites raw student query before tool call:
+                          adds chapter context, removes off-topic elements,
+                          biases toward educational/news/research sources
+                        Frames results conversationally, never as raw links
+                        Never presents search results as course material
+```
+
+---
+
+### session.state Reference
+
+| Key                   | Set by                     | Read by                              |
+|-----------------------|----------------------------|--------------------------------------|
+| student_context       | Frontend (on session init) | All agents                           |
+| chapter_vocabulary    | Frontend (on session init) | ScopeGateAgent, LearningOrchestrator |
+| selected_chapter_id   | FocusAgent or Orchestrator | TutorAgent                           |
+| selected_chapter_name | FocusAgent or Orchestrator | TutorAgent, LearningOrchestrator     |
+
+---
+
+### Routing Summary
+
+| Student signal                               | Orchestrator routes to         |
+|----------------------------------------------|--------------------------------|
+| Chip: Explore my scores & progress           | PerformanceAgent               |
+| Free text: results / how am I doing          | PerformanceAgent               |
+| Chip: Find what to focus on                  | FocusAgent (standalone)        |
+| Free text: what should I work on             | FocusAgent (standalone)        |
+| FocusAgent done + student confirms tutoring  | TutorAgent (direct transfer)   |
+| Chip: Find what to focus on + instant yes    | SequentialAgent pipeline       |
+| Chip: Get tutored + clear topic              | TutorAgent (direct transfer)   |
+| Free text: explain X / I don't understand X  | TutorAgent (direct transfer)   |
+| Chip: Explore topics in the real world       | ScopeGateAgent → ExploreAgent  |
+| Free text: news about X / real world X       | ScopeGateAgent → ExploreAgent  |
+| Anything outside syllabus scope              | Orchestrator handles directly  |
+
 ## Open Questions / Future Considerations
 
 - **Multi-subject sessions:** Currently the agent is scoped to one subject per session (matching the Page 2 switcher). Cross-subject queries ("how does Chapter 2 here relate to what I learned in Maths?") are not yet handled — log for v2.
