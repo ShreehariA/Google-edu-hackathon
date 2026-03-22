@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from google.cloud import bigquery
@@ -49,6 +49,7 @@ SUBJECTS_TABLE = f"{PROJECT_ID}.educational_resources_db.subject_table"
 # ── Simple daily in-memory cache ──────────────────────────────────────────────
 
 _leaderboard_cache: dict = {"date": None, "data": None}
+_agent_context_cache: dict = {}
 
 def _get_cached_leaderboard():
     today = datetime.date.today()
@@ -121,7 +122,7 @@ def register(user: UserRequest):
 
 
 @app.post("/login")
-def login(user: UserRequest):
+def login(user: UserRequest, background_tasks: BackgroundTasks):
     existing = get_user(user.email)
     if not existing:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -129,6 +130,11 @@ def login(user: UserRequest):
     if existing["hashkey"] != hash_password(user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Incorrect password.")
+                            
+    # Dispatch an async background job to generate the student profile
+    # for the Agent VM to read from the memory cache instantly later!
+    background_tasks.add_task(_preload_agent_context, user.email)
+    
     return {"message": "Successful login.", "email": user.email}
 
 
@@ -598,3 +604,67 @@ def get_student_dashboard(student_id: str, subject_id: str):
             "by_chapter": progress_by_chapter,
         },
     }
+
+# ── Agent Context Preloader & Fetch Endpoint ──────────────────────────────────
+
+def _preload_agent_context(email: str):
+    """
+    Background worker that runs instantly after student login.
+    Resolves the student_id from student_personal_details using their email,
+    fetches their subjects, pulls all dashboard data, and caches it globally!
+    """
+    print(f"[Agent Preload] Starting prefetch for {email}...")
+    try:
+        # Step 1: Look up student_id by email
+        query = f"SELECT student_id FROM `{NAMES_TABLE}` WHERE email_address = @email LIMIT 1"
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[bigquery.ScalarQueryParameter("email", "STRING", email)]
+        )
+        rows = list(client.query(query, job_config=job_config).result())
+        if not rows:
+            print(f"[Agent Preload] No student_id matched to {email}.")
+            return
+            
+        student_id = rows[0]["student_id"]
+        
+        # Step 2: Fetch all subjects for this student
+        try:
+            subjects = get_student_subjects(student_id)
+        except HTTPException:
+            subjects = []
+            
+        full_context = {
+            "student_id":   student_id,
+            "email":        email,
+            "last_updated": datetime.datetime.utcnow().isoformat(),
+            "subjects":     subjects,
+            "dashboards":   {}
+        }
+        
+        # Step 3: Fetch dashboard payloads for every active subject and map it out
+        for sub in subjects:
+            subj_id = sub["subject_id"]
+            try:
+                full_context["dashboards"][subj_id] = get_student_dashboard(student_id, subj_id)
+            except Exception as e:
+                print(f"[Agent Preload] Failed to generate dashboard for {subj_id}: {e}")
+                
+        # Cache it globally
+        _agent_context_cache[student_id] = full_context
+        print(f"[Agent Preload] SUCCESS: Cached {len(subjects)} subjects for {student_id}")
+        
+    except Exception as e:
+        print(f"[Agent Preload] ERROR preloading context for {email}: {e}")
+
+@app.get("/agent/context/{student_id}")
+def get_agent_context(student_id: str):
+    """
+    VM-facing endpoint. Instantly returns the pre-calculated agent context 
+    from backend RAM, preventing 5+ second BigQuery roundtrips for the AI Agent!
+    """
+    if student_id not in _agent_context_cache:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Context not preloaded. Ensure the student logged in successfully recently."
+        )
+    return _agent_context_cache[student_id]
