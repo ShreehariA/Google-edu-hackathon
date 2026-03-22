@@ -405,38 +405,221 @@
 
 /* 2. HERO BADGE — full width, bright teal, name + percentile inside */
 .dash-hero { display:block; }
+
+@keyframes heroFloat {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50%     { transform: translateY(-12px) rotate(3deg); }
+}
+@keyframes heroFloat2 {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50%     { transform: translateY(-8px) rotate(-2deg); }
+}
+@keyframes heroFloat3 {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%     { transform: translateY(-6px) scale(1.05); }
+}
+@keyframes heroPulse {
+  0%,100% { opacity: .18; transform: scale(1); }
+  50%     { opacity: .3;  transform: scale(1.08); }
+}
+@keyframes sparkle {
+  0%,100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+  50%     { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+@keyframes waveSlide {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .growth-badge-hero {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   width: 100%;
-  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 100%);
+  background: linear-gradient(135deg, #064E3B 0%, #0C7A72 25%, #0D9488 50%, #14B8A6 75%, #2DD4BF 100%);
+  background-size: 200% 200%;
+  animation: fadeUp .4s ease both, waveSlide 8s ease infinite;
   color: #fff;
-  border-radius: var(--r-lg);
-  padding: 20px 28px;
-  box-shadow: 0 6px 28px rgba(20,184,166,.45);
-  animation: fadeUp .4s ease both;
+  border-radius: 20px;
+  padding: 44px 40px;
+  box-shadow:
+    0 12px 60px rgba(20,184,166,.6),
+    0 4px 20px rgba(20,184,166,.35),
+    inset 0 1px 0 rgba(255,255,255,.2),
+    inset 0 -1px 0 rgba(0,0,0,.1);
+  border: 1px solid rgba(255,255,255,.15);
 }
+
+/* Large glowing orb — top right */
+.growth-badge-hero::before {
+  content: '';
+  position: absolute;
+  right: -80px;
+  top: -80px;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.18) 0%, transparent 70%);
+  animation: heroPulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+/* Bottom-left orb */
+.growth-badge-hero::after {
+  content: '';
+  position: absolute;
+  left: -60px;
+  bottom: -80px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(6,78,59,.5) 0%, transparent 70%);
+  animation: heroPulse 5.5s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+
+/* Decorative floating shapes injected via pseudo on inner wrapper */
 .hero-badge-left {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
 }
+
+/* Floating triangle (Delta symbol echo) */
+.hero-badge-left::before {
+  content: '△';
+  position: absolute;
+  right: -120px;
+  top: -8px;
+  font-size: 5rem;
+  color: rgba(255,255,255,.07);
+  font-family: var(--fh);
+  pointer-events: none;
+  animation: heroFloat 6s ease-in-out infinite;
+  line-height: 1;
+}
+
+/* Greeting line above name */
+.hero-badge-greeting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: rgba(255,255,255,.65);
+}
+.hero-badge-greeting::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 2px;
+  background: rgba(255,255,255,.5);
+  border-radius: 2px;
+}
+
 .hero-badge-name {
   font-family: var(--fh);
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: clamp(2.2rem, 5.5vw, 3.2rem);
+  font-weight: 800;
   color: #fff;
-  line-height: 1.1;
+  line-height: 1;
+  letter-spacing: -.035em;
+  text-shadow: 0 2px 20px rgba(0,0,0,.2);
 }
+
+/* Divider line */
+.hero-badge-divider {
+  width: 48px;
+  height: 3px;
+  background: rgba(255,255,255,.35);
+  border-radius: 3px;
+}
+
 .hero-badge-text {
   font-family: var(--fh);
   font-size: 1.05rem;
   font-weight: 500;
   color: rgba(255,255,255,.9);
   letter-spacing: -.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+/* Sparkle star before the text */
+.hero-badge-text::before {
+  content: '✦';
+  font-size: .85rem;
+  color: rgba(255,255,255,.7);
+  animation: sparkle 2.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* Right side: large decorative percentile ring */
+.hero-badge-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.hero-badge-ring {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.25);
+  background: radial-gradient(circle, rgba(255,255,255,.18) 0%, rgba(255,255,255,.06) 60%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 8px rgba(255,255,255,.06), 0 0 30px rgba(255,255,255,.12);
+  animation: heroFloat3 5s ease-in-out infinite;
+}
+.hero-ring-number {
+  font-family: var(--fh);
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+.hero-ring-label {
+  font-size: .62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.65);
+  text-align: center;
+}
+
+/* Floating dots cluster — purely decorative */
+.hero-dots {
+  position: absolute;
+  top: 20px;
+  right: 180px;
+  display: grid;
+  grid-template-columns: repeat(4, 8px);
+  gap: 7px;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.18);
+  display: block;
+}
+
 .hero-badge-btn {
   background: rgba(255,255,255,.22) !important;
   color: #fff !important;
@@ -444,6 +627,8 @@
   border: 1.5px solid rgba(255,255,255,.4) !important;
   white-space: nowrap;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 .hero-badge-btn:hover {
   background: rgba(255,255,255,.32) !important;
@@ -540,12 +725,14 @@
 
 /* Mobile */
 @media (max-width: 480px) {
-  .growth-badge-hero { flex-direction: column; align-items: flex-start; }
+  .growth-badge-hero { flex-direction: column; align-items: flex-start; padding: 32px 24px; }
   .hero-badge-btn    { width: 100%; justify-content: center; }
+  .hero-badge-right  { display: none; }
+  .hero-dots         { display: none; }
   #scoreTiles.tiles-row,
   #progressTiles.tiles-row { grid-template-columns: 1fr !important; }
-  .hero-badge-name { font-size: 1.3rem; }
-  .hero-badge-text { font-size: .9rem; }
+  .hero-badge-name { font-size: 1.6rem; }
+  .hero-badge-text { font-size: .88rem; }
 }
 
 /* ── Scrollable bar list (max 5 rows) ── */

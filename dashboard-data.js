@@ -195,11 +195,14 @@ function renderHero(data) {
 
   if (badgeEl && badgeTxt) {
     var pctile = data.scores && data.scores.overall && data.scores.overall.growth_percentile;
+    var ringEl = document.getElementById('heroRingNumber');
     if (pctile !== null && pctile !== undefined) {
       badgeTxt.textContent = 'Improving faster than ' + pctile + '% of peers this week';
       badgeEl.setAttribute('aria-label', 'Improving faster than ' + pctile + ' percent of peers this week');
+      if (ringEl) ringEl.textContent = pctile + '%';
     } else {
       badgeTxt.textContent = 'Not enough activity this week for an improvement rank';
+      if (ringEl) ringEl.textContent = '—';
     }
     badgeEl.classList.remove('hidden');
   }

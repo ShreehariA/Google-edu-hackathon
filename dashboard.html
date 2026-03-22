@@ -40,9 +40,24 @@
       <div class="sk sk-hero-badge" id="skHeroBadge" style="width:100%;height:90px;border-radius:16px;"></div>
       <!-- Real hero badge — full width, name + percentile inside -->
       <div class="growth-badge-hero hidden" id="growthBadge" aria-label="Growth percentile badge">
+        <!-- Floating dot grid — decorative -->
+        <div class="hero-dots" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
         <div class="hero-badge-left">
+          <span class="hero-badge-greeting">Your Progress</span>
           <span class="hero-badge-name" id="heroName">Student</span>
+          <div class="hero-badge-divider"></div>
           <span class="hero-badge-text" id="growthBadgeText">Improving faster than 72% of peers this week</span>
+        </div>
+        <!-- Right: animated percentile ring -->
+        <div class="hero-badge-right" id="heroBadgeRight" aria-hidden="true">
+          <div class="hero-badge-ring">
+            <span class="hero-ring-number" id="heroRingNumber">72%</span>
+            <span class="hero-ring-label">Top</span>
+          </div>
         </div>
       </div>
     </div>
