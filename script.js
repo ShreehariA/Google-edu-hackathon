@@ -352,11 +352,16 @@ function renderCard(entry, idx) {
       '</svg>'
     : '';
 
-  var ariaLabel = 'Rank ' + rank + ', ' + (entry.name || entry.student_id) +
+  var ariaLabel = 'Rank ' + rank + ', Student ' + entry.student_id +
                   ', growth ' + dLabel.replace('%',' percent') +
                   ', last week ' + prevPct + ', better than ' + peerPct + '% of peers';
 
-  if (entry.student_id === 'YOU') rowClass += ' lb-row-you';
+  if (entry.student_id === 'YOU') {
+    rowClass += ' lb-row-you';
+    if (entry.rank === 1) rowClass += ' lb-row-rank1';
+    else if (entry.rank === 2) rowClass += ' lb-row-rank2';
+    else if (entry.rank === 3) rowClass += ' lb-row-rank3';
+  }
   var li = document.createElement('li');
   li.className = rowClass;
   li.setAttribute('style', delayStyle);
@@ -369,7 +374,16 @@ function renderCard(entry, idx) {
     '<div class="lb-av av-' + (idx+1) + '" style="background:' + avColour + '" aria-hidden="true">' + avText + '</div>' +
     '<div class="lb-info">' +
       '<div class="lb-name-row">' +
-        '<span class="lb-name">' + escapeHtml(entry.name || entry.student_id) + '</span>' +
+        '<span class="lb-name">' + escapeHtml(
+        entry.student_id === 'YOU'
+          ? (function(){
+              var e = sessionStorage.getItem('deltaemail')||'';
+              return e ? e.split('@')[0].split(/[._-]/)
+                .map(function(p){return p.charAt(0).toUpperCase()+p.slice(1);}).join(' ')
+                : (entry.name || 'You');
+            }())
+          : (entry.name || entry.student_id)
+      ) + '</span>' +
       '</div>' +
       '<div class="lb-stats">' +
         '<span>Last week: <span class="lb-stat-val">' + prevPct + '</span></span>' +
@@ -414,6 +428,11 @@ function renderLeaderboard(data) {
 
   showRegion('lbList');
   document.getElementById('lbFooter').classList.remove('hidden');
+  // Trigger party popper for rank 1
+  var sc = MOCK_SCENARIOS[MOCK_SCENARIO];
+  if (sc && sc.you && sc.you.rank === 1) {
+    setTimeout(launchConfetti, 500);
+  }
   document.getElementById('lbFooter').removeAttribute('aria-hidden');
 
   // Count-up animation on delta numbers
@@ -461,7 +480,7 @@ function renderYourRow() {
      'rank2'  → #2, almost there
      'rank1'  → #1, crowned
 ═══════════════════════════════════════════════ */
-var MOCK_SCENARIO = 'rank4';
+var MOCK_SCENARIO = 'rank1';
 
 var MOCK_SCENARIOS = {
 
@@ -514,6 +533,55 @@ var MOCK_LEADERBOARD = (function() {
   var s = MOCK_SCENARIOS[MOCK_SCENARIO] || MOCK_SCENARIOS['rank12'];
   return { last_updated: new Date().toISOString(), leaderboard: s.leaderboard };
 }());
+
+function launchConfetti() {
+  var canvas = document.getElementById('confettiCanvas');
+  if (!canvas) {
+    canvas = document.createElement('canvas');
+    canvas.id = 'confettiCanvas';
+    canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
+    document.body.appendChild(canvas);
+  }
+  var ctx = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  var pieces = [];
+  var colours = ['#14B8A6','#F1C40F','#EF4444','#3B82F6','#A855F7','#F59E0B','#10B981','#fff'];
+  for (var i = 0; i < 160; i++) {
+    pieces.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height,
+      w: Math.random() * 10 + 5,
+      h: Math.random() * 6 + 3,
+      colour: colours[Math.floor(Math.random() * colours.length)],
+      rot: Math.random() * 360,
+      vx: (Math.random() - 0.5) * 4,
+      vy: Math.random() * 4 + 2,
+      vr: (Math.random() - 0.5) * 6
+    });
+  }
+
+  var frame = 0;
+  var maxFrames = 180;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(function(p) {
+      ctx.save();
+      ctx.translate(p.x + p.w/2, p.y + p.h/2);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.colour;
+      ctx.globalAlpha = Math.max(0, 1 - frame / maxFrames);
+      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.restore();
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+    });
+    frame++;
+    if (frame < maxFrames) requestAnimationFrame(draw);
+    else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.remove(); }
+  }
+  draw();
+}
 
 function initLeaderboard() {
   if (!document.getElementById('lbLoading')) return;
