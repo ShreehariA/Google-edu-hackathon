@@ -98,7 +98,7 @@ function showSkeleton() {
     var el = document.getElementById(id);
     if (el) el.classList.remove('hidden');
   });
-  ['heroName','growthBadge','skHeroName','scoreTiles','scoreBars',
+  ['heroName','growthBadge','scoreTiles','scoreBars',
    'progressTiles','progressBars','scoresEmpty','progressEmpty'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.classList.add('hidden');
@@ -162,39 +162,39 @@ function renderSubjects(subjects, activeId) {
 
 function emailToName(email) {
   if (!email) return null;
-  var local = email.split('@')[0];
-  return local.split(/[.\-_]/)
-    .map(function(p){ return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase(); })
-    .join(' ');
+  return email.split('@')[0].split(/[._-]/)
+    .map(function(p){return p.charAt(0).toUpperCase()+p.slice(1).toLowerCase();}).join(' ');
 }
-
 function renderHero(data) {
   var nameEl  = document.getElementById('heroName');
   var badgeEl = document.getElementById('growthBadge');
   var badgeTxt = document.getElementById('growthBadgeText');
   var avatarEl = document.getElementById('avatarInitials');
 
-  // Derive name from email, fall back to data.student_name
-  var email = sessionStorage.getItem('deltaemail') || '';
-  var displayName = (email ? emailToName(email) : null) || data.student_name || 'Student';
+  if (nameEl) {
+    var _em=sessionStorage.getItem('deltaemail')||'';
+    var _nm=(_em?emailToName(_em):null)||data.student_name||'Student';
+    nameEl.textContent=_nm;
+    nameEl.classList.remove('hidden');
+  }
 
-  // Name lives inside the badge box (heroName is a div inside growthBadge)
-  if (nameEl) nameEl.textContent = displayName;
-
-  // Avatar initials in topbar
-  if (avatarEl && displayName) {
-    var parts = displayName.trim().split(' ');
-    avatarEl.textContent = parts.length >= 2
-      ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
-      : displayName.substring(0,2).toUpperCase();
-    avatarEl.title = displayName;
+  // Update avatar initials
+  if (avatarEl) {
+    var _em2=sessionStorage.getItem('deltaemail')||'';
+    var _nm2=(_em2?emailToName(_em2):null)||data.student_name||'Student';
+    var parts=_nm2.trim().split(' ');
+    avatarEl.textContent=parts.length>=2?(parts[0][0]+parts[parts.length-1][0]).toUpperCase():_nm2.substring(0,2).toUpperCase();
+    avatarEl.title=_nm2;
   }
 
   if (badgeEl && badgeTxt) {
     var pctile = data.scores && data.scores.overall && data.scores.overall.growth_percentile;
-    badgeTxt.textContent = (pctile !== null && pctile !== undefined)
-      ? 'Improving faster than ' + pctile + '% of peers this week'
-      : 'Not enough activity this week for an improvement rank';
+    if (pctile !== null && pctile !== undefined) {
+      badgeTxt.textContent = 'Improving faster than ' + pctile + '% of peers this week';
+      badgeEl.setAttribute('aria-label', 'Improving faster than ' + pctile + ' percent of peers this week');
+    } else {
+      badgeTxt.textContent = 'Not enough activity this week for an improvement rank';
+    }
     badgeEl.classList.remove('hidden');
   }
 }
@@ -207,22 +207,16 @@ function renderScoreTiles(overall) {
 
   document.getElementById('scoreTillDate').textContent  = pct(overall.till_date_avg,  1) || '—';
   document.getElementById('scorePrevWeek').textContent  = pct(overall.prev_week_avg,  1) || '—';
-  var swb=document.getElementById('scoreWeekBefore'); if(swb) swb.textContent=pct(overall.week_before_avg,1)||'—';
+  var _s=document.getElementById('scoreWeekBefore'); if(_s) _s.textContent=pct(overall.week_before_avg,1)||'—';
 
+  // Update delta pill in-place — no outerHTML swap to avoid duplicates
   var deltaEl = document.getElementById('scoreDelta');
-  deltaEl.outerHTML = makeDeltaPill(overall.growth_delta).replace('delta-pill', 'delta-pill" id="scoreDelta');
-  // Re-query after replace
-  tilesEl.classList.remove('hidden');
-  // Re-render delta pill properly
-  var dp = tilesEl.querySelector('#scoreDelta');
-  if (!dp) {
-    // fallback
-    var newDp = document.createElement('span');
-    newDp.id = 'scoreDelta';
-    newDp.className = 'delta-pill ' + (overall.growth_delta > 0 ? 'pos' : overall.growth_delta < 0 ? 'neg' : 'nil');
-    newDp.textContent = deltaPct(overall.growth_delta) || '—';
-    document.querySelector('.tile-card--accent .tile-value-row').appendChild(newDp);
+  if (deltaEl) {
+    var dv = overall.growth_delta;
+    deltaEl.className = 'delta-pill ' + (dv > 0 ? 'pos' : dv < 0 ? 'neg' : 'nil');
+    deltaEl.textContent = deltaPct(dv) || '—';
   }
+  tilesEl.classList.remove('hidden');
 }
 
 /* ── Render progress tiles ────────────────────────────────── */
@@ -234,7 +228,7 @@ function renderProgressTiles(overall) {
   document.getElementById('progTillDate').textContent    = pct(overall.till_date_progress,    0) || '—';
   document.getElementById('progPrevWeek').textContent    = overall.prev_week_progress !== null
     ? '+' + pct(overall.prev_week_progress, 0) : '—';
-var pwb=document.getElementById('progWeekBefore'); if(pwb) pwb.textContent=overall.week_before_progress!==null?'+'+pct(overall.week_before_progress,0):'—';
+  var _p=document.getElementById('progWeekBefore'); if(_p) _p.textContent=overall.week_before_progress!==null?'+'+pct(overall.week_before_progress,0):'—';
 
   tilesEl.classList.remove('hidden');
 

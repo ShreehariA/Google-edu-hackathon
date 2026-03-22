@@ -352,10 +352,11 @@ function renderCard(entry, idx) {
       '</svg>'
     : '';
 
-  var ariaLabel = 'Rank ' + rank + ', Student ' + entry.student_id +
+  var ariaLabel = 'Rank ' + rank + ', ' + (entry.name || entry.student_id) +
                   ', growth ' + dLabel.replace('%',' percent') +
-                  ', previous week ' + prevPct + ', week before ' + beforePct;
+                  ', last week ' + prevPct + ', better than ' + peerPct + '% of peers';
 
+  if (entry.student_id === 'YOU') rowClass += ' lb-row-you';
   var li = document.createElement('li');
   li.className = rowClass;
   li.setAttribute('style', delayStyle);
@@ -433,42 +434,92 @@ function renderLeaderboard(data) {
 }
 
 function renderYourRow() {
-  // Placeholder — in production replace with real current-user API call
   var wrap = document.getElementById('yourRow');
   if (!wrap) return;
+  var sc   = MOCK_SCENARIOS[MOCK_SCENARIO] || MOCK_SCENARIOS['rank12'];
+  var you  = sc.you;
+  var email = sessionStorage.getItem('deltaemail') || '';
+  var name  = email
+    ? email.split('@')[0].split(/[._-]/)
+        .map(function(p){ return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
+    : 'You';
   wrap.innerHTML =
-    '<div class="your-rank">#12</div>' +
+    '<div class="your-rank">#' + you.rank + '</div>' +
     '<div class="your-info">' +
-      '<span class="your-name">You — Alex Morgan</span>' +
-      '<span class="your-detail">+14% this week · keep going!</span>' +
+      '<span class="your-name">' + name + '</span>' +
+      '<span class="your-detail">' + you.growth + ' this week · ' + you.message + '</span>' +
     '</div>' +
-    '<a href="dashboard.html" class="btn btn-ghost btn-sm">Improve →</a>';
+    '<a href="dashboard.html" class="btn btn-ghost btn-sm">View My Progress →</a>';
 }
 
 /* ── Mock data — remove / disable before production ── */
-var MOCK_LEADERBOARD = {
-  last_updated: new Date().toISOString(),
-  leaderboard: [
-    { rank:1, student_id:'student_042', name:'Jordan Lee',   avg_score_prev_week:0.94, avg_score_week_before:0.64, growth:0.30, questions_prev_week:42, questions_week_before:38 },
-    { rank:2, student_id:'student_117', name:'Priya Sharma', avg_score_prev_week:0.88, avg_score_week_before:0.63, growth:0.25, questions_prev_week:35, questions_week_before:29 },
-    { rank:3, student_id:'student_209', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22, questions_prev_week:28, questions_week_before:31 },
-    { rank:4, student_id:'student_055', name:'Aisha Patel',  avg_score_prev_week:0.76, avg_score_week_before:0.58, growth:0.18, questions_prev_week:33, questions_week_before:27 },
-    { rank:5, student_id:'student_301', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16, questions_prev_week:22, questions_week_before:18 }
-  ]
+/* ═══════════════════════════════════════════════
+   MOCK SCENARIOS
+   Change MOCK_SCENARIO to switch between states:
+     'rank12' → outside top 5
+     'rank4'  → just entered top 5
+     'rank2'  → #2, almost there
+     'rank1'  → #1, crowned
+═══════════════════════════════════════════════ */
+var MOCK_SCENARIO = 'rank4';
+
+var MOCK_SCENARIOS = {
+
+  rank12: {
+    leaderboard: [
+      { rank:1, student_id:'s_01', name:'Jordan Lee',   avg_score_prev_week:0.94, avg_score_week_before:0.64, growth:0.30 },
+      { rank:2, student_id:'s_02', name:'Priya Sharma', avg_score_prev_week:0.88, avg_score_week_before:0.63, growth:0.25 },
+      { rank:3, student_id:'s_03', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22 },
+      { rank:4, student_id:'s_04', name:'Aisha Patel',  avg_score_prev_week:0.76, avg_score_week_before:0.58, growth:0.18 },
+      { rank:5, student_id:'s_05', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16 }
+    ],
+    you: { rank:12, growth:'+14%', message:"You're improving — keep going!" }
+  },
+
+  rank4: {
+    leaderboard: [
+      { rank:1, student_id:'s_01', name:'Jordan Lee',   avg_score_prev_week:0.94, avg_score_week_before:0.64, growth:0.30 },
+      { rank:2, student_id:'s_02', name:'Priya Sharma', avg_score_prev_week:0.88, avg_score_week_before:0.63, growth:0.25 },
+      { rank:3, student_id:'s_03', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22 },
+      { rank:4, student_id:'YOU',  name:'You',          avg_score_prev_week:0.79, avg_score_week_before:0.58, growth:0.21 },
+      { rank:5, student_id:'s_05', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16 }
+    ],
+    you: { rank:4, growth:'+21%', message:"You cracked the Top 5! Keep pushing!" }
+  },
+
+  rank2: {
+    leaderboard: [
+      { rank:1, student_id:'s_01', name:'Jordan Lee',   avg_score_prev_week:0.94, avg_score_week_before:0.64, growth:0.30 },
+      { rank:2, student_id:'YOU',  name:'You',          avg_score_prev_week:0.91, avg_score_week_before:0.63, growth:0.28 },
+      { rank:3, student_id:'s_03', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22 },
+      { rank:4, student_id:'s_04', name:'Aisha Patel',  avg_score_prev_week:0.76, avg_score_week_before:0.58, growth:0.18 },
+      { rank:5, student_id:'s_05', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16 }
+    ],
+    you: { rank:2, growth:'+28%', message:"So close to #1 — one more push!" }
+  },
+
+  rank1: {
+    leaderboard: [
+      { rank:1, student_id:'YOU',  name:'You',          avg_score_prev_week:0.96, avg_score_week_before:0.64, growth:0.32 },
+      { rank:2, student_id:'s_02', name:'Priya Sharma', avg_score_prev_week:0.88, avg_score_week_before:0.63, growth:0.25 },
+      { rank:3, student_id:'s_03', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22 },
+      { rank:4, student_id:'s_04', name:'Aisha Patel',  avg_score_prev_week:0.76, avg_score_week_before:0.58, growth:0.18 },
+      { rank:5, student_id:'s_05', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16 }
+    ],
+    you: { rank:1, growth:'+32%', message:"You crushed it! You're #1 this week!" }
+  }
 };
 
-/* ── Entry point ── */
+var MOCK_LEADERBOARD = (function() {
+  var s = MOCK_SCENARIOS[MOCK_SCENARIO] || MOCK_SCENARIOS['rank12'];
+  return { last_updated: new Date().toISOString(), leaderboard: s.leaderboard };
+}());
+
 function initLeaderboard() {
-  // Guard: only run on the leaderboard page
   if (!document.getElementById('lbLoading')) return;
-
   showRegion('lbLoading');
-
-  // Always use mock data until backend is ready
-  // To switch to real API: replace the two lines below with the fetch block
-  setTimeout(function() {
-    renderLeaderboard(MOCK_LEADERBOARD);
-  }, 300);  // small delay so skeleton shows briefly
+  // MOCK ONLY — no API call. Change MOCK_SCENARIO above to switch states.
+  setTimeout(function() { renderLeaderboard(MOCK_LEADERBOARD); }, 300);
 }
 
 /* ═══════════════════════════════════════════════
