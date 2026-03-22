@@ -211,6 +211,10 @@ function initLogin() {
       var data = await res.json();
       if (res.ok) {
         sessionStorage.setItem('deltaemail', lEmail.value.trim());
+        // Store student_id returned by the API for dashboard + agent use
+        if (data.student_id) {
+          sessionStorage.setItem('deltastudentid', data.student_id);
+        }
         window.location.href = 'leaderboard.html';
       } else {
         var msg = res.status === 404 ? 'No account found with that email.'
@@ -455,18 +459,39 @@ function renderLeaderboard(data) {
 function renderYourRow() {
   var wrap = document.getElementById('yourRow');
   if (!wrap) return;
-  var sc   = MOCK_SCENARIOS[MOCK_SCENARIO] || MOCK_SCENARIOS['rank12'];
-  var you  = sc.you;
+
   var email = sessionStorage.getItem('deltaemail') || '';
   var name  = email
     ? email.split('@')[0].split(/[._-]/)
         .map(function(p){ return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
     : 'You';
+
+  // Try to pull your real rank from the rendered leaderboard data
+  var myId = sessionStorage.getItem('deltastudentid') || '';
+  var rank = '—', growthStr = '—', message = 'Keep going!';
+
+  // Check rendered list for YOU entry (set during renderLeaderboard)
+  var youEntry = window._lbYouEntry;
+  if (youEntry) {
+    rank      = '#' + youEntry.rank;
+    growthStr = deltaLabel(youEntry.growth);
+    message   = youEntry.rank === 1 ? "You're #1 this week! Incredible!" :
+                youEntry.rank <= 3  ? 'You\'re in the Top 3 — keep pushing!' :
+                                      'You\'re in the Top 5! Keep going!';
+  } else {
+    // Fallback to mock scenario data
+    var sc = MOCK_SCENARIOS[MOCK_SCENARIO] || MOCK_SCENARIOS['rank12'];
+    var you = sc.you;
+    rank      = '#' + you.rank;
+    growthStr = you.growth;
+    message   = you.message;
+  }
+
   wrap.innerHTML =
-    '<div class="your-rank">#' + you.rank + '</div>' +
+    '<div class="your-rank">' + rank + '</div>' +
     '<div class="your-info">' +
       '<span class="your-name">' + name + '</span>' +
-      '<span class="your-detail">' + you.growth + ' this week · ' + you.message + '</span>' +
+      '<span class="your-detail">' + growthStr + ' this week · ' + message + '</span>' +
     '</div>' +
     '<a href="dashboard.html" class="btn btn-ghost btn-sm">View My Progress →</a>';
 }
@@ -586,8 +611,31 @@ function launchConfetti() {
 function initLeaderboard() {
   if (!document.getElementById('lbLoading')) return;
   showRegion('lbLoading');
-  // MOCK ONLY — no API call. Change MOCK_SCENARIO above to switch states.
-  setTimeout(function() { renderLeaderboard(MOCK_LEADERBOARD); }, 300);
+
+  var myId = sessionStorage.getItem('deltastudentid') || '';
+
+  fetch(API_BASE + '/leaderboard')
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      // Mark the current student as YOU in the leaderboard
+      if (myId && data.leaderboard) {
+        data.leaderboard = data.leaderboard.map(function(entry) {
+          if (entry.student_id === myId) {
+            window._lbYouEntry = entry;  // store for renderYourRow
+            return Object.assign({}, entry, { student_id: 'YOU' });
+          }
+          return entry;
+        });
+      }
+      renderLeaderboard(data);
+    })
+    .catch(function(err) {
+      console.warn('Leaderboard API failed, using mock:', err);
+      renderLeaderboard(MOCK_LEADERBOARD);
+    });
 }
 
 /* ═══════════════════════════════════════════════
@@ -666,12 +714,22 @@ function appendMsg(role, content) {
     var frag = cloneFace('idle');
     if (frag && avEl) avEl.appendChild(frag);
   } else {
+    // Derive initials from stored email; fall back to 'AM'
+    var _avEm = sessionStorage.getItem('deltaemail') || '';
+    var _avNm = _avEm ? _avEm.split('@')[0].split(/[._-]/)
+      .map(function(p){return p.charAt(0).toUpperCase()+p.slice(1);}).join(' ') : '';
+    var _avParts = _avNm.trim().split(' ');
+    var _avInit = _avNm
+      ? (_avParts.length >= 2
+          ? (_avParts[0][0] + _avParts[_avParts.length-1][0]).toUpperCase()
+          : _avNm.substring(0, 2).toUpperCase())
+      : 'AM';
     div.innerHTML =
       '<div class="bubble bubble-user">' +
         '<p>' + escapeHtml(content) + '</p>' +
         '<span class="msg-time">' + timeNow() + '</span>' +
       '</div>' +
-      '<div class="msg-av-user">AM</div>';
+      '<div class="msg-av-user">' + _avInit + '</div>';
   }
   log.appendChild(div);
   scrollToBottom(log);
@@ -716,6 +774,75 @@ function initChat() {
   if (!chatForm) return;
 
   initBotFaces();
+
+  // ── Personalise from sessionStorage ────────────────────────────────────────
+  (function hydrateChatFromSession() {
+    var email  = sessionStorage.getItem('deltaemail') || '';
+    var name   = email
+      ? email.split('@')[0].split(/[._-]/)
+          .map(function(p){ return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
+      : '';
+
+    // Topbar avatar
+    var avatar = document.getElementById('chatAvatar');
+    if (avatar && name) {
+      var parts = name.trim().split(' ');
+      avatar.textContent = parts.length >= 2
+        ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
+        : name.substring(0, 2).toUpperCase();
+    }
+
+    // Opening message greeting
+    var nameSpan = document.getElementById('chatStudentName');
+    if (nameSpan && name) nameSpan.textContent = name.split(' ')[0];
+
+    // Try to enrich greeting from saved dashboard payload
+    try {
+      var payload = JSON.parse(sessionStorage.getItem('deltadashboard') || 'null');
+      if (payload) {
+        // Update opening bubble with personalised intel
+        var bubble = document.getElementById('openingBubble');
+        if (bubble && nameSpan) {
+          var firstName = (payload.student_name || name || 'there').split(' ')[0];
+          nameSpan.textContent = firstName;
+
+          var growthPct = payload.scores && payload.scores.overall
+            ? payload.scores.overall.growth_percentile : null;
+          var overallScore = payload.scores && payload.scores.overall
+            ? payload.scores.overall.till_date_avg : null;
+          var subj = payload.subject_name || 'your subject';
+
+          var secondLine = bubble.querySelector('p:nth-child(2)');
+          if (secondLine && growthPct !== null && growthPct !== undefined) {
+            secondLine.innerHTML = 'You\'re improving faster than <strong>' + growthPct +'%</strong> of your peers in <strong>' + escapeHtml(subj) + '</strong> this week \u2014 great momentum! Want to explore your results, find what to focus on, or get tutored on a topic?';
+          } else if (secondLine && overallScore !== null) {
+            secondLine.innerHTML = 'Your overall score in <strong>' + escapeHtml(subj) + '</strong> is <strong>' + Math.round(overallScore * 100) + '%</strong>. Want to explore your results, find what to focus on, or get tutored on a topic?';
+          }
+        }
+
+        // Sidebar stats — growth delta %
+        var sbGrowth = document.getElementById('sbGrowth');
+        if (sbGrowth) {
+          var gd = payload.scores && payload.scores.overall
+            ? payload.scores.overall.growth_delta : null;
+          if (gd !== null && gd !== undefined) {
+            sbGrowth.textContent = (gd >= 0 ? '+' : '') + (gd * 100).toFixed(1) + '%';
+            sbGrowth.className = 's-teal';
+          } else {
+            sbGrowth.textContent = '\u2014';
+          }
+        }
+
+        // Sidebar rank — use leaderboard YOU entry if available
+        var sbRank = document.getElementById('sbRank');
+        if (sbRank) {
+          var youEntry = window._lbYouEntry;
+          sbRank.textContent = youEntry ? '#' + youEntry.rank : '\u2014';
+        }
+      }
+    } catch(e) { /* sessionStorage read error — ignore */ }
+  }());
+  // ───────────────────────────────────────────────────────────────────────────
 
   chatForm.addEventListener('submit', function(e) {
     e.preventDefault();

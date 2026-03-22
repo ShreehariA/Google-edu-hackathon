@@ -14,8 +14,8 @@
 
 /* ── Config ───────────────────────────────────────────────── */
 
-const USE_MOCK    = true;                        // ← flip to false for real API
-const STUDENT_ID  = 'student_001';               // ← replace with session student_id
+const USE_MOCK    = false;                       // real API; mock used as fallback
+const STUDENT_ID  = sessionStorage.getItem('deltastudentid') || 'student_001';
 const DASH_BASE   = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:8000';
 
 /* ── Mock data ────────────────────────────────────────────── */
@@ -382,7 +382,11 @@ function loadDashboard(studentId, subjectId) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     })
-    .then(renderDashboard)
+    .then(function(data) {
+      // Persist payload for agent session init on chat page (no extra fetch needed)
+      try { sessionStorage.setItem('deltadashboard', JSON.stringify(data)); } catch(e) {}
+      renderDashboard(data);
+    })
     .catch(function(err) {
       console.warn('Dashboard API failed, using mock:', err);
       renderDashboard(MOCK_DASHBOARD);

@@ -2,29 +2,28 @@
 DeltaEd — FastAPI Backend
 =========================
 Endpoints:
-  POST /register   { email, password }  → 201 or 409
-  POST /login      { email, password }  → 200 or 401/404
-  GET  /leaderboard                     → 200 with top 5 most improved
+  POST /register                           { email, password } → 201 or 409
+  POST /login                              { email, password } → 200 + student_id
+  GET  /leaderboard                        → top 5 most improved
+  GET  /student/{student_id}/subjects      → list of subjects in curriculum
+  GET  /student/{student_id}/dashboard     → full dashboard payload
 
-Key fixes vs original:
-  - Uses SQL INSERT instead of streaming insert_rows_json
-    (streaming buffer has ~90s delay before rows are queryable)
-  - Fixed datetime import (removed bare `import datetime`,
-    now uses `from datetime import datetime, date, timezone`)
-  - Fixed login_time format (TIMESTAMP column needs proper ISO string)
-  - Leaderboard cache uses date from `date` not `datetime.date`
+Key implementation notes:
+  - Uses SQL INSERT (not streaming insert_rows_json) so rows are immediately queryable
+  - login now returns student_id resolved from student_personal_details
+  - dashboard q uses two weekly windows for prev/week-before comparisons
 """
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from google.cloud import bigquery
-from datetime import datetime, date, timezone
+from datetime import date
 import hashlib
 import os
 
 from dotenv import load_dotenv
-load_dotenv()  # reads .env from current directory
+load_dotenv()
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
@@ -33,10 +32,11 @@ client     = bigquery.Client(project=PROJECT_ID)
 
 # ── Table references ──────────────────────────────────────────────────────────
 
-AUTH_TABLE   = f"`{PROJECT_ID}.auth_creds.user_creds_db`"
-SCORES_TABLE = f"`{PROJECT_ID}.student_db.student_scores`"
-NAMES_TABLE  = f"`{PROJECT_ID}.student_db.student_personal_details`"
-TABLE_REF    = f"`{PROJECT_ID}.auth_creds.user_creds_db`"
+AUTH_TABLE     = f"`{PROJECT_ID}.auth_creds.user_creds_db`"
+SCORES_TABLE   = f"`{PROJECT_ID}.student_db.student_scores`"
+PROGRESS_TABLE = f"`{PROJECT_ID}.student_db.student_progress`"
+NAMES_TABLE    = f"`{PROJECT_ID}.student_db.student_personal_details`"
+CHAPTER_TABLE  = f"`{PROJECT_ID}.educational_resources_db.chapter_table`"
 
 # ── App ───────────────────────────────────────────────────────────────────────
 
@@ -71,116 +71,92 @@ class UserRequest(BaseModel):
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def hash_password(password: str) -> str:
-    """SHA-256 hash of the password."""
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 
+def _run(query: str, params: list) -> list:
+    """Run a BigQuery query with parameters, return list of row dicts."""
+    job_config = bigquery.QueryJobConfig(query_parameters=params)
+    return [dict(r) for r in client.query(query, job_config=job_config).result()]
+
+
 def get_user(email: str) -> dict | None:
-    """
-    Look up a user by email in BigQuery.
-    Uses a parameterised query to prevent SQL injection.
-    Returns a dict with 'username' and 'hashkey', or None.
-    """
-    query = f"""
-        SELECT username, hashkey
-        FROM {TABLE_REF}
-        WHERE username = @email
-        LIMIT 1
-    """
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[
-            bigquery.ScalarQueryParameter("email", "STRING", email),
-        ]
+    rows = _run(
+        f"SELECT username, hashkey FROM {AUTH_TABLE} WHERE username = @email LIMIT 1",
+        [bigquery.ScalarQueryParameter("email", "STRING", email)],
     )
-    rows = list(client.query(query, job_config=job_config).result())
-    return dict(rows[0]) if rows else None
+    return rows[0] if rows else None
+
+
+def get_student_id_for_email(email: str) -> str | None:
+    """Resolve email → student_id via student_personal_details. None if not found."""
+    rows = _run(
+        f"SELECT student_id FROM {NAMES_TABLE} WHERE email_address = @email LIMIT 1",
+        [bigquery.ScalarQueryParameter("email", "STRING", email)],
+    )
+    return rows[0]["student_id"] if rows else None
+
+
+def _safe(v):
+    return float(v) if v is not None else None
+
+
+def _avg(lst, key):
+    vals = [c[key] for c in lst if c.get(key) is not None]
+    return sum(vals) / len(vals) if vals else None
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.get("/")
 def root():
-    """Health check."""
     return {"status": "DeltaEd API is running ✅"}
 
 
 @app.post("/register", status_code=status.HTTP_201_CREATED)
 def register(user: UserRequest):
-    """
-    Register a new user.
-
-    Uses a SQL INSERT (not streaming insert_rows_json) so the row is
-    immediately visible to subsequent SELECT queries — no buffer delay.
-    """
-    # Check for duplicates first
     if get_user(user.email):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="An account with this email already exists.",
-        )
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="An account with this email already exists.")
 
-    # SQL INSERT — immediately queryable, no streaming buffer delay
     insert_query = f"""
-        INSERT INTO {TABLE_REF} (username, hashkey, login_time)
+        INSERT INTO {AUTH_TABLE} (username, hashkey, login_time)
         VALUES (@email, @hashkey, CURRENT_TIMESTAMP())
     """
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[
+    try:
+        _run(insert_query, [
             bigquery.ScalarQueryParameter("email",   "STRING", user.email),
             bigquery.ScalarQueryParameter("hashkey", "STRING", hash_password(user.password)),
-        ]
-    )
-
-    try:
-        client.query(insert_query, job_config=job_config).result()  # .result() waits for completion
+        ])
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database insert failed: {str(e)}",
-        )
+        raise HTTPException(status_code=500, detail=f"Database insert failed: {e}")
 
     return {"message": "User created.", "email": user.email}
 
 
 @app.post("/login")
 def login(user: UserRequest):
-    """
-    Authenticate a user.
-
-    Fetches the stored SHA-256 hash and compares it to the hash of
-    the supplied password.
-    """
     existing = get_user(user.email)
-
     if not existing:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No account found with that email.",
-        )
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="No account found with that email.")
     if existing["hashkey"] != hash_password(user.password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect password. Please try again.",
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Incorrect password. Please try again.")
 
-    return {"message": "Successful login.", "email": user.email}
+    # Best-effort — does not fail the login if the student isn't in personal_details
+    student_id = get_student_id_for_email(user.email)
+
+    return {
+        "message":    "Successful login.",
+        "email":      user.email,
+        "student_id": student_id,   # None if email not linked to a student record
+    }
 
 
 @app.get("/leaderboard")
 def leaderboard():
-    """
-    Return the top 5 most improved students.
-
-    Compares average quiz accuracy across two 7-day windows:
-      Week A (baseline): today-14d → today-8d
-      Week B (recent):   today-7d  → today-1d
-
-    Eligibility: ≥ 10 attempts in EACH window.
-    Ranked by: growth DESC, then avg_week_b DESC, then student_id ASC.
-
-    Result is cached once per day in memory.
-    """
+    """Top 5 most improved students, cached once per day."""
     cached = _get_cached()
     if cached is not None:
         return cached
@@ -188,10 +164,7 @@ def leaderboard():
     query = f"""
         WITH
           week_a AS (
-            SELECT
-              student_id,
-              AVG(correct) AS avg_score,
-              COUNT(*)     AS q_count
+            SELECT student_id, AVG(correct) AS avg_score, COUNT(*) AS q_count
             FROM {SCORES_TABLE}
             WHERE DATE(timestamp)
                   BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY)
@@ -200,10 +173,7 @@ def leaderboard():
             HAVING COUNT(*) >= 10
           ),
           week_b AS (
-            SELECT
-              student_id,
-              AVG(correct) AS avg_score,
-              COUNT(*)     AS q_count
+            SELECT student_id, AVG(correct) AS avg_score, COUNT(*) AS q_count
             FROM {SCORES_TABLE}
             WHERE DATE(timestamp)
                   BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
@@ -214,10 +184,9 @@ def leaderboard():
           ranked AS (
             SELECT
               RANK() OVER (
-                ORDER BY
-                  (b.avg_score - a.avg_score) DESC,
-                  b.avg_score DESC,
-                  a.student_id ASC
+                ORDER BY (b.avg_score - a.avg_score) DESC,
+                          b.avg_score DESC,
+                          a.student_id ASC
               )                                    AS rank,
               a.student_id,
               ROUND(b.avg_score, 2)                AS avg_score_prev_week,
@@ -225,8 +194,7 @@ def leaderboard():
               ROUND(b.avg_score - a.avg_score, 2)  AS growth,
               b.q_count                            AS questions_prev_week,
               a.q_count                            AS questions_week_before
-            FROM week_a a
-            JOIN week_b b USING (student_id)
+            FROM week_a a JOIN week_b b USING (student_id)
           )
         SELECT
           r.rank,
@@ -242,18 +210,322 @@ def leaderboard():
         WHERE r.rank <= 5
         ORDER BY r.rank
     """
-
     try:
-        rows = list(client.query(query).result())
+        rows = _run(query, [])
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Leaderboard query failed: {str(e)}",
-        )
+        raise HTTPException(status_code=500, detail=f"Leaderboard query failed: {e}")
 
-    result = {
-        "last_updated": date.today().isoformat(),
-        "leaderboard": [dict(row) for row in rows],
-    }
+    result = {"last_updated": date.today().isoformat(), "leaderboard": rows}
     _set_cached(result)
     return result
+
+
+# ── Dashboard endpoints ───────────────────────────────────────────────────────
+
+@app.get("/student/{student_id}/subjects")
+def get_subjects(student_id: str):
+    """
+    All subjects in the curriculum (from chapter_table).
+    student_id param accepted for route consistency but subjects are curriculum-wide.
+    """
+    try:
+        rows = _run(
+            f"SELECT DISTINCT subject_id, subject_name FROM {CHAPTER_TABLE} ORDER BY subject_name",
+            [],
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Subjects query failed: {e}")
+    return rows
+
+
+@app.get("/student/{student_id}/dashboard")
+def get_dashboard(student_id: str, subject_id: str = Query(...)):
+    """
+    Full dashboard payload for a student + subject.
+
+    Scores  : AVG(correct) per chapter across three windows
+              (till-date, prev 7 days, 8-14 days ago).
+    Progress: latest cumulative progress per chapter, weekly gained deltas.
+    Growth percentile: rank of this student's week-on-week score growth
+                       relative to all students who have data for this subject.
+    """
+
+    p = [
+        bigquery.ScalarQueryParameter("student_id", "STRING", student_id),
+        bigquery.ScalarQueryParameter("subject_id", "STRING", subject_id),
+    ]
+    p_sid   = [bigquery.ScalarQueryParameter("student_id", "STRING", student_id)]
+    p_subj  = [bigquery.ScalarQueryParameter("subject_id", "STRING", subject_id)]
+
+    # ── Scores ────────────────────────────────────────────────────────────────
+    scores_sql = f"""
+        WITH
+          chapters AS (
+            SELECT chapter_id, chapter_name
+            FROM {CHAPTER_TABLE}
+            WHERE subject_id = @subject_id
+          ),
+          base AS (
+            SELECT s.chapter_id, s.correct, s.timestamp
+            FROM {SCORES_TABLE} s
+            JOIN chapters USING (chapter_id)
+            WHERE s.student_id = @student_id
+          ),
+          till_date AS (
+            SELECT chapter_id, AVG(correct) AS till_date_avg
+            FROM base GROUP BY chapter_id
+          ),
+          prev_week AS (
+            SELECT chapter_id, AVG(correct) AS prev_week_avg
+            FROM base
+            WHERE DATE(timestamp)
+                  BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
+                      AND CURRENT_DATE()
+            GROUP BY chapter_id
+          ),
+          week_before AS (
+            SELECT chapter_id, AVG(correct) AS week_before_avg
+            FROM base
+            WHERE DATE(timestamp)
+                  BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY)
+                      AND DATE_SUB(CURRENT_DATE(), INTERVAL 8 DAY)
+            GROUP BY chapter_id
+          )
+        SELECT
+          c.chapter_id,
+          c.chapter_name,
+          td.till_date_avg,
+          pw.prev_week_avg,
+          wb.week_before_avg,
+          (pw.prev_week_avg - wb.week_before_avg) AS growth_delta
+        FROM chapters c
+        LEFT JOIN till_date  td USING (chapter_id)
+        LEFT JOIN prev_week  pw USING (chapter_id)
+        LEFT JOIN week_before wb USING (chapter_id)
+        ORDER BY c.chapter_name
+    """
+
+    # ── Progress ──────────────────────────────────────────────────────────────
+    progress_sql = f"""
+        WITH
+          chapters AS (
+            SELECT chapter_id, chapter_name
+            FROM {CHAPTER_TABLE}
+            WHERE subject_id = @subject_id
+          ),
+          all_prog AS (
+            SELECT p.chapter_id, p.chapter_cumulative_progress,
+                   p.subject_cumulative_progress, p.timestamp
+            FROM {PROGRESS_TABLE} p
+            JOIN chapters USING (chapter_id)
+            WHERE p.student_id = @student_id
+          ),
+          latest AS (
+            SELECT chapter_id, chapter_cumulative_progress, subject_cumulative_progress,
+                   ROW_NUMBER() OVER (PARTITION BY chapter_id ORDER BY timestamp DESC) AS rn
+            FROM all_prog
+          ),
+          snap_now AS (
+            SELECT chapter_id, chapter_cumulative_progress AS now_prog,
+                   subject_cumulative_progress
+            FROM latest WHERE rn = 1
+          ),
+          snap_7d AS (
+            SELECT chapter_id, chapter_cumulative_progress AS prog_7d,
+                   ROW_NUMBER() OVER (
+                     PARTITION BY chapter_id
+                     ORDER BY ABS(TIMESTAMP_DIFF(timestamp,
+                       TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY), SECOND))
+                   ) AS rn
+            FROM all_prog
+          ),
+          at_7d AS (SELECT chapter_id, prog_7d FROM snap_7d WHERE rn = 1),
+          snap_14d AS (
+            SELECT chapter_id, chapter_cumulative_progress AS prog_14d,
+                   ROW_NUMBER() OVER (
+                     PARTITION BY chapter_id
+                     ORDER BY ABS(TIMESTAMP_DIFF(timestamp,
+                       TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 14 DAY), SECOND))
+                   ) AS rn
+            FROM all_prog
+          ),
+          at_14d AS (SELECT chapter_id, prog_14d FROM snap_14d WHERE rn = 1)
+        SELECT
+          c.chapter_id,
+          c.chapter_name,
+          n.now_prog                      AS till_date_progress,
+          n.subject_cumulative_progress,
+          (n.now_prog - a7.prog_7d)       AS prev_week_progress,
+          (a7.prog_7d - a14.prog_14d)     AS week_before_progress,
+          ((n.now_prog  - a7.prog_7d) -
+           (a7.prog_7d  - a14.prog_14d)) AS growth_delta
+        FROM chapters c
+        LEFT JOIN snap_now n   USING (chapter_id)
+        LEFT JOIN at_7d    a7  USING (chapter_id)
+        LEFT JOIN at_14d   a14 USING (chapter_id)
+        ORDER BY c.chapter_name
+    """
+
+    # ── Score growth percentile vs cohort ─────────────────────────────────────
+    score_pct_sql = f"""
+        WITH
+          chaps AS (SELECT chapter_id FROM {CHAPTER_TABLE} WHERE subject_id = @subject_id),
+          pw AS (
+            SELECT student_id, AVG(correct) AS avg
+            FROM {SCORES_TABLE}
+            WHERE chapter_id IN (SELECT chapter_id FROM chaps)
+              AND DATE(timestamp) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
+                                      AND CURRENT_DATE()
+            GROUP BY student_id
+          ),
+          wb AS (
+            SELECT student_id, AVG(correct) AS avg
+            FROM {SCORES_TABLE}
+            WHERE chapter_id IN (SELECT chapter_id FROM chaps)
+              AND DATE(timestamp) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY)
+                                      AND DATE_SUB(CURRENT_DATE(), INTERVAL 8 DAY)
+            GROUP BY student_id
+          ),
+          growth AS (
+            SELECT pw.student_id, (pw.avg - wb.avg) AS g
+            FROM pw JOIN wb USING (student_id)
+          ),
+          my_g AS (SELECT g FROM growth WHERE student_id = @student_id),
+          total AS (SELECT COUNT(*) AS n FROM growth)
+        SELECT
+          CASE
+            WHEN (SELECT n FROM total) <= 1 THEN NULL
+            ELSE CAST(ROUND(
+              100.0 * (SELECT COUNT(*) FROM growth WHERE g < (SELECT g FROM my_g))
+              / NULLIF((SELECT n FROM total) - 1, 0)
+            ) AS INT64)
+          END AS growth_percentile
+    """
+
+    # ── Progress percentile vs cohort ─────────────────────────────────────────
+    prog_pct_sql = f"""
+        WITH
+          chaps AS (SELECT chapter_id FROM {CHAPTER_TABLE} WHERE subject_id = @subject_id),
+          latest AS (
+            SELECT student_id, subject_cumulative_progress,
+                   ROW_NUMBER() OVER (PARTITION BY student_id ORDER BY timestamp DESC) AS rn
+            FROM {PROGRESS_TABLE}
+            WHERE chapter_id IN (SELECT chapter_id FROM chaps)
+          ),
+          lps AS (SELECT student_id, subject_cumulative_progress FROM latest WHERE rn = 1),
+          my_p AS (SELECT subject_cumulative_progress FROM lps WHERE student_id = @student_id),
+          total AS (SELECT COUNT(*) AS n FROM lps)
+        SELECT
+          CASE
+            WHEN (SELECT n FROM total) <= 1 THEN NULL
+            ELSE CAST(ROUND(
+              100.0 * (SELECT COUNT(*) FROM lps
+                       WHERE subject_cumulative_progress < (SELECT subject_cumulative_progress FROM my_p))
+              / NULLIF((SELECT n FROM total) - 1, 0)
+            ) AS INT64)
+          END AS progress_percentile
+    """
+
+    name_sql = f"""
+        SELECT name FROM {NAMES_TABLE}
+        WHERE student_id = @student_id LIMIT 1
+    """
+    subj_sql = f"""
+        SELECT DISTINCT subject_name FROM {CHAPTER_TABLE}
+        WHERE subject_id = @subject_id LIMIT 1
+    """
+
+    try:
+        scores_rows  = _run(scores_sql,   p)
+        prog_rows    = _run(progress_sql, p)
+        sc_pct_rows  = _run(score_pct_sql, p)
+        pr_pct_rows  = _run(prog_pct_sql,  p)
+        name_rows    = _run(name_sql,   p_sid)
+        subj_rows    = _run(subj_sql,   p_subj)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Dashboard query failed: {e}")
+
+    # ── Build by_chapter scores ───────────────────────────────────────────────
+    chapters_score = [
+        {
+            "chapter_id":      r["chapter_id"],
+            "chapter_name":    r["chapter_name"],
+            "till_date_avg":   _safe(r.get("till_date_avg")),
+            "prev_week_avg":   _safe(r.get("prev_week_avg")),
+            "week_before_avg": _safe(r.get("week_before_avg")),
+            "growth_delta":    _safe(r.get("growth_delta")),
+        }
+        for r in scores_rows
+    ]
+
+    growth_pct = sc_pct_rows[0]["growth_percentile"] if sc_pct_rows else None
+    prog_pct   = pr_pct_rows[0]["progress_percentile"] if pr_pct_rows else None
+
+    def _round(v):
+        return round(v, 4) if v is not None else None
+
+    scores_overall = {
+        "till_date_avg":     _round(_avg(chapters_score, "till_date_avg")),
+        "prev_week_avg":     _round(_avg(chapters_score, "prev_week_avg")),
+        "week_before_avg":   _round(_avg(chapters_score, "week_before_avg")),
+        "growth_delta":      _round(
+            (_avg(chapters_score, "prev_week_avg") or 0) -
+            (_avg(chapters_score, "week_before_avg") or 0)
+            if _avg(chapters_score, "prev_week_avg") is not None
+               and _avg(chapters_score, "week_before_avg") is not None
+            else None
+        ),
+        "growth_percentile": int(growth_pct) if growth_pct is not None else None,
+    }
+
+    # ── Build by_chapter progress ─────────────────────────────────────────────
+    chapters_progress = [
+        {
+            "chapter_id":           r["chapter_id"],
+            "chapter_name":         r["chapter_name"],
+            "till_date_progress":   _safe(r.get("till_date_progress")),
+            "prev_week_progress":   _safe(r.get("prev_week_progress")),
+            "week_before_progress": _safe(r.get("week_before_progress")),
+            "growth_delta":         _safe(r.get("growth_delta")),
+        }
+        for r in prog_rows
+    ]
+
+    # Subject-level cumulative progress — same value across all chapter rows
+    subject_prog = next(
+        (_safe(r.get("subject_cumulative_progress")) for r in prog_rows
+         if r.get("subject_cumulative_progress") is not None),
+        None,
+    )
+
+    progress_overall = {
+        "till_date_progress":    subject_prog,
+        "prev_week_progress":    _round(_avg(chapters_progress, "prev_week_progress")),
+        "week_before_progress":  _round(_avg(chapters_progress, "week_before_progress")),
+        "growth_delta":          _round(
+            (_avg(chapters_progress, "prev_week_progress") or 0) -
+            (_avg(chapters_progress, "week_before_progress") or 0)
+            if _avg(chapters_progress, "prev_week_progress") is not None
+               and _avg(chapters_progress, "week_before_progress") is not None
+            else None
+        ),
+        "growth_percentile": int(prog_pct) if prog_pct is not None else None,
+    }
+
+    student_name = name_rows[0]["name"] if name_rows else student_id
+    subject_name = subj_rows[0]["subject_name"] if subj_rows else subject_id
+
+    return {
+        "student_id":   student_id,
+        "student_name": student_name,
+        "subject_id":   subject_id,
+        "subject_name": subject_name,
+        "scores": {
+            "overall":    scores_overall,
+            "by_chapter": chapters_score,
+        },
+        "progress": {
+            "overall":    progress_overall,
+            "by_chapter": chapters_progress,
+        },
+    }
