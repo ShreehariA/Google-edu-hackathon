@@ -432,9 +432,9 @@ function renderLeaderboard(data) {
 
   showRegion('lbList');
   document.getElementById('lbFooter').classList.remove('hidden');
-  // Trigger party popper for rank 1
-  var sc = MOCK_SCENARIOS[MOCK_SCENARIO];
-  if (sc && sc.you && sc.you.rank === 1) {
+  // Trigger confetti only when the real logged-in student is #1
+  var _youE = window._lbYouEntry;
+  if (_youE && _youE.rank === 1) {
     setTimeout(launchConfetti, 500);
   }
   document.getElementById('lbFooter').removeAttribute('aria-hidden');
@@ -466,34 +466,43 @@ function renderYourRow() {
         .map(function(p){ return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
     : 'You';
 
-  // Try to pull your real rank from the rendered leaderboard data
-  var myId = sessionStorage.getItem('deltastudentid') || '';
-  var rank = '—', growthStr = '—', message = 'Keep going!';
+  var rank = '\u2014', growthStr = '', message = '';
 
-  // Check rendered list for YOU entry (set during renderLeaderboard)
-  var youEntry = window._lbYouEntry;
-  if (youEntry) {
+  var rankData  = window._lbRankData;   // from /student/{id}/leaderboard-rank
+  var youEntry  = window._lbYouEntry;   // from top-5 list (if student is in it)
+
+  if (rankData && rankData.rank !== null) {
+    // Real rank from the full leaderboard query
+    rank = '#' + rankData.rank;
+    growthStr = rankData.growth !== null ? deltaLabel(rankData.growth) : '';
+    message   = rankData.rank === 1 ? "You're #1 this week! \uD83C\uDF89" :
+                rankData.rank <= 3  ? "You're in the Top 3 \u2014 keep pushing!" :
+                rankData.rank <= 5  ? "You're in the Top 5! Great work!" :
+                                      "Keep going \u2014 every attempt counts!";
+  } else if (youEntry) {
+    // Fallback: student in top 5 but rank endpoint didn't respond
     rank      = '#' + youEntry.rank;
     growthStr = deltaLabel(youEntry.growth);
-    message   = youEntry.rank === 1 ? "You're #1 this week! Incredible!" :
-                youEntry.rank <= 3  ? 'You\'re in the Top 3 — keep pushing!' :
-                                      'You\'re in the Top 5! Keep going!';
-  } else {
-    // Fallback to mock scenario data
-    var sc = MOCK_SCENARIOS[MOCK_SCENARIO] || MOCK_SCENARIOS['rank12'];
-    var you = sc.you;
-    rank      = '#' + you.rank;
-    growthStr = you.growth;
-    message   = you.message;
+    message   = youEntry.rank === 1 ? "You're #1 this week! \uD83C\uDF89" :
+                youEntry.rank <= 3  ? "You're in the Top 3 \u2014 keep pushing!" :
+                                      "You're in the Top 5! Keep going!";
+  } else if (window._lbApiUsed) {
+    // API worked but student has insufficient activity for a rank
+    rank    = '\u2014';
+    message = 'Complete more questions to appear on the leaderboard.';
   }
+
+  var detailStr = growthStr
+    ? growthStr + ' this week \u00b7 ' + message
+    : message;
 
   wrap.innerHTML =
     '<div class="your-rank">' + rank + '</div>' +
     '<div class="your-info">' +
       '<span class="your-name">' + name + '</span>' +
-      '<span class="your-detail">' + growthStr + ' this week · ' + message + '</span>' +
+      '<span class="your-detail">' + detailStr + '</span>' +
     '</div>' +
-    '<a href="dashboard.html" class="btn btn-ghost btn-sm">View My Progress →</a>';
+    '<a href="dashboard.html" class="btn btn-ghost btn-sm">View My Progress \u2192</a>';
 }
 
 /* ── Mock data — remove / disable before production ── */
@@ -614,17 +623,29 @@ function initLeaderboard() {
 
   var myId = sessionStorage.getItem('deltastudentid') || '';
 
-  fetch(API_BASE + '/leaderboard')
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(function(data) {
-      // Mark the current student as YOU in the leaderboard
+  // Fetch top-5 list and the student's own full rank in parallel
+  var leaderboardFetch = fetch(API_BASE + '/leaderboard')
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+
+  var rankFetch = myId
+    ? fetch(API_BASE + '/student/' + myId + '/leaderboard-rank')
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .catch(function() { return null; })
+    : Promise.resolve(null);
+
+  Promise.all([leaderboardFetch, rankFetch])
+    .then(function(results) {
+      var data    = results[0];
+      var rankData= results[1];   // { rank, growth, total_eligible } or null
+
+      window._lbApiUsed  = true;
+      window._lbRankData = rankData;  // stored for renderYourRow
+
+      // Mark the current student as YOU in the top-5 list if present
       if (myId && data.leaderboard) {
         data.leaderboard = data.leaderboard.map(function(entry) {
           if (entry.student_id === myId) {
-            window._lbYouEntry = entry;  // store for renderYourRow
+            window._lbYouEntry = entry;
             return Object.assign({}, entry, { student_id: 'YOU' });
           }
           return entry;
@@ -633,8 +654,10 @@ function initLeaderboard() {
       renderLeaderboard(data);
     })
     .catch(function(err) {
-      console.warn('Leaderboard API failed, using mock:', err);
-      renderLeaderboard(MOCK_LEADERBOARD);
+      console.warn('Leaderboard API failed:', err);
+      var emptyEl = document.getElementById('lbEmpty');
+      if (emptyEl) emptyEl.querySelector('p').textContent = 'Could not load leaderboard. Please try again later.';
+      showRegion('lbEmpty');
     });
 }
 

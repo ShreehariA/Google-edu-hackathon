@@ -220,6 +220,72 @@ def leaderboard():
     return result
 
 
+@app.get("/student/{student_id}/leaderboard-rank")
+def get_leaderboard_rank(student_id: str):
+    """
+    Return this student's full rank in the most-improved leaderboard,
+    across ALL eligible students (not just top 5).
+
+    Same eligibility rules as /leaderboard:
+      - ≥ 10 attempts in each of the two 7-day windows.
+    Returns:
+      { rank: int | null, total_eligible: int, growth: float | null }
+    rank is null if the student has insufficient activity.
+    """
+    query = f"""
+        WITH
+          week_a AS (
+            SELECT student_id, AVG(correct) AS avg_score
+            FROM {SCORES_TABLE}
+            WHERE DATE(timestamp)
+                  BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY)
+                      AND DATE_SUB(CURRENT_DATE(), INTERVAL 8 DAY)
+            GROUP BY student_id
+            HAVING COUNT(*) >= 10
+          ),
+          week_b AS (
+            SELECT student_id, AVG(correct) AS avg_score
+            FROM {SCORES_TABLE}
+            WHERE DATE(timestamp)
+                  BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
+                      AND DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+            GROUP BY student_id
+            HAVING COUNT(*) >= 10
+          ),
+          all_ranked AS (
+            SELECT
+              a.student_id,
+              ROUND(b.avg_score - a.avg_score, 4) AS growth,
+              RANK() OVER (
+                ORDER BY (b.avg_score - a.avg_score) DESC,
+                          b.avg_score DESC,
+                          a.student_id ASC
+              ) AS rank,
+              COUNT(*) OVER () AS total_eligible
+            FROM week_a a JOIN week_b b USING (student_id)
+          )
+        SELECT rank, growth, total_eligible
+        FROM all_ranked
+        WHERE student_id = @student_id
+        LIMIT 1
+    """
+    try:
+        rows = _run(query, [bigquery.ScalarQueryParameter("student_id", "STRING", student_id)])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Rank query failed: {e}")
+
+    if not rows:
+        return {"rank": None, "growth": None, "total_eligible": 0}
+
+    r = rows[0]
+    return {
+        "rank":            int(r["rank"]),
+        "growth":          float(r["growth"]) if r["growth"] is not None else None,
+        "total_eligible":  int(r["total_eligible"]),
+    }
+
+
+
 # ── Dashboard endpoints ───────────────────────────────────────────────────────
 
 @app.get("/student/{student_id}/subjects")
@@ -243,21 +309,22 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
     """
     Full dashboard payload for a student + subject.
 
-    Scores  : AVG(correct) per chapter across three windows
-              (till-date, prev 7 days, 8-14 days ago).
-    Progress: latest cumulative progress per chapter, weekly gained deltas.
-    Growth percentile: rank of this student's week-on-week score growth
-                       relative to all students who have data for this subject.
+    KEY SCHEMA NOTE:
+      student_scores uses `topic_id`  (not chapter_id)
+      chapter_table  uses `chapter_id`
+      topic_id == chapter_id  (same numeric values, different column names)
+
+    All 6 BigQuery queries run in parallel via ThreadPoolExecutor.
     """
 
     p = [
         bigquery.ScalarQueryParameter("student_id", "STRING", student_id),
         bigquery.ScalarQueryParameter("subject_id", "STRING", subject_id),
     ]
-    p_sid   = [bigquery.ScalarQueryParameter("student_id", "STRING", student_id)]
-    p_subj  = [bigquery.ScalarQueryParameter("subject_id", "STRING", subject_id)]
+    p_sid  = [bigquery.ScalarQueryParameter("student_id", "STRING", student_id)]
+    p_subj = [bigquery.ScalarQueryParameter("subject_id", "STRING", subject_id)]
 
-    # ── Scores ────────────────────────────────────────────────────────────────
+    # ── Scores (topic_id in student_scores = chapter_id in chapter_table) ─────
     scores_sql = f"""
         WITH
           chapters AS (
@@ -266,9 +333,9 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
             WHERE subject_id = @subject_id
           ),
           base AS (
-            SELECT s.chapter_id, s.correct, s.timestamp
+            SELECT s.topic_id AS chapter_id, s.correct, s.timestamp
             FROM {SCORES_TABLE} s
-            JOIN chapters USING (chapter_id)
+            JOIN chapters ON s.topic_id = chapters.chapter_id
             WHERE s.student_id = @student_id
           ),
           till_date AS (
@@ -302,10 +369,10 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
         LEFT JOIN till_date  td USING (chapter_id)
         LEFT JOIN prev_week  pw USING (chapter_id)
         LEFT JOIN week_before wb USING (chapter_id)
-        ORDER BY c.chapter_name
+        ORDER BY CAST(c.chapter_id AS INT64)
     """
 
-    # ── Progress ──────────────────────────────────────────────────────────────
+    # ── Progress (chapter_id is correct here) ────────────────────────────────
     progress_sql = f"""
         WITH
           chapters AS (
@@ -363,17 +430,17 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
         LEFT JOIN snap_now n   USING (chapter_id)
         LEFT JOIN at_7d    a7  USING (chapter_id)
         LEFT JOIN at_14d   a14 USING (chapter_id)
-        ORDER BY c.chapter_name
+        ORDER BY CAST(c.chapter_id AS INT64)
     """
 
-    # ── Score growth percentile vs cohort ─────────────────────────────────────
+    # ── Score growth percentile (topic_id = chapter_id) ───────────────────────
     score_pct_sql = f"""
         WITH
           chaps AS (SELECT chapter_id FROM {CHAPTER_TABLE} WHERE subject_id = @subject_id),
           pw AS (
             SELECT student_id, AVG(correct) AS avg
             FROM {SCORES_TABLE}
-            WHERE chapter_id IN (SELECT chapter_id FROM chaps)
+            WHERE topic_id IN (SELECT chapter_id FROM chaps)
               AND DATE(timestamp) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
                                       AND CURRENT_DATE()
             GROUP BY student_id
@@ -381,7 +448,7 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
           wb AS (
             SELECT student_id, AVG(correct) AS avg
             FROM {SCORES_TABLE}
-            WHERE chapter_id IN (SELECT chapter_id FROM chaps)
+            WHERE topic_id IN (SELECT chapter_id FROM chaps)
               AND DATE(timestamp) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY)
                                       AND DATE_SUB(CURRENT_DATE(), INTERVAL 8 DAY)
             GROUP BY student_id
@@ -402,7 +469,7 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
           END AS growth_percentile
     """
 
-    # ── Progress percentile vs cohort ─────────────────────────────────────────
+    # ── Progress percentile ───────────────────────────────────────────────────
     prog_pct_sql = f"""
         WITH
           chaps AS (SELECT chapter_id FROM {CHAPTER_TABLE} WHERE subject_id = @subject_id),
@@ -426,24 +493,37 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
           END AS progress_percentile
     """
 
-    name_sql = f"""
-        SELECT name FROM {NAMES_TABLE}
-        WHERE student_id = @student_id LIMIT 1
-    """
-    subj_sql = f"""
-        SELECT DISTINCT subject_name FROM {CHAPTER_TABLE}
-        WHERE subject_id = @subject_id LIMIT 1
-    """
+    name_sql = f"SELECT name FROM {NAMES_TABLE} WHERE student_id = @student_id LIMIT 1"
+    subj_sql  = f"SELECT DISTINCT subject_name FROM {CHAPTER_TABLE} WHERE subject_id = @subject_id LIMIT 1"
 
+    # ── Run all 6 queries in parallel ─────────────────────────────────────────
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    tasks = {
+        "scores":    (scores_sql,    p),
+        "progress":  (progress_sql,  p),
+        "score_pct": (score_pct_sql, p),
+        "prog_pct":  (prog_pct_sql,  p),
+        "name":      (name_sql,      p_sid),
+        "subj":      (subj_sql,      p_subj),
+    }
+
+    results: dict = {}
     try:
-        scores_rows  = _run(scores_sql,   p)
-        prog_rows    = _run(progress_sql, p)
-        sc_pct_rows  = _run(score_pct_sql, p)
-        pr_pct_rows  = _run(prog_pct_sql,  p)
-        name_rows    = _run(name_sql,   p_sid)
-        subj_rows    = _run(subj_sql,   p_subj)
+        with ThreadPoolExecutor(max_workers=6) as ex:
+            futs = {ex.submit(_run, sql, prms): key for key, (sql, prms) in tasks.items()}
+            for fut in as_completed(futs):
+                key = futs[fut]
+                results[key] = fut.result()   # raises on error → caught below
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Dashboard query failed: {e}")
+
+    scores_rows = results["scores"]
+    prog_rows   = results["progress"]
+    sc_pct_rows = results["score_pct"]
+    pr_pct_rows = results["prog_pct"]
+    name_rows   = results["name"]
+    subj_rows   = results["subj"]
 
     # ── Build by_chapter scores ───────────────────────────────────────────────
     chapters_score = [
@@ -491,7 +571,6 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
         for r in prog_rows
     ]
 
-    # Subject-level cumulative progress — same value across all chapter rows
     subject_prog = next(
         (_safe(r.get("subject_cumulative_progress")) for r in prog_rows
          if r.get("subject_cumulative_progress") is not None),
@@ -499,10 +578,10 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
     )
 
     progress_overall = {
-        "till_date_progress":    subject_prog,
-        "prev_week_progress":    _round(_avg(chapters_progress, "prev_week_progress")),
-        "week_before_progress":  _round(_avg(chapters_progress, "week_before_progress")),
-        "growth_delta":          _round(
+        "till_date_progress":   subject_prog,
+        "prev_week_progress":   _round(_avg(chapters_progress, "prev_week_progress")),
+        "week_before_progress": _round(_avg(chapters_progress, "week_before_progress")),
+        "growth_delta":         _round(
             (_avg(chapters_progress, "prev_week_progress") or 0) -
             (_avg(chapters_progress, "week_before_progress") or 0)
             if _avg(chapters_progress, "prev_week_progress") is not None
@@ -513,7 +592,9 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
     }
 
     student_name = name_rows[0]["name"] if name_rows else student_id
-    subject_name = subj_rows[0]["subject_name"] if subj_rows else subject_id
+    # subject_name may be NULL in BigQuery — fall back to subject_id
+    raw_subj_name = subj_rows[0]["subject_name"] if subj_rows else None
+    subject_name  = raw_subj_name if raw_subj_name else f"Subject {subject_id}"
 
     return {
         "student_id":   student_id,
@@ -529,3 +610,5 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
             "by_chapter": chapters_progress,
         },
     }
+
+

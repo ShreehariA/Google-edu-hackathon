@@ -138,6 +138,12 @@ function renderSubjects(subjects, activeId) {
   // Remove old real tabs
   switcher.querySelectorAll('.subject-tab').forEach(function(t) { t.remove(); });
 
+  // Hide the switcher entirely when there is only one subject —
+  // a single isolated tab looks like an unknown orphaned button.
+  if (subjects.length <= 1) {
+    switcher.style.display = 'none';
+  }
+
   subjects.forEach(function(subj) {
     var btn = document.createElement('button');
     btn.className = 'subject-tab' + (subj.subject_id === activeId ? ' active' : '');
@@ -359,8 +365,7 @@ function loadSubjects(studentId, callback) {
     .then(function(r) { return r.json(); })
     .then(callback)
     .catch(function(err) {
-      console.warn('Subjects API failed, using mock:', err);
-      callback(MOCK_SUBJECTS);
+      console.warn('Subjects API failed:', err);
     });
 }
 
@@ -388,8 +393,7 @@ function loadDashboard(studentId, subjectId) {
       renderDashboard(data);
     })
     .catch(function(err) {
-      console.warn('Dashboard API failed, using mock:', err);
-      renderDashboard(MOCK_DASHBOARD);
+      console.warn('Dashboard API failed:', err);
     });
 }
 
