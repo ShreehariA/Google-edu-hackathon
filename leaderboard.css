@@ -212,12 +212,12 @@
 
 @keyframes shimmerRow {
   0%   { background-position: -600px 0; opacity: 1; }
-  100% { background-position:  800px 0; opacity: 1; }
+  100% { background-position:  1800px 0; opacity: 1; }
 }
 
 @keyframes goldShimmerRow {
   0%   { background-position: -600px 0; opacity: 1; }
-  100% { background-position:  800px 0; opacity: 1; }
+  100% { background-position:  1800px 0; opacity: 1; }
 }
 
 /* Teal glow — infinite, soft */
