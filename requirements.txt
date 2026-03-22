@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+pydantic[email]
+google-cloud-bigquery
+python-dotenv
+
+# Future LLM integrations
+openai
+google-generativeai
+langchain
+langchain-openai
+langchain-google-genai
