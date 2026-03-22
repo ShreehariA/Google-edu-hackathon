@@ -2,7 +2,7 @@ from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event
 from typing import AsyncGenerator
-from .scope_utils import is_in_scope, rewrite_query, resolve_and_scope
+from .scope_utils import resolve_and_scope
 
 class ScopeGateAgent(BaseAgent):
     async def _run_async_impl(

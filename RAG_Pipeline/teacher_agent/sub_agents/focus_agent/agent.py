@@ -8,7 +8,7 @@ focus_agent = Agent(
     model='gemini-2.5-flash',
     name='FocusAgent',
     instruction="""
-    You are a focus advisor for {student_name} studying {subject_name}.
+    You are a focus advisor for session.state["student_context"]["student_name"] studying session.state["student_context"]["subject_name"].
 
     When called, immediately call compute_focus_chapters to rank the student's
     chapters by weakness_score. Do not reason about scores yourself — always

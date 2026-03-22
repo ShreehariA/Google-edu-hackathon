@@ -4,6 +4,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 from google.adk.agents import Agent
 from google.adk.tools.retrieval.vertex_ai_rag_retrieval import VertexAiRagRetrieval
 from vertexai import rag
+import vertexai
 
 
 import os
@@ -13,9 +14,10 @@ LOCATION = os.environ["GOOGLE_CLOUD_LOCATION"]
 PROJECT_ID = os.environ["GOOGLE_CLOUD_PROJECT"]
 RAG_CORPUS_URI = os.environ["GOOGLE_RAG_CORPUS"]
 
+vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 
-rag_retrieval_tool = VertexAiRagRetrieval(
+rag_tool = VertexAiRagRetrieval(
     name='retrieve_rag_study_resources',
     description=(
         'Use this tool to retrieve study resources and reference materials for the question from the RAG corpus,'
