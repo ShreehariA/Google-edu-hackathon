@@ -10,18 +10,24 @@ const BOT_RESPONSES = [
     html: 'Your biggest gap this week is <span class="inline-tag-red">BST Deletion</span> at only 38% accuracy (group avg: 62%). Fixing this will have the highest impact on your rank.' },
   { triggers: ['bst','deletion','tree','binary'],
     html: 'For BST Deletion:<ul class="chat-ul"><li>Watch <strong>Lesson 4.3</strong> (14 min)</li><li>Complete <strong>BST Drill Quiz</strong> right after</li><li>Use the <strong>BST Visualiser</strong> Thu/Fri</li></ul>' },
-  { triggers: ['average','avg','group','compare'],
+  { triggers: ['scores','performance','results','progress','how am i','doing'],
+    html: 'Your week snapshot:<ul class="chat-ul"><li>Quizzes completed: <strong>6</strong></li><li>Average score: <strong>58/100</strong></li><li>Growth vs last week: <strong>+14%</strong></li><li>You\'re improving faster than <strong>72%</strong> of peers</li></ul>' },
+  { triggers: ['focus','work on','struggling','improve','weakness','gaps'],
+    html: 'Based on your data, I\'d recommend focusing on:<ul class="chat-ul"><li><strong>BST Deletion</strong> — 38% accuracy (biggest gap)</li><li><strong>Nested Loops</strong> — 55% accuracy</li></ul>Want to start working on one of these now?' },
+  { triggers: ['tutor','explain','understand','help me','what is','teach'],
+    html: 'Sure! Which topic would you like to go through?<ul class="chat-ul"><li>BST Deletion</li><li>Nested Loops &amp; Time Complexity</li><li>BFS vs DFS</li><li>Or type any topic from your syllabus</li></ul>' },
+  { triggers: ['real world','news','application','example','happening','explore'],
+    html: 'Here are some real-world connections to your course material:<ul class="chat-ul"><li><strong>BSTs</strong> are used in database indexing (e.g. MySQL B-Trees)</li><li><strong>BFS</strong> powers social network friend suggestions</li><li><strong>NLP</strong> is behind every AI assistant you use</li></ul>Want to explore any of these further?' },
+  { triggers: ['average','avg','group','compare','vs'],
     html: 'You vs the group:<ul class="chat-ul"><li>Your score: <strong>58 pts</strong> — group avg: <strong>40 pts</strong></li><li>Your growth: <strong>+14%</strong> — group avg: <strong>+8%</strong></li></ul>' },
-  { triggers: ['study','plan','schedule','next'],
+  { triggers: ['study','plan','schedule','next week'],
     html: 'Your study plan:<div class="action-list"><div class="action-item"><span class="action-n">1</span><div><strong>Tue</strong><p>Lesson 4.3 + BST Quiz (~30 min)</p></div></div><div class="action-item"><span class="action-n">2</span><div><strong>Thu</strong><p>Lesson 5.1 – Nested Loops (~20 min)</p></div></div><div class="action-item"><span class="action-n">3</span><div><strong>Fri</strong><p>BFS vs DFS Flashcards (~35 min)</p></div></div></div>' },
   { triggers: ['rank','leaderboard','top','position'],
     html: 'You\'re currently <strong>#12</strong>. To reach the <strong>Top 5</strong> you need ~+33% growth (you\'re at +14%). This week\'s action steps should add <strong>+15–20%</strong>.' },
   { triggers: ['hello','hi','hey','help'],
     html: 'Hello! I have access to your quiz scores, study logs, and curriculum.<br/><br/>You have <strong>3 learning gaps</strong> and <strong>4 action steps</strong> ready. Where would you like to start?' },
-  { triggers: ['score','quiz','result','doing','progress'],
-    html: 'Your week snapshot:<ul class="chat-ul"><li>Quizzes completed: <strong>6</strong></li><li>Average score: <strong>58/100</strong></li><li>Growth vs last week: <strong>+14%</strong></li></ul>' },
 ]
-const DEFAULT_BOT = 'Based on your data, focus on <span class="inline-tag-red">BST Deletion</span> first — it\'s your highest-impact gap.<br/><br/>Ask me about your gaps, group comparison, or get a full study plan.'
+const DEFAULT_BOT = 'Based on your data, focus on <span class="inline-tag-red">BST Deletion</span> first — it\'s your highest-impact gap.<br/><br/>Ask me about your scores, what to focus on, get tutored on a topic, or explore real-world connections.'
 
 function getBotReply(msg) {
   const low = msg.toLowerCase()
@@ -35,27 +41,51 @@ function timeNow() {
   return new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })
 }
 
-const INIT_MSGS = [
-  { id:1, role:'bot', face:'idle',     html:'<p>Hi there! I can see you\'ve been making progress.</p><p style="margin-top:7px">Your <strong>growth rate</strong> is ahead of many peers. Want to explore your results, find what to focus on, or get help with a topic?</p>', time:'Now' },
-  { id:2, role:'user', text:"What's my main weakness?", time:'9:03 AM' },
-  { id:3, role:'bot', face:'thinking', html:'<p>Your biggest gap is <span class="inline-tag-red">BST Deletion</span>.</p><ul class="chat-ul"><li>Accuracy: <strong>38%</strong> (group avg: 62%)</li><li>Closing this gap boosts your rank by <strong>~10 positions</strong></li></ul>', time:'9:03 AM' },
-  { id:4, role:'user', text:'What should I do?', time:'9:04 AM' },
-  { id:5, role:'bot', face:'writing',  html:'<p>Here\'s your <strong>3-step plan</strong>:</p><div class="action-list"><div class="action-item"><span class="action-n">1</span><div><strong>Watch Lesson 4.3</strong><p>14-min video on BST Deletion.</p></div></div><div class="action-item"><span class="action-n">2</span><div><strong>BST Drill Quiz</strong><p>10 targeted questions after the video.</p></div></div><div class="action-item"><span class="action-n">3</span><div><strong>30-min Thu/Fri</strong><p>Use the BST Visualiser.</p></div></div></div>', time:'9:04 AM' },
+// ── TODO: replace this with an agent API call when ADK is ready ──
+// When the agent is live, swap this function for:
+//   const html = await callOrchestratorAgent(payload)
+// Everything else stays the same.
+function buildGreeting(payload) {
+  const name       = payload?.student_name || 'there'
+  const subject    = payload?.subject_name || 'your subject'
+  const percentile = payload?.scores?.overall?.growth_percentile
+  const firstName  = name.split(' ')[0]
+
+  if (percentile != null) {
+    return `<p>Hi <strong>${firstName}</strong>! I can see you've been making good progress in <strong>${subject}</strong> — you're improving faster than <strong>${percentile}%</strong> of your peers this week.</p><p style="margin-top:7px">Want to explore your results, work on something specific, or just ask me anything about the course?</p>`
+  }
+  return `<p>Hi <strong>${firstName}</strong>! I'm your AI Coach for <strong>${subject}</strong>.</p><p style="margin-top:7px">Want to explore your results, work on something specific, or just ask me anything about the course?</p>`
+}
+
+const CHIPS = [
+  { emoji: '📊', label: 'Explore my scores & progress',   msg: 'Explore my scores and progress' },
+  { emoji: '🎯', label: 'Find what to focus on',          msg: 'Find what I should focus on'   },
+  { emoji: '💬', label: 'Get tutored on a topic',         msg: 'I want to get tutored on a topic' },
+  { emoji: '🌍', label: 'Explore topics in the real world', msg: 'Show me real world examples from my course' },
 ]
 
 let _id = 100
 
 export default function Chat() {
-  const [messages,    setMessages]    = useState(INIT_MSGS)
-  const [input,       setInput]       = useState('')
-  const [typing,      setTyping]      = useState(false)
-  const [headerFace,  setHeaderFace]  = useState('idle')
+  const [messages,   setMessages]   = useState([])
+  const [input,      setInput]      = useState('')
+  const [typing,     setTyping]     = useState(false)
+  const [headerFace, setHeaderFace] = useState('idle')
+  const [started,    setStarted]    = useState(false)
   const logRef = useRef(null)
 
   const email    = sessionStorage.getItem('deltaemail') || ''
   const name     = email ? email.split('@')[0].split(/[._-]/).map(p => p.charAt(0).toUpperCase()+p.slice(1)).join(' ') : 'User'
   const parts    = name.trim().split(' ')
   const initials = parts.length >= 2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : name.substring(0,2).toUpperCase()
+
+  // Build opening message from dashboard payload in sessionStorage
+  useEffect(() => {
+    let payload = null
+    try { payload = JSON.parse(sessionStorage.getItem('deltadashboard') || 'null') } catch(e) {}
+    const greetingHtml = buildGreeting(payload)
+    setMessages([{ id: ++_id, role: 'bot', face: 'idle', html: greetingHtml, time: timeNow(), showChips: true }])
+  }, [])
 
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight
@@ -64,16 +94,27 @@ export default function Chat() {
   const sendMessage = (text) => {
     if (!text.trim()) return
     setInput('')
-    setMessages(m => [...m, { id:++_id, role:'user', text, time:timeNow() }])
-    const delay = 850 + Math.random()*600
+    setStarted(true)
+    setMessages(m => m.map(msg => ({ ...msg, showChips: false })))
+    setMessages(m => [...m, { id: ++_id, role: 'user', text, time: timeNow() }])
+    const delay = 850 + Math.random() * 600
     setTyping(true)
     setHeaderFace('thinking')
-    setTimeout(() => setHeaderFace('writing'), delay*0.45)
+    setTimeout(() => setHeaderFace('writing'), delay * 0.45)
     setTimeout(() => {
       setTyping(false)
       setHeaderFace('idle')
-      setMessages(m => [...m, { id:++_id, role:'bot', face:'idle', html:getBotReply(text), time:timeNow() }])
+      setMessages(m => [...m, { id: ++_id, role: 'bot', face: 'idle', html: getBotReply(text), time: timeNow() }])
     }, delay)
+  }
+
+  const clearChat = () => {
+    let payload = null
+    try { payload = JSON.parse(sessionStorage.getItem('deltadashboard') || 'null') } catch(e) {}
+    setMessages([{ id: ++_id, role: 'bot', face: 'idle', html: buildGreeting(payload), time: timeNow(), showChips: true }])
+    setStarted(false)
+    setHeaderFace('idle')
+    showToast('Chat cleared.', 2000)
   }
 
   return (
@@ -96,19 +137,6 @@ export default function Chat() {
               <li className="sg-item sg-low"><span className="sg-dot"></span><span>BFS vs DFS — 70%</span></li>
             </ul>
           </div>
-          <div className="sidebar-section">
-            <p className="sidebar-label">Quick Asks</p>
-            <div className="chip-list">
-              {[
-                { msg:'What is my biggest weakness this week?', label:'Biggest weakness?' },
-                { msg:'How do I improve my BST Deletion score?', label:'Fix BST Deletion' },
-                { msg:'How am I doing vs the group average?',    label:'Me vs group avg' },
-                { msg:'Give me a study plan for this week.',     label:'Study plan' },
-              ].map(c => (
-                <button key={c.label} className="chip" onClick={() => sendMessage(c.msg)}>{c.label}</button>
-              ))}
-            </div>
-          </div>
         </aside>
 
         <div className="chat-main">
@@ -118,7 +146,7 @@ export default function Chat() {
               <span className="chat-hname">Delta Coach</span>
               <span className="chat-hstatus"><span className="status-dot"></span> AI-powered · always available</span>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={() => { setMessages(INIT_MSGS); setHeaderFace('idle'); showToast('Chat cleared.', 2000) }}>Clear chat</button>
+            <button className="btn btn-ghost btn-sm" onClick={clearChat}>Clear chat</button>
           </div>
 
           <div className="chat-messages" ref={logRef} role="log" aria-live="polite">
@@ -128,16 +156,29 @@ export default function Chat() {
             </div>
 
             {messages.map(msg => (
-              <div key={msg.id} className={`msg ${msg.role === 'bot' ? 'msg-bot' : 'msg-user'}`}>
-                {msg.role === 'bot' && <div className="msg-av-bot"><BotFace state={msg.face||'idle'} /></div>}
-                <div className={`bubble ${msg.role === 'bot' ? 'bubble-bot' : 'bubble-user'}`}>
-                  {msg.role === 'bot'
-                    ? <div dangerouslySetInnerHTML={{ __html: msg.html }} />
-                    : <p>{msg.text}</p>
-                  }
-                  <span className="msg-time">{msg.time}</span>
+              <div key={msg.id}>
+                <div className={`msg ${msg.role === 'bot' ? 'msg-bot' : 'msg-user'}`}>
+                  {msg.role === 'bot' && <div className="msg-av-bot"><BotFace state={msg.face||'idle'} /></div>}
+                  <div className={`bubble ${msg.role === 'bot' ? 'bubble-bot' : 'bubble-user'}`}>
+                    {msg.role === 'bot'
+                      ? <div dangerouslySetInnerHTML={{ __html: msg.html }} />
+                      : <p>{msg.text}</p>
+                    }
+                    <span className="msg-time">{msg.time}</span>
+                  </div>
+                  {msg.role === 'user' && <div className="msg-av-user">{initials}</div>}
                 </div>
-                {msg.role === 'user' && <div className="msg-av-user">{initials}</div>}
+
+                {msg.showChips && (
+                  <div className="opening-chips">
+                    {CHIPS.map(c => (
+                      <button key={c.label} className="opening-chip" onClick={() => sendMessage(c.msg)}>
+                        <span className="opening-chip-emoji">{c.emoji}</span>
+                        <span>{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
 
