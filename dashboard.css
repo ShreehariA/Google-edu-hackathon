@@ -547,3 +547,25 @@
   .hero-badge-name { font-size: 1.3rem; }
   .hero-badge-text { font-size: .9rem; }
 }
+
+/* ── Scrollable bar list (max 5 rows) ── */
+.bars-scroll-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scroll-behavior: smooth;
+  /* Custom scrollbar — thin, themed */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border, #444) transparent;
+}
+.bars-scroll-wrap::-webkit-scrollbar        { width: 5px; }
+.bars-scroll-wrap::-webkit-scrollbar-track  { background: transparent; }
+.bars-scroll-wrap::-webkit-scrollbar-thumb  { background: var(--border, #444); border-radius: 99px; }
+
+/* Empty message when all chapters show 0 activity */
+.bars-empty-msg {
+  font-size: .86rem;
+  color: var(--ink-3, #717171);
+  padding: 18px 0 8px;
+  text-align: center;
+}

@@ -262,7 +262,31 @@ function renderBars(containerId, chapters, type) {
 
   var isScore = type === 'score';
 
-  chapters.forEach(function(ch) {
+  // ── Filter out chapters with zero or no data ──────────────────────────────
+  var active = chapters.filter(function(ch) {
+    var value = isScore ? ch.till_date_avg : ch.till_date_progress;
+    return value !== null && value !== undefined && value > 0;
+  });
+
+  if (active.length === 0) {
+    container.innerHTML = '<p class="bars-empty-msg">No activity recorded for any chapter yet.</p>';
+    container.classList.remove('hidden');
+    return;
+  }
+
+  // ── Scrollable inner wrapper (max 5 rows) ─────────────────────────────────
+  // Each bar-row is ~44px; 5 rows ≈ 220px. Add a little padding.
+  var ROW_H    = 44;
+  var MAX_ROWS = 5;
+  var wrapper  = document.createElement('div');
+  wrapper.className = 'bars-scroll-wrap';
+  if (active.length > MAX_ROWS) {
+    wrapper.style.maxHeight  = (ROW_H * MAX_ROWS) + 'px';
+    wrapper.style.overflowY  = 'auto';
+    wrapper.style.paddingRight = '4px'; // room for scrollbar
+  }
+
+  active.forEach(function(ch) {
     var value     = isScore ? ch.till_date_avg : ch.till_date_progress;
     var prevWeek  = isScore ? ch.prev_week_avg  : ch.prev_week_progress;
     var weekBefore= isScore ? ch.week_before_avg : ch.week_before_progress;
@@ -296,9 +320,10 @@ function renderBars(containerId, chapters, type) {
         '<div class="bar-tooltip">' + tooltipText + '</div>' +
       '</div>';
 
-    container.appendChild(row);
+    wrapper.appendChild(row);
   });
 
+  container.appendChild(wrapper);
   container.classList.remove('hidden');
 
   // Animate bars after a short delay (allows DOM to paint)
