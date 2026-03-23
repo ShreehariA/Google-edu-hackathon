@@ -24,6 +24,10 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types as genai_types
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 from .agent import root_agent
 
 app = FastAPI(title="DeltaEd Agent API")
@@ -57,49 +61,66 @@ async def agent_init(req: InitRequest):
     session_id = str(uuid.uuid4())
     ctx = req.student_context
 
-    # Build chapter_vocabulary from the student_context
-    # Prioritize flat 'chapters' list, fall back to nested 'scores.by_chapter'
-    chapters_data = ctx.get("chapters")
-    if not chapters_data:
-        chapters_data = ctx.get("scores", {}).get("by_chapter", [])
+    # ── Preprocess nested get_dashboard response into flat initial_state ──────
+    # get_dashboard (main.py) returns:
+    #   { student_id, student_name, subject_id, subject_name,
+    #     scores:   { overall: { till_date_avg, growth_delta, growth_percentile, ... },
+    #                 by_chapter: [ { chapter_id, chapter_name, till_date_avg, growth_delta, ... } ] },
+    #     progress: { overall: { till_date_progress, growth_delta, ... },
+    #                 by_chapter: [ { chapter_id, chapter_name, till_date_progress, growth_delta, ... } ] } }
+    #
+    # We flatten this into the format required by initial_state (and the agent).
 
-    chapter_vocabulary = [
-        c["chapter_name"]
-        for c in chapters_data
-        if "chapter_name" in c
-    ]
-
-    # Pull overall metrics — prefer flat top-level keys, fall back to nested shape
     overall_scores   = ctx.get("scores",   {}).get("overall", {})
     overall_progress = ctx.get("progress", {}).get("overall", {})
 
-    # Initial session state — flat keys for agent instruction templates +
-    # normalised chapters list so ScopeGateAgent / PerformanceAgent can iterate it
-    initial_state = {
-        # Full payload (agents may read any field)
-        "student_context": ctx,
-
-        # Flat identity keys (used directly in {student_name} / {subject_name} templates)
-        "student_id":   ctx.get("student_id",   "unknown"),
-        "student_name": ctx.get("student_name", ""),
-        "subject_id":   ctx.get("subject_id",   ""),
-        "subject_name": ctx.get("subject_name", ""),
-
-        # Overall score metrics
-        "overall_till_date_avg":         ctx.get("overall_till_date_avg",         overall_scores.get("till_date_avg",        0.0)),
-        "overall_growth_delta":          ctx.get("overall_growth_delta",          overall_scores.get("growth_delta",         0.0)),
-        "overall_growth_percentile":     ctx.get("overall_growth_percentile",     overall_scores.get("growth_percentile",    0)),
-        "overall_till_date_progress":    ctx.get("overall_till_date_progress",    overall_progress.get("till_date_progress", 0.0)),
-        "overall_progress_growth_delta": ctx.get("overall_progress_growth_delta", overall_progress.get("progress_growth_delta", 0.0)),
-
-        # Normalised chapters list (flat shape the agents expect)
-        "chapters":           chapters_data,
-        "chapter_vocabulary": chapter_vocabulary,
-
-        # Routing placeholders (cleared after each turn by orchestrator tools)
-        "selected_chapter_id":   None,
-        "selected_chapter_name": None,
+    # Build indexed map of progress rows so we can merge by chapter_id
+    prog_by_chapter: dict = {
+        r["chapter_id"]: r
+        for r in ctx.get("progress", {}).get("by_chapter", [])
+        if "chapter_id" in r
     }
+
+    # If a pre-flattened "chapters" list was already supplied (e.g. during testing),
+    # use it as-is; otherwise merge scores.by_chapter + progress.by_chapter.
+    chapters_payload = ctx.get("chapters") or []
+    if not chapters_payload:
+        for sc in ctx.get("scores", {}).get("by_chapter", []):
+            cid = sc.get("chapter_id")
+            pc  = prog_by_chapter.get(cid, {})
+            chapters_payload.append({
+                "chapter_id":           cid,
+                "chapter_name":         sc.get("chapter_name"),
+                "score_till_date_avg":  sc.get("till_date_avg")        if sc.get("till_date_avg")        is not None else 0.0,
+                "score_growth_delta":   sc.get("growth_delta")         if sc.get("growth_delta")         is not None else 0.0,
+                "progress_till_date":   pc.get("till_date_progress")   if pc.get("till_date_progress")   is not None else 0.0,
+                "progress_growth_delta": pc.get("growth_delta")        if pc.get("growth_delta")         is not None else 0.0,
+            })
+
+    def _f(v, fallback=0.0):
+        """Return v if not None, else fallback."""
+        return v if v is not None else fallback
+
+    initial_state = {
+        "student_id":                   ctx.get("student_id",   ""),
+        "student_name":                 ctx.get("student_name", ""),
+        "subject_id":                   ctx.get("subject_id",   ""),
+        "subject_name":                 "Natural Language Processing & Speech",
+        # overall score metrics — check flat keys first, then nested scores.overall
+        "overall_till_date_avg":        _f(ctx.get("overall_till_date_avg",        overall_scores.get("till_date_avg"))),
+        "overall_growth_delta":         _f(ctx.get("overall_growth_delta",         overall_scores.get("growth_delta"))),
+        "overall_growth_percentile":    _f(ctx.get("overall_growth_percentile",    overall_scores.get("growth_percentile")), fallback=0),
+        # overall progress metrics — check flat keys first, then nested progress.overall
+        "overall_till_date_progress":   _f(ctx.get("overall_till_date_progress",   overall_progress.get("till_date_progress"))),
+        "overall_progress_growth_delta": _f(ctx.get("overall_progress_growth_delta", overall_progress.get("growth_delta"))),
+        "chapters":                     chapters_payload,
+        "selected_chapter_id":          None,
+        "selected_chapter_name":        None,
+        "vocab_embeddings":             [],
+        "active_agent":                 "",
+    }
+
+    logger.info("Initializing Agent Session with State: %s", json.dumps(initial_state, indent=2))
 
     await session_service.create_session(
         app_name=APP_NAME,
@@ -127,7 +148,7 @@ async def agent_init(req: InitRequest):
         if event.is_final_response() and event.content:
             for part in event.content.parts:
                 if hasattr(part, "text") and part.text:
-                    opening_message += part.text
+                    opening_message += str(part.text)
 
     return {"session_id": session_id, "opening_message": opening_message}
 

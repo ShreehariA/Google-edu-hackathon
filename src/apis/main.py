@@ -629,9 +629,18 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
     }
 
     student_name = name_rows[0]["name"] if name_rows else student_id
-    # subject_name may be NULL in BigQuery — fall back to subject_id
+    # subject_name may be NULL in BigQuery.
+    # Fallback: derive a curriculum hint from the chapter names already fetched,
+    # so the agent has meaningful context rather than the opaque "Subject {id}".
     raw_subj_name = subj_rows[0]["subject_name"] if subj_rows else None
-    subject_name  = raw_subj_name if raw_subj_name else f"Subject {subject_id}"
+    if raw_subj_name:
+        subject_name = raw_subj_name
+    elif scores_rows:
+        # Use first 3 chapter names as a curriculum fingerprint
+        sample = [r["chapter_name"] for r in scores_rows[:3] if r.get("chapter_name")]
+        subject_name = f"Subject covering: {', '.join(sample)}" if sample else f"Subject {subject_id}"
+    else:
+        subject_name = f"Subject {subject_id}"
 
     return {
         "student_id":   student_id,
