@@ -17,12 +17,12 @@ const API_BASE = (typeof CONFIG !== 'undefined') ? CONFIG.API_BASE : 'http://loc
 
 function showToast(msg, duration) {
   duration = duration || 3000;
-  var toast    = document.getElementById('toast');
+  var toast = document.getElementById('toast');
   var toastMsg = document.getElementById('toastMsg');
   if (!toast || !toastMsg) return;
   toastMsg.textContent = msg;
   toast.classList.add('show');
-  setTimeout(function() { toast.classList.remove('show'); }, duration);
+  setTimeout(function () { toast.classList.remove('show'); }, duration);
 }
 
 function scrollToBottom(el) {
@@ -32,8 +32,8 @@ function scrollToBottom(el) {
 
 function escapeHtml(str) {
   return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function timeNow() {
@@ -74,7 +74,7 @@ function cloneFace(state) {
   var tmpl = document.getElementById('tmpl-' + state);
   if (!tmpl) return null;
   var clone = tmpl.content.cloneNode(true);
-  var svg   = clone.querySelector('svg');
+  var svg = clone.querySelector('svg');
   if (svg) {
     svg.classList.add('bot-face-svg');
     svg.classList.add('bot-face-' + state);
@@ -84,9 +84,9 @@ function cloneFace(state) {
 
 function initBotFaces() {
   // Inject faces into pre-seeded message avatars
-  document.querySelectorAll('.msg-av-bot[data-face]').forEach(function(el) {
+  document.querySelectorAll('.msg-av-bot[data-face]').forEach(function (el) {
     var state = el.dataset.face || 'idle';
-    var frag  = cloneFace(state);
+    var frag = cloneFace(state);
     if (frag) el.appendChild(frag);
   });
   // Inject idle into header
@@ -108,8 +108,8 @@ function setHeaderFace(state) {
 // Called when bot is responding: thinking → writing → idle
 function animateBotFaceForResponse(delay) {
   setHeaderFace('thinking');
-  setTimeout(function() { setHeaderFace('writing'); }, Math.round(delay * 0.45));
-  setTimeout(function() { setHeaderFace('idle');    }, delay + 250);
+  setTimeout(function () { setHeaderFace('writing'); }, Math.round(delay * 0.45));
+  setTimeout(function () { setHeaderFace('idle'); }, delay + 250);
 }
 
 /* ═══════════════════════════════════════════════
@@ -120,10 +120,10 @@ function initTheme() {
   var saved = localStorage.getItem('deltaTheme') || 'light';
   document.documentElement.setAttribute('data-theme', saved);
 
-  document.querySelectorAll('#themeToggle').forEach(function(btn) {
-    btn.addEventListener('click', function() {
+  document.querySelectorAll('#themeToggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
       var current = document.documentElement.getAttribute('data-theme');
-      var next    = current === 'dark' ? 'light' : 'dark';
+      var next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('deltaTheme', next);
     });
@@ -135,16 +135,16 @@ function initTheme() {
 ═══════════════════════════════════════════════ */
 
 function initLogin() {
-  var loginForm    = document.getElementById('loginForm');
+  var loginForm = document.getElementById('loginForm');
   if (!loginForm) return;
   var registerForm = document.getElementById('registerForm');
-  var tabLogin     = document.getElementById('tabLogin');
-  var tabRegister  = document.getElementById('tabRegister');
+  var tabLogin = document.getElementById('tabLogin');
+  var tabRegister = document.getElementById('tabRegister');
 
   // Tab switching
   function activateTab(tab) {
     if (tab === 'login') {
-      tabLogin.classList.add('active');    tabRegister.classList.remove('active');
+      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
       loginForm.classList.remove('hidden'); registerForm.classList.add('hidden');
     } else {
       tabRegister.classList.add('active'); tabLogin.classList.remove('active');
@@ -152,13 +152,13 @@ function initLogin() {
     }
     hideApiError();
   }
-  tabLogin.addEventListener('click',    function() { activateTab('login'); });
-  tabRegister.addEventListener('click', function() { activateTab('register'); });
+  tabLogin.addEventListener('click', function () { activateTab('login'); });
+  tabRegister.addEventListener('click', function () { activateTab('register'); });
 
   // Password eye toggle
   function bindEye(eyeBtn, eyeIconEl, inputEl) {
     if (!eyeBtn) return;
-    eyeBtn.addEventListener('click', function() {
+    eyeBtn.addEventListener('click', function () {
       var show = inputEl.type === 'password';
       inputEl.type = show ? 'text' : 'password';
       eyeIconEl.innerHTML = show
@@ -167,43 +167,43 @@ function initLogin() {
     });
   }
   bindEye(document.getElementById('loginEye'), document.getElementById('loginEyeIcon'), document.getElementById('loginPass'));
-  bindEye(document.getElementById('regEye'),   document.getElementById('regEyeIcon'),   document.getElementById('regPass'));
+  bindEye(document.getElementById('regEye'), document.getElementById('regEyeIcon'), document.getElementById('regPass'));
 
   // Validation helpers
   function validateEmail(inputEl, errEl) {
     var val = inputEl.value.trim();
-    if (!val)                                    { errEl.textContent = 'Email is required.'; return false; }
+    if (!val) { errEl.textContent = 'Email is required.'; return false; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) { errEl.textContent = 'Enter a valid email.'; return false; }
     errEl.textContent = ''; return true;
   }
   function validatePass(inputEl, errEl) {
     var val = inputEl.value;
-    if (!val)          { errEl.textContent = 'Password is required.'; return false; }
-    if (val.length < 6){ errEl.textContent = 'At least 6 characters.'; return false; }
+    if (!val) { errEl.textContent = 'Password is required.'; return false; }
+    if (val.length < 6) { errEl.textContent = 'At least 6 characters.'; return false; }
     errEl.textContent = ''; return true;
   }
 
   var lEmail = document.getElementById('loginEmail'), lEErr = document.getElementById('loginEmailErr');
-  var lPass  = document.getElementById('loginPass'),  lPErr = document.getElementById('loginPassErr');
-  var rEmail = document.getElementById('regEmail'),   rEErr = document.getElementById('regEmailErr');
-  var rPass  = document.getElementById('regPass'),    rPErr = document.getElementById('regPassErr');
+  var lPass = document.getElementById('loginPass'), lPErr = document.getElementById('loginPassErr');
+  var rEmail = document.getElementById('regEmail'), rEErr = document.getElementById('regEmailErr');
+  var rPass = document.getElementById('regPass'), rPErr = document.getElementById('regPassErr');
 
-  lEmail.addEventListener('blur', function() { validateEmail(lEmail, lEErr); });
-  lPass.addEventListener('blur',  function() { validatePass(lPass,   lPErr); });
-  rEmail.addEventListener('blur', function() { validateEmail(rEmail, rEErr); });
-  rPass.addEventListener('blur',  function() { validatePass(rPass,   rPErr); });
+  lEmail.addEventListener('blur', function () { validateEmail(lEmail, lEErr); });
+  lPass.addEventListener('blur', function () { validatePass(lPass, lPErr); });
+  rEmail.addEventListener('blur', function () { validateEmail(rEmail, rEErr); });
+  rPass.addEventListener('blur', function () { validatePass(rPass, rPErr); });
 
   // LOGIN → POST /login
-  loginForm.addEventListener('submit', async function(e) {
+  loginForm.addEventListener('submit', async function (e) {
     e.preventDefault(); hideApiError();
     if (!validateEmail(lEmail, lEErr)) return;
-    if (!validatePass(lPass, lPErr))   return;
+    if (!validatePass(lPass, lPErr)) return;
     var btn = document.getElementById('loginBtn');
     var btnText = document.getElementById('loginBtnText');
     var spinner = document.getElementById('loginSpinner');
     setLoading(btnText, spinner, btn, true, 'Sign In');
     try {
-      var res  = await fetch(API_BASE + '/login', {
+      var res = await fetch(API_BASE + '/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: lEmail.value.trim(), password: lPass.value })
@@ -218,28 +218,28 @@ function initLogin() {
         window.location.href = 'leaderboard.html';
       } else {
         var msg = res.status === 404 ? 'No account found with that email.'
-                : res.status === 401 ? 'Incorrect password. Please try again.'
-                : (data.detail || 'Login failed. Please try again.');
+          : res.status === 401 ? 'Incorrect password. Please try again.'
+            : (data.detail || 'Login failed. Please try again.');
         showApiError(msg);
         setLoading(btnText, spinner, btn, false, 'Sign In');
       }
-    } catch(err) {
+    } catch (err) {
       showApiError('Could not reach the server. Check your connection.');
       setLoading(btnText, spinner, btn, false, 'Sign In');
     }
   });
 
   // REGISTER → POST /register
-  registerForm.addEventListener('submit', async function(e) {
+  registerForm.addEventListener('submit', async function (e) {
     e.preventDefault(); hideApiError();
     if (!validateEmail(rEmail, rEErr)) return;
-    if (!validatePass(rPass, rPErr))   return;
+    if (!validatePass(rPass, rPErr)) return;
     var btn = document.getElementById('regBtn');
     var btnText = document.getElementById('regBtnText');
     var spinner = document.getElementById('regSpinner');
     setLoading(btnText, spinner, btn, true, 'Create Account');
     try {
-      var res  = await fetch(API_BASE + '/register', {
+      var res = await fetch(API_BASE + '/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: rEmail.value.trim(), password: rPass.value })
@@ -248,7 +248,7 @@ function initLogin() {
       if (res.status === 201) {
         sessionStorage.setItem('deltaemail', rEmail.value.trim());
         showToast('Account created! Welcome to DeltaEd 🎉', 2500);
-        setTimeout(function() { window.location.href = 'leaderboard.html'; }, 1200);
+        setTimeout(function () { window.location.href = 'leaderboard.html'; }, 1200);
       } else if (res.status === 409) {
         showApiError('An account with this email already exists. Sign in instead.');
         setLoading(btnText, spinner, btn, false, 'Create Account');
@@ -256,7 +256,7 @@ function initLogin() {
         showApiError(data.detail || 'Registration failed. Please try again.');
         setLoading(btnText, spinner, btn, false, 'Create Account');
       }
-    } catch(err) {
+    } catch (err) {
       showApiError('Could not reach the server. Check your connection.');
       setLoading(btnText, spinner, btn, false, 'Create Account');
     }
@@ -297,7 +297,7 @@ var AVATAR_COLOURS = [
   'linear-gradient(135deg,#E74C3C,#C0392B)'
 ];
 
-var RANK_CLASSES = ['rank-gold','rank-silver','rank-bronze','rank-plain','rank-plain'];
+var RANK_CLASSES = ['rank-gold', 'rank-silver', 'rank-bronze', 'rank-plain', 'rank-plain'];
 
 function formatPct(frac, dp) {
   // frac is 0–1 (e.g. 0.82 → "82.0%")
@@ -308,8 +308,8 @@ function formatPct(frac, dp) {
 function deltaLabel(growth) {
   // growth is a fraction e.g. 0.125 → "+12.5%"
   var pct = (growth * 100).toFixed(1);
-  if (growth > 0)  return '+' + pct + '%';
-  if (growth < 0)  return pct + '%';
+  if (growth > 0) return '+' + pct + '%';
+  if (growth < 0) return pct + '%';
   return '0.0%';
 }
 
@@ -321,44 +321,44 @@ function deltaClass(growth) {
 
 function initials(studentId) {
   // student_id may be a UUID or a display name. Extract up to 2 initials.
-  var parts = String(studentId).replace(/_/g,' ').trim().split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
-  return String(studentId).substring(0,2).toUpperCase();
+  var parts = String(studentId).replace(/_/g, ' ').trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return String(studentId).substring(0, 2).toUpperCase();
 }
 
 /* ── DOM helpers ── */
 
 function showRegion(id) {
-  ['lbLoading','lbEmpty','lbList','lbFooter'].forEach(function(r) {
+  ['lbLoading', 'lbEmpty', 'lbList', 'lbFooter'].forEach(function (r) {
     var el = document.getElementById(r);
     if (!el) return;
     if (r === id) { el.classList.remove('hidden'); el.removeAttribute('aria-hidden'); }
-    else          { el.classList.add('hidden');    el.setAttribute('aria-hidden','true'); }
+    else { el.classList.add('hidden'); el.setAttribute('aria-hidden', 'true'); }
   });
 }
 
 function renderCard(entry, idx) {
-  var rank       = entry.rank;
-  var rankClass  = RANK_CLASSES[Math.min(idx, 4)];
-  var avColour   = AVATAR_COLOURS[Math.min(idx, 4)];
-  var avText     = initials(entry.student_id);
-  var dLabel     = deltaLabel(entry.growth);
-  var dClass     = deltaClass(entry.growth);
-  var prevPct    = formatPct(entry.avg_score_prev_week);
-  var peerPct = Math.min(99, Math.round(50 + (entry.growth||0)*180));
-  var rowClass   = idx < 3 ? 'lb-row lb-row-' + (idx+1) : 'lb-row';
+  var rank = entry.rank;
+  var rankClass = RANK_CLASSES[Math.min(idx, 4)];
+  var avColour = AVATAR_COLOURS[Math.min(idx, 4)];
+  var avText = initials(entry.student_id);
+  var dLabel = deltaLabel(entry.growth);
+  var dClass = deltaClass(entry.growth);
+  var prevPct = formatPct(entry.avg_score_prev_week);
+  var peerPct = Math.min(99, Math.round(50 + (entry.growth || 0) * 180));
+  var rowClass = idx < 3 ? 'lb-row lb-row-' + (idx + 1) : 'lb-row';
   var delayStyle = 'animation-delay:' + (0.06 + idx * 0.08) + 's';
 
   // Crown only for rank 1
   var crown = rank === 1
     ? '<svg class="crown" viewBox="0 0 20 14" fill="none" aria-hidden="true">' +
-        '<path d="M1 13 L3.5 5 L8 10 L10 1 L12 10 L16.5 5 L19 13 Z" fill="#F1C40F" stroke="#d4a017" stroke-width=".8"/>' +
-      '</svg>'
+    '<path d="M1 13 L3.5 5 L8 10 L10 1 L12 10 L16.5 5 L19 13 Z" fill="#F1C40F" stroke="#d4a017" stroke-width=".8"/>' +
+    '</svg>'
     : '';
 
   var ariaLabel = 'Rank ' + rank + ', Student ' + entry.student_id +
-                  ', growth ' + dLabel.replace('%',' percent') +
-                  ', last week ' + prevPct + ', better than ' + peerPct + '% of peers';
+    ', growth ' + dLabel.replace('%', ' percent') +
+    ', last week ' + prevPct + ', better than ' + peerPct + '% of peers';
 
   if (entry.student_id === 'YOU') {
     rowClass += ' lb-row-you';
@@ -372,27 +372,27 @@ function renderCard(entry, idx) {
   li.setAttribute('aria-label', ariaLabel);
   li.innerHTML =
     '<div class="lb-rank ' + rankClass + '" aria-hidden="true">' +
-      crown +
-      '<span class="lb-rank-num">' + rank + '</span>' +
+    crown +
+    '<span class="lb-rank-num">' + rank + '</span>' +
     '</div>' +
-    '<div class="lb-av av-' + (idx+1) + '" style="background:' + avColour + '" aria-hidden="true">' + avText + '</div>' +
+    '<div class="lb-av av-' + (idx + 1) + '" style="background:' + avColour + '" aria-hidden="true">' + avText + '</div>' +
     '<div class="lb-info">' +
-      '<div class="lb-name-row">' +
-        '<span class="lb-name">' + escapeHtml(
-        entry.student_id === 'YOU'
-          ? (function(){
-              var e = sessionStorage.getItem('deltaemail')||'';
-              return e ? e.split('@')[0].split(/[._-]/)
-                .map(function(p){return p.charAt(0).toUpperCase()+p.slice(1);}).join(' ')
-                : (entry.name || 'You');
-            }())
-          : (entry.name || entry.student_id)
-      ) + '</span>' +
-      '</div>' +
-      '<div class="lb-stats">' +
-        '<span>Last week: <span class="lb-stat-val">' + prevPct + '</span></span>' +
-        '<span class="lb-percentile">better than ' + peerPct + '% of peers</span>' +
-      '</div>' +
+    '<div class="lb-name-row">' +
+    '<span class="lb-name">' + escapeHtml(
+      entry.student_id === 'YOU'
+        ? (function () {
+          var e = sessionStorage.getItem('deltaemail') || '';
+          return e ? e.split('@')[0].split(/[._-]/)
+            .map(function (p) { return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
+            : (entry.name || 'You');
+        }())
+        : (entry.name || entry.student_id)
+    ) + '</span>' +
+    '</div>' +
+    '<div class="lb-stats">' +
+    '<span>Last week: <span class="lb-stat-val">' + prevPct + '</span></span>' +
+    '<span class="lb-percentile">better than ' + peerPct + '% of peers</span>' +
+    '</div>' +
     '</div>' +
     '<span class="lb-delta ' + dClass + '" aria-hidden="true">' + dLabel + '</span>';
 
@@ -400,7 +400,7 @@ function renderCard(entry, idx) {
 }
 
 function renderLeaderboard(data) {
-  var list   = document.getElementById('lbList');
+  var list = document.getElementById('lbList');
   var footer = document.getElementById('lbFooter');
   var eyebrow = document.getElementById('lbEyebrow');
   if (!list) return;
@@ -411,14 +411,14 @@ function renderLeaderboard(data) {
   }
 
   list.innerHTML = '';
-  data.leaderboard.forEach(function(entry, idx) {
+  data.leaderboard.forEach(function (entry, idx) {
     list.appendChild(renderCard(entry, idx));
   });
 
   // Last updated label
   if (data.last_updated) {
     var d = new Date(data.last_updated);
-    var formatted = d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+    var formatted = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
     var updEl = document.getElementById('lbUpdated');
     if (updEl) updEl.textContent = 'Last updated: ' + formatted;
     if (eyebrow) eyebrow.textContent = formatted;
@@ -440,14 +440,14 @@ function renderLeaderboard(data) {
   document.getElementById('lbFooter').removeAttribute('aria-hidden');
 
   // Count-up animation on delta numbers
-  list.querySelectorAll('.lb-delta').forEach(function(el, i) {
-    var raw     = el.textContent;
-    var isNeg   = raw.charAt(0) === '-';
-    var numeric = parseFloat(raw.replace(/[^\d.]/g,''));
+  list.querySelectorAll('.lb-delta').forEach(function (el, i) {
+    var raw = el.textContent;
+    var isNeg = raw.charAt(0) === '-';
+    var numeric = parseFloat(raw.replace(/[^\d.]/g, ''));
     if (isNaN(numeric) || numeric === 0) return;
     var cur = 0, step = numeric / 30;
-    setTimeout(function() {
-      var iv = setInterval(function() {
+    setTimeout(function () {
+      var iv = setInterval(function () {
         cur = Math.min(cur + step, numeric);
         el.textContent = (isNeg ? '-' : '+') + cur.toFixed(1) + '%';
         if (cur >= numeric) { el.textContent = raw; clearInterval(iv); }
@@ -461,34 +461,34 @@ function renderYourRow() {
   if (!wrap) return;
 
   var email = sessionStorage.getItem('deltaemail') || '';
-  var name  = email
+  var name = email
     ? email.split('@')[0].split(/[._-]/)
-        .map(function(p){ return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
+      .map(function (p) { return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
     : 'You';
 
   var rank = '\u2014', growthStr = '', message = '';
 
-  var rankData  = window._lbRankData;   // from /student/{id}/leaderboard-rank
-  var youEntry  = window._lbYouEntry;   // from top-5 list (if student is in it)
+  var rankData = window._lbRankData;   // from /student/{id}/leaderboard-rank
+  var youEntry = window._lbYouEntry;   // from top-5 list (if student is in it)
 
   if (rankData && rankData.rank !== null) {
     // Real rank from the full leaderboard query
     rank = '#' + rankData.rank;
     growthStr = rankData.growth !== null ? deltaLabel(rankData.growth) : '';
-    message   = rankData.rank === 1 ? "You're #1 this week! \uD83C\uDF89" :
-                rankData.rank <= 3  ? "You're in the Top 3 \u2014 keep pushing!" :
-                rankData.rank <= 5  ? "You're in the Top 5! Great work!" :
-                                      "Keep going \u2014 every attempt counts!";
+    message = rankData.rank === 1 ? "You're #1 this week! \uD83C\uDF89" :
+      rankData.rank <= 3 ? "You're in the Top 3 \u2014 keep pushing!" :
+        rankData.rank <= 5 ? "You're in the Top 5! Great work!" :
+          "Keep going \u2014 every attempt counts!";
   } else if (youEntry) {
     // Fallback: student in top 5 but rank endpoint didn't respond
-    rank      = '#' + youEntry.rank;
+    rank = '#' + youEntry.rank;
     growthStr = deltaLabel(youEntry.growth);
-    message   = youEntry.rank === 1 ? "You're #1 this week! \uD83C\uDF89" :
-                youEntry.rank <= 3  ? "You're in the Top 3 \u2014 keep pushing!" :
-                                      "You're in the Top 5! Keep going!";
+    message = youEntry.rank === 1 ? "You're #1 this week! \uD83C\uDF89" :
+      youEntry.rank <= 3 ? "You're in the Top 3 \u2014 keep pushing!" :
+        "You're in the Top 5! Keep going!";
   } else if (window._lbApiUsed) {
     // API worked but student has insufficient activity for a rank
-    rank    = '\u2014';
+    rank = '\u2014';
     message = 'Complete more questions to appear on the leaderboard.';
   }
 
@@ -499,8 +499,8 @@ function renderYourRow() {
   wrap.innerHTML =
     '<div class="your-rank">' + rank + '</div>' +
     '<div class="your-info">' +
-      '<span class="your-name">' + name + '</span>' +
-      '<span class="your-detail">' + detailStr + '</span>' +
+    '<span class="your-name">' + name + '</span>' +
+    '<span class="your-detail">' + detailStr + '</span>' +
     '</div>' +
     '<a href="dashboard.html" class="btn btn-ghost btn-sm">View My Progress \u2192</a>';
 }
@@ -520,50 +520,50 @@ var MOCK_SCENARIOS = {
 
   rank12: {
     leaderboard: [
-      { rank:1, student_id:'s_01', name:'Jordan Lee',   avg_score_prev_week:0.94, avg_score_week_before:0.64, growth:0.30 },
-      { rank:2, student_id:'s_02', name:'Priya Sharma', avg_score_prev_week:0.88, avg_score_week_before:0.63, growth:0.25 },
-      { rank:3, student_id:'s_03', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22 },
-      { rank:4, student_id:'s_04', name:'Aisha Patel',  avg_score_prev_week:0.76, avg_score_week_before:0.58, growth:0.18 },
-      { rank:5, student_id:'s_05', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16 }
+      { rank: 1, student_id: 's_01', name: 'Jordan Lee', avg_score_prev_week: 0.94, avg_score_week_before: 0.64, growth: 0.30 },
+      { rank: 2, student_id: 's_02', name: 'Priya Sharma', avg_score_prev_week: 0.88, avg_score_week_before: 0.63, growth: 0.25 },
+      { rank: 3, student_id: 's_03', name: 'Marcus Webb', avg_score_prev_week: 0.82, avg_score_week_before: 0.60, growth: 0.22 },
+      { rank: 4, student_id: 's_04', name: 'Aisha Patel', avg_score_prev_week: 0.76, avg_score_week_before: 0.58, growth: 0.18 },
+      { rank: 5, student_id: 's_05', name: 'Sam Chen', avg_score_prev_week: 0.71, avg_score_week_before: 0.55, growth: 0.16 }
     ],
-    you: { rank:12, growth:'+14%', message:"You're improving — keep going!" }
+    you: { rank: 12, growth: '+14%', message: "You're improving — keep going!" }
   },
 
   rank4: {
     leaderboard: [
-      { rank:1, student_id:'s_01', name:'Jordan Lee',   avg_score_prev_week:0.94, avg_score_week_before:0.64, growth:0.30 },
-      { rank:2, student_id:'s_02', name:'Priya Sharma', avg_score_prev_week:0.88, avg_score_week_before:0.63, growth:0.25 },
-      { rank:3, student_id:'s_03', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22 },
-      { rank:4, student_id:'YOU',  name:'You',          avg_score_prev_week:0.79, avg_score_week_before:0.58, growth:0.21 },
-      { rank:5, student_id:'s_05', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16 }
+      { rank: 1, student_id: 's_01', name: 'Jordan Lee', avg_score_prev_week: 0.94, avg_score_week_before: 0.64, growth: 0.30 },
+      { rank: 2, student_id: 's_02', name: 'Priya Sharma', avg_score_prev_week: 0.88, avg_score_week_before: 0.63, growth: 0.25 },
+      { rank: 3, student_id: 's_03', name: 'Marcus Webb', avg_score_prev_week: 0.82, avg_score_week_before: 0.60, growth: 0.22 },
+      { rank: 4, student_id: 'YOU', name: 'You', avg_score_prev_week: 0.79, avg_score_week_before: 0.58, growth: 0.21 },
+      { rank: 5, student_id: 's_05', name: 'Sam Chen', avg_score_prev_week: 0.71, avg_score_week_before: 0.55, growth: 0.16 }
     ],
-    you: { rank:4, growth:'+21%', message:"You cracked the Top 5! Keep pushing!" }
+    you: { rank: 4, growth: '+21%', message: "You cracked the Top 5! Keep pushing!" }
   },
 
   rank2: {
     leaderboard: [
-      { rank:1, student_id:'s_01', name:'Jordan Lee',   avg_score_prev_week:0.94, avg_score_week_before:0.64, growth:0.30 },
-      { rank:2, student_id:'YOU',  name:'You',          avg_score_prev_week:0.91, avg_score_week_before:0.63, growth:0.28 },
-      { rank:3, student_id:'s_03', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22 },
-      { rank:4, student_id:'s_04', name:'Aisha Patel',  avg_score_prev_week:0.76, avg_score_week_before:0.58, growth:0.18 },
-      { rank:5, student_id:'s_05', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16 }
+      { rank: 1, student_id: 's_01', name: 'Jordan Lee', avg_score_prev_week: 0.94, avg_score_week_before: 0.64, growth: 0.30 },
+      { rank: 2, student_id: 'YOU', name: 'You', avg_score_prev_week: 0.91, avg_score_week_before: 0.63, growth: 0.28 },
+      { rank: 3, student_id: 's_03', name: 'Marcus Webb', avg_score_prev_week: 0.82, avg_score_week_before: 0.60, growth: 0.22 },
+      { rank: 4, student_id: 's_04', name: 'Aisha Patel', avg_score_prev_week: 0.76, avg_score_week_before: 0.58, growth: 0.18 },
+      { rank: 5, student_id: 's_05', name: 'Sam Chen', avg_score_prev_week: 0.71, avg_score_week_before: 0.55, growth: 0.16 }
     ],
-    you: { rank:2, growth:'+28%', message:"So close to #1 — one more push!" }
+    you: { rank: 2, growth: '+28%', message: "So close to #1 — one more push!" }
   },
 
   rank1: {
     leaderboard: [
-      { rank:1, student_id:'YOU',  name:'You',          avg_score_prev_week:0.96, avg_score_week_before:0.64, growth:0.32 },
-      { rank:2, student_id:'s_02', name:'Priya Sharma', avg_score_prev_week:0.88, avg_score_week_before:0.63, growth:0.25 },
-      { rank:3, student_id:'s_03', name:'Marcus Webb',  avg_score_prev_week:0.82, avg_score_week_before:0.60, growth:0.22 },
-      { rank:4, student_id:'s_04', name:'Aisha Patel',  avg_score_prev_week:0.76, avg_score_week_before:0.58, growth:0.18 },
-      { rank:5, student_id:'s_05', name:'Sam Chen',     avg_score_prev_week:0.71, avg_score_week_before:0.55, growth:0.16 }
+      { rank: 1, student_id: 'YOU', name: 'You', avg_score_prev_week: 0.96, avg_score_week_before: 0.64, growth: 0.32 },
+      { rank: 2, student_id: 's_02', name: 'Priya Sharma', avg_score_prev_week: 0.88, avg_score_week_before: 0.63, growth: 0.25 },
+      { rank: 3, student_id: 's_03', name: 'Marcus Webb', avg_score_prev_week: 0.82, avg_score_week_before: 0.60, growth: 0.22 },
+      { rank: 4, student_id: 's_04', name: 'Aisha Patel', avg_score_prev_week: 0.76, avg_score_week_before: 0.58, growth: 0.18 },
+      { rank: 5, student_id: 's_05', name: 'Sam Chen', avg_score_prev_week: 0.71, avg_score_week_before: 0.55, growth: 0.16 }
     ],
-    you: { rank:1, growth:'+32%', message:"You crushed it! You're #1 this week!" }
+    you: { rank: 1, growth: '+32%', message: "You crushed it! You're #1 this week!" }
   }
 };
 
-var MOCK_LEADERBOARD = (function() {
+var MOCK_LEADERBOARD = (function () {
   var s = MOCK_SCENARIOS[MOCK_SCENARIO] || MOCK_SCENARIOS['rank12'];
   return { last_updated: new Date().toISOString(), leaderboard: s.leaderboard };
 }());
@@ -577,11 +577,11 @@ function launchConfetti() {
     document.body.appendChild(canvas);
   }
   var ctx = canvas.getContext('2d');
-  canvas.width  = window.innerWidth;
+  canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
   var pieces = [];
-  var colours = ['#14B8A6','#F1C40F','#EF4444','#3B82F6','#A855F7','#F59E0B','#10B981','#fff'];
+  var colours = ['#14B8A6', '#F1C40F', '#EF4444', '#3B82F6', '#A855F7', '#F59E0B', '#10B981', '#fff'];
   for (var i = 0; i < 160; i++) {
     pieces.push({
       x: Math.random() * canvas.width,
@@ -600,19 +600,19 @@ function launchConfetti() {
   var maxFrames = 180;
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    pieces.forEach(function(p) {
+    pieces.forEach(function (p) {
       ctx.save();
-      ctx.translate(p.x + p.w/2, p.y + p.h/2);
+      ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
       ctx.rotate(p.rot * Math.PI / 180);
       ctx.fillStyle = p.colour;
       ctx.globalAlpha = Math.max(0, 1 - frame / maxFrames);
-      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
       ctx.restore();
       p.x += p.vx; p.y += p.vy; p.rot += p.vr;
     });
     frame++;
     if (frame < maxFrames) requestAnimationFrame(draw);
-    else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.remove(); }
+    else { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.remove(); }
   }
   draw();
 }
@@ -625,25 +625,25 @@ function initLeaderboard() {
 
   // Fetch top-5 list and the student's own full rank in parallel
   var leaderboardFetch = fetch(API_BASE + '/leaderboard')
-    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
 
   var rankFetch = myId
     ? fetch(API_BASE + '/student/' + myId + '/leaderboard-rank')
-        .then(function(r) { return r.ok ? r.json() : null; })
-        .catch(function() { return null; })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; })
     : Promise.resolve(null);
 
   Promise.all([leaderboardFetch, rankFetch])
-    .then(function(results) {
-      var data    = results[0];
-      var rankData= results[1];   // { rank, growth, total_eligible } or null
+    .then(function (results) {
+      var data = results[0];
+      var rankData = results[1];   // { rank, growth, total_eligible } or null
 
-      window._lbApiUsed  = true;
+      window._lbApiUsed = true;
       window._lbRankData = rankData;  // stored for renderYourRow
 
       // Mark the current student as YOU in the top-5 list if present
       if (myId && data.leaderboard) {
-        data.leaderboard = data.leaderboard.map(function(entry) {
+        data.leaderboard = data.leaderboard.map(function (entry) {
           if (entry.student_id === myId) {
             window._lbYouEntry = entry;
             return Object.assign({}, entry, { student_id: 'YOU' });
@@ -653,7 +653,7 @@ function initLeaderboard() {
       }
       renderLeaderboard(data);
     })
-    .catch(function(err) {
+    .catch(function (err) {
       console.warn('Leaderboard API failed:', err);
       var emptyEl = document.getElementById('lbEmpty');
       if (emptyEl) emptyEl.querySelector('p').textContent = 'Could not load leaderboard. Please try again later.';
@@ -668,12 +668,12 @@ function initLeaderboard() {
 function initDashboard() {
   var stepsList = document.getElementById('stepsList');
   if (!stepsList) return;
-  var myRing  = document.getElementById('myRing');
+  var myRing = document.getElementById('myRing');
   var avgRing = document.getElementById('avgRing');
-  if (myRing)  { myRing.style.transition  = 'stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1) .35s'; myRing.style.strokeDashoffset  = '79'; }
-  if (avgRing) { avgRing.style.transition = 'stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1) .5s';  avgRing.style.strokeDashoffset = '135'; }
-  stepsList.addEventListener('click', function(e) {
-    var cb  = e.target.closest('.step-cb');
+  if (myRing) { myRing.style.transition = 'stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1) .35s'; myRing.style.strokeDashoffset = '79'; }
+  if (avgRing) { avgRing.style.transition = 'stroke-dashoffset 1.1s cubic-bezier(.4,0,.2,1) .5s'; avgRing.style.strokeDashoffset = '135'; }
+  stepsList.addEventListener('click', function (e) {
+    var cb = e.target.closest('.step-cb');
     if (!cb) return;
     var row = cb.closest('.step-row');
     if (!row) return;
@@ -691,8 +691,8 @@ function initDashboard() {
 var AGENT_BASE = 'http://localhost:8001';
 
 // Agent session state (set by agentInit on success)
-var _agentSessionId  = null;
-var _agentStudentId  = null;
+var _agentSessionId = null;
+var _agentStudentId = null;
 var _agentChipsShown = false;
 
 // ── Mock fallback (used when agent backend is unreachable) ────────────────
@@ -702,6 +702,15 @@ function getBotReply(msg) {
 
 // ── Agent client ─────────────────────────────────────────────────────────
 
+function saveChatHistory() {
+  if (!_agentSessionId || !_agentStudentId) return;
+  var log = document.getElementById('chatMessages');
+  if (log) {
+    localStorage.setItem('agentSession_' + _agentStudentId, _agentSessionId);
+    localStorage.setItem('agentChatHistory_' + _agentStudentId, log.innerHTML);
+  }
+}
+
 /**
  * agentInit — called once when the chat page loads.
  * Posts the dashboard payload to /agent/init, receives the session_id and
@@ -710,7 +719,7 @@ function getBotReply(msg) {
  */
 async function agentInit() {
   var payload = null;
-  try { payload = JSON.parse(sessionStorage.getItem('deltadashboard') || 'null'); } catch(e) {}
+  try { payload = JSON.parse(sessionStorage.getItem('deltadashboard') || 'null'); } catch (e) { }
   if (!payload) {
     // no dashboard data → leave static bubble, but unhide it so the UI isn't broken
     var container = document.getElementById('openingMsgContainer');
@@ -720,13 +729,29 @@ async function agentInit() {
 
   _agentStudentId = payload.student_id || sessionStorage.getItem('deltastudentid') || 'unknown';
 
+  var savedSession = localStorage.getItem('agentSession_' + _agentStudentId);
+  var savedHistory = localStorage.getItem('agentChatHistory_' + _agentStudentId);
+
+  if (savedSession && savedHistory) {
+    _agentSessionId = savedSession;
+    var log = document.getElementById('chatMessages');
+    if (log) log.innerHTML = savedHistory;
+
+    var chips = document.getElementById('agentChips');
+    if (chips && savedHistory.indexOf('msg-user') !== -1) {
+      chips.style.display = 'none';
+      _agentChipsShown = true;
+    }
+    return;
+  }
+
   showTyping(); // <-- Show loading animation while fetching opening message
 
   try {
     var res = await fetch(AGENT_BASE + '/agent/init', {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ student_context: payload }),
+      body: JSON.stringify({ student_context: payload }),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
@@ -748,8 +773,9 @@ async function agentInit() {
 
     // Reveal the 4 ADK chips
     renderAgentChips();
+    saveChatHistory();
 
-  } catch(err) {
+  } catch (err) {
     removeTyping(); // <-- Hide loading animation on fail
     console.warn('Agent init failed, using mock bot:', err);
     // Static bubble + hidden chips remain — mock bot stays active
@@ -768,10 +794,10 @@ function renderAgentChips() {
   container.style.display = 'flex';
   _agentChipsShown = true;
 
-  container.querySelectorAll('.agent-chip').forEach(function(btn) {
-    btn.addEventListener('click', function() {
+  container.querySelectorAll('.agent-chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
       var chipValue = btn.dataset.chip;
-      var label     = btn.textContent.trim();
+      var label = btn.textContent.trim();
       container.style.display = 'none';       // hide after first tap
       appendMsg('user', label);
       sendAgentMessage(label, chipValue);
@@ -795,7 +821,7 @@ function createStreamingBubble() {
   var frag = cloneFace('writing');
   if (frag) avDiv.appendChild(frag);
 
-  var bubbleDiv  = document.createElement('div');
+  var bubbleDiv = document.createElement('div');
   bubbleDiv.className = 'bubble bubble-bot';
   var textEl = document.createElement('div');
   textEl.className = 'markdown-content';
@@ -832,7 +858,7 @@ async function sendAgentMessage(text, chipSelected) {
     var delay = 850 + Math.random() * 600;
     showTyping();
     animateBotFaceForResponse(delay);
-    setTimeout(function() {
+    setTimeout(function () {
       removeTyping();
       appendMsg('bot', getBotReply(text));
     }, delay);
@@ -845,12 +871,12 @@ async function sendAgentMessage(text, chipSelected) {
 
   try {
     var res = await fetch(AGENT_BASE + '/agent/run', {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        session_id:    _agentSessionId,
-        student_id:    _agentStudentId,
-        message:       text,
+      body: JSON.stringify({
+        session_id: _agentSessionId,
+        student_id: _agentStudentId,
+        message: text,
         chip_selected: chipSelected || null,
       }),
     });
@@ -858,11 +884,11 @@ async function sendAgentMessage(text, chipSelected) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
 
-    var reader  = res.body.getReader();
+    var reader = res.body.getReader();
     var decoder = new TextDecoder();
-    var buffer  = '';
-    var accum   = '';
-    var textEl  = null;
+    var buffer = '';
+    var accum = '';
+    var textEl = null;
 
     // Stream SSE lines
     while (true) {
@@ -889,7 +915,7 @@ async function sendAgentMessage(text, chipSelected) {
           accum += token;
           if (textEl) textEl.innerHTML = window.marked ? marked.parse(accum) : accum;
           scrollToBottom(document.getElementById('chatMessages'));
-        } catch(e) { /* malformed SSE chunk — skip */ }
+        } catch (e) { /* malformed SSE chunk — skip */ }
       }
     }
 
@@ -906,8 +932,9 @@ async function sendAgentMessage(text, chipSelected) {
       }
     }
 
+    saveChatHistory();
 
-  } catch(err) {
+  } catch (err) {
     console.warn('Agent run failed, falling back to mock:', err);
     removeTyping();
     setHeaderFace('idle');
@@ -925,7 +952,7 @@ function appendMsg(role, content) {
     div.innerHTML =
       '<div class="msg-av-bot" data-face="idle"></div>' +
       '<div class="bubble bubble-bot">' + content +
-        '<span class="msg-time">' + timeNow() + '</span>' +
+      '<span class="msg-time">' + timeNow() + '</span>' +
       '</div>';
     // Inject SVG face into the avatar div we just created
     var avEl = div.querySelector('.msg-av-bot');
@@ -935,22 +962,23 @@ function appendMsg(role, content) {
     // Derive initials from stored email; fall back to 'AM'
     var _avEm = sessionStorage.getItem('deltaemail') || '';
     var _avNm = _avEm ? _avEm.split('@')[0].split(/[._-]/)
-      .map(function(p){return p.charAt(0).toUpperCase()+p.slice(1);}).join(' ') : '';
+      .map(function (p) { return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ') : '';
     var _avParts = _avNm.trim().split(' ');
     var _avInit = _avNm
       ? (_avParts.length >= 2
-          ? (_avParts[0][0] + _avParts[_avParts.length-1][0]).toUpperCase()
-          : _avNm.substring(0, 2).toUpperCase())
+        ? (_avParts[0][0] + _avParts[_avParts.length - 1][0]).toUpperCase()
+        : _avNm.substring(0, 2).toUpperCase())
       : 'AM';
     div.innerHTML =
       '<div class="bubble bubble-user">' +
-        '<p>' + escapeHtml(content) + '</p>' +
-        '<span class="msg-time">' + timeNow() + '</span>' +
+      '<p>' + escapeHtml(content) + '</p>' +
+      '<span class="msg-time">' + timeNow() + '</span>' +
       '</div>' +
       '<div class="msg-av-user">' + _avInit + '</div>';
   }
   log.appendChild(div);
   scrollToBottom(log);
+  saveChatHistory();
 }
 
 function showTyping() {
@@ -988,10 +1016,10 @@ function initChat() {
 
   // ── Personalise from sessionStorage ────────────────────────────────────────
   (function hydrateChatFromSession() {
-    var email  = sessionStorage.getItem('deltaemail') || '';
-    var name   = email
+    var email = sessionStorage.getItem('deltaemail') || '';
+    var name = email
       ? email.split('@')[0].split(/[._-]/)
-          .map(function(p){ return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
+        .map(function (p) { return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
       : '';
 
     // Topbar avatar
@@ -999,7 +1027,7 @@ function initChat() {
     if (avatar && name) {
       var parts = name.trim().split(' ');
       avatar.textContent = parts.length >= 2
-        ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
         : name.substring(0, 2).toUpperCase();
     }
 
@@ -1025,7 +1053,7 @@ function initChat() {
 
           var secondLine = bubble.querySelector('p:nth-child(2)');
           if (secondLine && growthPct !== null && growthPct !== undefined) {
-            secondLine.innerHTML = 'You\'re improving faster than <strong>' + growthPct +'%</strong> of your peers in <strong>' + escapeHtml(subj) + '</strong> this week \u2014 great momentum! Want to explore your results, find what to focus on, or get tutored on a topic?';
+            secondLine.innerHTML = 'You\'re improving faster than <strong>' + growthPct + '%</strong> of your peers in <strong>' + escapeHtml(subj) + '</strong> this week \u2014 great momentum! Want to explore your results, find what to focus on, or get tutored on a topic?';
           } else if (secondLine && overallScore !== null) {
             secondLine.innerHTML = 'Your overall score in <strong>' + escapeHtml(subj) + '</strong> is <strong>' + Math.round(overallScore * 100) + '%</strong>. Want to explore your results, find what to focus on, or get tutored on a topic?';
           }
@@ -1051,14 +1079,14 @@ function initChat() {
           sbRank.textContent = youEntry ? '#' + youEntry.rank : '\u2014';
         }
       }
-    } catch(e) { /* sessionStorage read error — ignore */ }
+    } catch (e) { /* sessionStorage read error — ignore */ }
   }());
   // ───────────────────────────────────────────────────────────────────────────
 
   // Kick off agent session initialisation (non-blocking)
   agentInit();
 
-  chatForm.addEventListener('submit', function(e) {
+  chatForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var inp = document.getElementById('chatInput');
     var text = inp.value.trim();
@@ -1069,8 +1097,8 @@ function initChat() {
   });
 
   // Sidebar Quick-Ask chips (free text, no chip_selected signal)
-  document.querySelectorAll('.chip').forEach(function(c) {
-    c.addEventListener('click', function() {
+  document.querySelectorAll('.chip').forEach(function (c) {
+    c.addEventListener('click', function () {
       var text = c.dataset.msg || c.textContent.trim();
       appendMsg('user', text);
       sendAgentMessage(text, null);
@@ -1079,14 +1107,14 @@ function initChat() {
 
   var clearBtn = document.getElementById('clearBtn');
   if (clearBtn) {
-    clearBtn.addEventListener('click', function() {
+    clearBtn.addEventListener('click', function () {
       var log = document.getElementById('chatMessages');
       if (!log) return;
       // Remove all dynamic messages; keep the static opening bubble + chips
       var kids = Array.prototype.slice.call(log.children);
-      kids.forEach(function(el) {
+      kids.forEach(function (el) {
         if (el.id !== 'openingBubble' && !el.closest('#openingBubble') &&
-            el.id !== 'agentChips'   && !el.classList.contains('ctx-pill')) {
+          el.id !== 'agentChips' && !el.classList.contains('ctx-pill')) {
           // Only remove messages (msg divs) not the structural elements
           if (el.classList.contains('msg') || el.classList.contains('typing-row')) {
             el.remove();
@@ -1104,7 +1132,7 @@ function initChat() {
 /* ═══════════════════════════════════════════════
    BOOT
 ═══════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   initTheme();
   initLogin();
   initLeaderboard();
