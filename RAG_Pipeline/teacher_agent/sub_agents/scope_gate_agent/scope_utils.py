@@ -1,7 +1,7 @@
 import numpy as np
 from vertexai.language_models import TextEmbeddingModel
 
-model = TextEmbeddingModel.from_pretrained("text-embedding-004")
+model = TextEmbeddingModel.from_pretrained("text-embedding-005")
 
 def embed(texts: list[str]) -> list[np.ndarray]:
     response = model.get_embeddings(texts)

@@ -39,7 +39,7 @@ def clear_scope_gate_state(tool_context) -> dict:
 
 def clear_active_agent(tool_context) -> dict:
     """Called when student explicitly switches away from active agent."""
-    tool_context.state["active_agent"] = None
+    tool_context.state["active_agent"] = ""
     return {"status": "cleared"}
 
 def set_active_agent(agent_name: str, tool_context) -> dict:
