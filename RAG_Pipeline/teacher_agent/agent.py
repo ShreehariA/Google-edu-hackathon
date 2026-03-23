@@ -1,4 +1,6 @@
 import warnings
+
+from .tools.orchestrator_tools import clear_active_agent
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from google.adk.agents import Agent
@@ -10,10 +12,35 @@ from .sub_agents import (
 from .tools import (
     set_scope_gate_destination_tool,
     clear_scope_gate_state_tool,
+    clear_active_agent_tool,
+    set_active_agent_tool
 )
+from .callbacks import suppress_orchestrator_text
+
 
 ROUTING_RULES = """
 ROUTING RULES — read these carefully before every response:
+
+0. ACTIVE SESSION CHECK — always check this first
+
+   Read session.state["active_agent"]:
+
+   If "TutorAgent" or "ExploreAgent":
+     - temp:chip_selected is set → call clear_active_agent(), route by chip
+     - Student signals switching → call clear_active_agent(), apply rules 1-5
+     - Anything else → transfer directly to that agent immediately
+
+   If "PerformanceAgent":
+     - temp:chip_selected is set → call clear_active_agent(), route by chip
+     - Student signals switching → call clear_active_agent(), apply rules 1-5
+     - Student asks a follow-up performance question → transfer to PerformanceAgent immediately
+     - Student says "thanks", "okay", "got it", "done" with no follow-up question
+       → call clear_active_agent(), respond with a closing message
+
+   If "FocusAgent":
+     - Same pattern as PerformanceAgent above
+
+   If "" or not set → apply rules 1-5 below
 
 1. SCORES / PERFORMANCE
    Triggers: chip_selected = "explore_scores", or free text about
@@ -121,6 +148,21 @@ Per turn (temp: — discarded after each invocation automatically):
   temp:scope_rejected         — set by ScopeGateAgent if out of scope
   temp:scope_rejected_message — set by ScopeGateAgent if out of scope
   temp:chip_selected          — set by frontend on chip tap
+
+  ...
+  IMPORTANT — MULTI-TURN CONVERSATIONS:
+  Once you have transferred to TutorAgent, the student is in an active
+  tutoring session. For ALL subsequent messages, check session.state:
+
+    if selected_chapter_name is set AND the student's message is a
+    continuation of the tutoring conversation (a question, answer,
+    or follow-up about the topic) → transfer directly to TutorAgent
+    WITHOUT calling set_scope_gate_destination again.
+
+  Only re-route through ScopeGateAgent if the student explicitly asks
+  to switch topics or agents e.g. "I want to explore something else",
+  "can we look at a different chapter", "show me my scores".
+  ...
 """
 
 root_agent = Agent(
@@ -151,10 +193,24 @@ root_agent = Agent(
     - clear_scope_gate_state()
         Call this AFTER ScopeGateAgent returns, before reading
         temp:scope_rejected.
-    """,
+    NEVER:
+  - Ask "would you like me to transfer you to..."
+  - Ask "shall I find your focus areas?"
+  - Ask "do you want to start tutoring?"
+  - Wait for the student to say "yes" before acting
+  - Repeat the student's request back to them before routing
+  - Narrate what you are about to do e.g. "Great! Let's get started on X"
+    before transferring — just transfer immediately and let TutorAgent
+    open the conversation
+  - Respond with ANY message before transferring — the first action
+    must always be a tool call or agent transfer, never a text response
+      """,
+    after_model_callback=suppress_orchestrator_text,
     tools=[
         set_scope_gate_destination_tool,
         clear_scope_gate_state_tool,
+        clear_active_agent_tool,
+        set_active_agent_tool
     ],
     sub_agents=[
         performance_agent,
