@@ -156,16 +156,7 @@
         </div>
       </div>
 
-      <div class="sidebar-section">
-        <p class="sidebar-label">Gaps This Week</p>
-        <ul class="sidebar-gaps">
-          <li class="sg-item sg-high"><span class="sg-dot"></span><span>BST Deletion — 38%</span></li>
-          <li class="sg-item sg-med"><span class="sg-dot"></span><span>Nested Loops — 55%</span></li>
-          <li class="sg-item sg-low"><span class="sg-dot"></span><span>BFS vs DFS — 70%</span></li>
-        </ul>
-      </div>
-
-      <div class="sidebar-section">
+            <div class="sidebar-section">
         <p class="sidebar-label">Quick Asks</p>
         <div class="chip-list" id="chipList">
           <button class="chip" data-msg="What is my biggest weakness this week?">Biggest weakness?</button>
@@ -213,7 +204,7 @@
         </div>
 
         <!-- Opening bot message — IDLE face -->
-        <div class="msg msg-bot">
+        <div class="msg msg-bot" id="openingMsgContainer" style="display:none">
           <div class="msg-av-bot" data-face="idle"><!-- face injected by JS --></div>
           <div class="bubble bubble-bot" id="openingBubble">
             <p>Hi <span id="chatStudentName">there</span>! I can see you've been making progress in your course.</p>

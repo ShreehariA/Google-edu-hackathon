@@ -277,7 +277,7 @@
 }
 .chat-input:focus {
   border-color: var(--teal);
-  box-shadow: 0 0 0 3px var(--teal-glow);
+  box-shadow: 0 0 0 1.5px rgba(29, 158, 117, 0.3);
 }
 .chat-input::placeholder { color: var(--ink-3); }
 .chat-send {

@@ -740,9 +740,16 @@ function getBotReply(msg) {
 async function agentInit() {
   var payload = null;
   try { payload = JSON.parse(sessionStorage.getItem('deltadashboard') || 'null'); } catch(e) {}
-  if (!payload) return;   // no dashboard data → leave static bubble + chips hidden
+  if (!payload) {
+    // no dashboard data → leave static bubble, but unhide it so the UI isn't broken
+    var container = document.getElementById('openingMsgContainer');
+    if (container) container.style.display = 'flex';
+    return;
+  }
 
   _agentStudentId = payload.student_id || sessionStorage.getItem('deltastudentid') || 'unknown';
+
+  showTyping(); // <-- Show loading animation while fetching opening message
 
   try {
     var res = await fetch(AGENT_BASE + '/agent/init', {
@@ -754,22 +761,29 @@ async function agentInit() {
     var data = await res.json();
     _agentSessionId = data.session_id;
 
+    removeTyping(); // <-- Hide loading animation
+
     // Replace static opening bubble with the real agent greeting
     if (data.opening_message) {
+      var container = document.getElementById('openingMsgContainer');
       var bubble = document.getElementById('openingBubble');
       if (bubble) {
         bubble.innerHTML =
           (window.marked ? marked.parse(data.opening_message) : data.opening_message) +
           '<span class="msg-time">' + timeNow() + '</span>';
       }
+      if (container) container.style.display = 'flex';
     }
 
     // Reveal the 4 ADK chips
     renderAgentChips();
 
   } catch(err) {
+    removeTyping(); // <-- Hide loading animation on fail
     console.warn('Agent init failed, using mock bot:', err);
     // Static bubble + hidden chips remain — mock bot stays active
+    var container = document.getElementById('openingMsgContainer');
+    if (container) container.style.display = 'flex';
   }
 }
 
