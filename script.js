@@ -871,19 +871,24 @@ async function sendAgentMessage(text, chipSelected) {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    removeTyping();
-    setHeaderFace('writing');
 
-    var textEl  = createStreamingBubble();
     var reader  = res.body.getReader();
     var decoder = new TextDecoder();
     var buffer  = '';
     var accum   = '';
+    var textEl  = null;
 
     // Stream SSE lines
     while (true) {
       var chunk = await reader.read();
       if (chunk.done) break;
+
+      if (!textEl) {
+        removeTyping();
+        setHeaderFace('writing');
+        textEl = createStreamingBubble();
+      }
+
       buffer += decoder.decode(chunk.value, { stream: true });
       var lines = buffer.split('\n');
       buffer = lines.pop();          // keep incomplete last line
@@ -902,11 +907,19 @@ async function sendAgentMessage(text, chipSelected) {
       }
     }
 
-    setHeaderFace('idle');
-    // If the stream arrived empty, show a friendly fallback
-    if (textEl && !accum.trim()) {
+    if (!textEl) {
+      // Loop ended before first chunk was processed (empty stream)
+      removeTyping();
+      setHeaderFace('idle');
+      textEl = createStreamingBubble();
       textEl.textContent = 'I wasn\'t able to get a response. Please try again.';
+    } else {
+      setHeaderFace('idle');
+      if (!accum.trim()) {
+        textEl.textContent = 'I wasn\'t able to get a response. Please try again.';
+      }
     }
+
 
   } catch(err) {
     console.warn('Agent run failed, falling back to mock:', err);
