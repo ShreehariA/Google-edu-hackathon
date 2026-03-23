@@ -165,8 +165,8 @@ export default function Dashboard() {
 
           <button className="coach-cta-bar" onClick={() => navigate('/chat')}>
             <div>
-              <strong>Need to know what to do next?</strong>
-              <span>Your AI Coach has a personalised action plan ready.</span>
+              <strong>Your AI Coach has a personalised plan ready.</strong>
+              <span>Turn your results into mastery with expert tutoring.</span>
             </div>
             <span className="coach-cta-arrow">Ask Coach →</span>
           </button>

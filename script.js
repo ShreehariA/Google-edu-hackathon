@@ -696,37 +696,8 @@ var _agentStudentId  = null;
 var _agentChipsShown = false;
 
 // ── Mock fallback (used when agent backend is unreachable) ────────────────
-var BOT_RESPONSES = [
-  { triggers: ['weakness','weak','gap','biggest','main','worst'],
-    html: 'Your biggest gap this week is <span class="inline-tag-red">BST Deletion</span> at only 38% accuracy (group avg: 62%). Fixing this will have the highest impact on your rank.' },
-  { triggers: ['bst','deletion','tree','binary'],
-    html: 'For BST Deletion, here\'s the plan:<ul class="chat-ul"><li>Watch <strong>Lesson 4.3</strong> (14 min) — focus on the two-children case</li><li>Complete <strong>BST Drill Quiz</strong> right after</li><li>Use the <strong>BST Visualiser</strong> for 30 min Thu/Fri</li></ul>This alone should boost your rank by ~10 positions.' },
-  { triggers: ['average','avg','group','compare','vs'],
-    html: 'You vs the group this week:<ul class="chat-ul"><li>Your score: <strong>58 pts</strong> — group avg: <strong>40 pts</strong></li><li>Your growth: <strong>+14%</strong> — group avg: <strong>+8%</strong></li><li>You\'re <strong>+45% above average</strong> — keep going!</li></ul>' },
-  { triggers: ['study','plan','schedule','week','next'],
-    html: 'Here\'s your study plan:<div class="action-list"><div class="action-item"><span class="action-n">1</span><div><strong>Tue</strong><p>Watch Lesson 4.3 + BST Quiz Drill (~30 min)</p></div></div><div class="action-item"><span class="action-n">2</span><div><strong>Thu</strong><p>Lesson 5.1 – Nested Loops (~20 min)</p></div></div><div class="action-item"><span class="action-n">3</span><div><strong>Fri</strong><p>BFS vs DFS Flashcards + BST Visualiser (~35 min)</p></div></div></div>' },
-  { triggers: ['rank','leaderboard','top','position','improve'],
-    html: 'You\'re currently <strong>#12</strong>. To reach the <strong>Top 5 Most Improved</strong> you need ~+33% growth (you\'re at +14%).<br/><br/>Completing this week\'s 4 action steps should add <strong>+15–20%</strong> to your growth rate. You could crack the top 5!' },
-  { triggers: ['nested','loop','complexity','big-o','bigo'],
-    html: 'For <strong>Time Complexity – Nested Loops</strong> (55% accuracy):<ul class="chat-ul"><li>Watch <strong>Lesson 5.1</strong> (11 min)</li><li>Key rule: nested loops multiply — O(n) × O(n) = O(n²)</li><li>Do the follow-up quiz after</li></ul>' },
-  { triggers: ['bfs','dfs','graph','traversal'],
-    html: 'For <strong>BFS vs DFS</strong> (70% accuracy — nearly there!):<ul class="chat-ul"><li>Review the <strong>BFS vs DFS Flashcard Set</strong> (5 min)</li><li>BFS uses a queue; DFS uses a stack or recursion</li><li>One quick review should lock this in</li></ul>' },
-  { triggers: ['hello','hi','hey','morning','help'],
-    html: 'Hello! I have access to your quiz scores, study logs, and curriculum.<br/><br/>Where would you like to start?' },
-  { triggers: ['score','quiz','result','how','doing','progress'],
-    html: 'Your snapshot:<ul class="chat-ul"><li>Growth vs last week: <strong>+14%</strong></li><li>Total study time: <strong>26 hours</strong></li></ul>One more focused session and you could push above 70 pts!' }
-];
-
-var DEFAULT_BOT = 'Based on your data I\'d recommend starting with your highest-impact gap.<br/><br/>You can also ask me about your results, what to focus on, or get tutored on any topic in your syllabus.';
-
 function getBotReply(msg) {
-  var low = msg.toLowerCase();
-  for (var i = 0; i < BOT_RESPONSES.length; i++) {
-    if (BOT_RESPONSES[i].triggers.some(function(t) { return low.indexOf(t) >= 0; })) {
-      return BOT_RESPONSES[i].html;
-    }
-  }
-  return DEFAULT_BOT;
+  return 'My backend brain is currently unavailable. Please check that the agent server is running on port 8001.';
 }
 
 // ── Agent client ─────────────────────────────────────────────────────────

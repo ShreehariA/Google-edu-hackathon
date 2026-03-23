@@ -14,59 +14,8 @@
 
 /* ── Config ───────────────────────────────────────────────── */
 
-const USE_MOCK    = false;                       // real API; mock used as fallback
 const STUDENT_ID  = sessionStorage.getItem('deltastudentid') || 'student_001';
 const DASH_BASE   = typeof API_BASE !== 'undefined' ? API_BASE : 'http://localhost:8000';
-
-/* ── Mock data ────────────────────────────────────────────── */
-
-const MOCK_SUBJECTS = [
-  { subject_id: 'nlp_101',  subject_name: 'Natural Language Processing' },
-  { subject_id: 'ml_201',   subject_name: 'Machine Learning' },
-];
-
-const MOCK_DASHBOARD = {
-  student_id:   'student_001',
-  student_name: 'Alex Morgan',
-  subject_id:   'nlp_101',
-  subject_name: 'Natural Language Processing',
-
-  scores: {
-    overall: {
-      till_date_avg:     0.76,
-      prev_week_avg:     0.82,
-      week_before_avg:   0.735,
-      growth_delta:      0.085,
-      growth_percentile: 72
-    },
-    by_chapter: [
-      { chapter_id:'ch1', chapter_name:'Text Preprocessing',       till_date_avg:0.91, prev_week_avg:0.94, week_before_avg:0.88, growth_delta:0.06  },
-      { chapter_id:'ch2', chapter_name:'Language Models & N-grams', till_date_avg:0.83, prev_week_avg:0.87, week_before_avg:0.79, growth_delta:0.08  },
-      { chapter_id:'ch3', chapter_name:'Named Entity Recognition',  till_date_avg:0.74, prev_week_avg:0.78, week_before_avg:0.80, growth_delta:-0.02 },
-      { chapter_id:'ch4', chapter_name:'Sentiment Analysis',        till_date_avg:0.68, prev_week_avg:0.72, week_before_avg:0.61, growth_delta:0.11  },
-      { chapter_id:'ch5', chapter_name:'Transformer Architecture',  till_date_avg:0.55, prev_week_avg:0.58, week_before_avg:0.49, growth_delta:0.09  },
-      { chapter_id:'ch6', chapter_name:'Attention Mechanisms',      till_date_avg:0.38, prev_week_avg:null, week_before_avg:0.38, growth_delta:null  },
-    ]
-  },
-
-  progress: {
-    overall: {
-      till_date_progress:    0.64,
-      prev_week_progress:    0.12,
-      week_before_progress:  0.07,
-      growth_delta:          0.05,
-      growth_percentile:     68
-    },
-    by_chapter: [
-      { chapter_id:'ch1', chapter_name:'Text Preprocessing',       till_date_progress:0.95, prev_week_progress:0.05, week_before_progress:0.08, growth_delta:-0.03 },
-      { chapter_id:'ch2', chapter_name:'Language Models & N-grams', till_date_progress:0.88, prev_week_progress:0.12, week_before_progress:0.09, growth_delta:0.03  },
-      { chapter_id:'ch3', chapter_name:'Named Entity Recognition',  till_date_progress:0.72, prev_week_progress:0.18, week_before_progress:0.10, growth_delta:0.08  },
-      { chapter_id:'ch4', chapter_name:'Sentiment Analysis',        till_date_progress:0.60, prev_week_progress:0.20, week_before_progress:0.12, growth_delta:0.08  },
-      { chapter_id:'ch5', chapter_name:'Transformer Architecture',  till_date_progress:0.40, prev_week_progress:0.14, week_before_progress:0.06, growth_delta:0.08  },
-      { chapter_id:'ch6', chapter_name:'Attention Mechanisms',      till_date_progress:0.15, prev_week_progress:null, week_before_progress:null, growth_delta:null  },
-    ]
-  }
-};
 
 /* ── Formatting helpers ───────────────────────────────────── */
 
@@ -385,10 +334,6 @@ function renderDashboard(data) {
 /* ── Data loading ─────────────────────────────────────────── */
 
 function loadSubjects(studentId, callback) {
-  if (USE_MOCK) {
-    setTimeout(function() { callback(MOCK_SUBJECTS); }, 400);
-    return;
-  }
   fetch(DASH_BASE + '/student/' + studentId + '/subjects')
     .then(function(r) { return r.json(); })
     .then(callback)
@@ -398,18 +343,6 @@ function loadSubjects(studentId, callback) {
 }
 
 function loadDashboard(studentId, subjectId) {
-  if (USE_MOCK) {
-    setTimeout(function() {
-      var mock = Object.assign({}, MOCK_DASHBOARD, {
-        subject_id:   subjectId,
-        subject_name: MOCK_SUBJECTS.find(function(s) { return s.subject_id === subjectId; })
-                        ? MOCK_SUBJECTS.find(function(s) { return s.subject_id === subjectId; }).subject_name
-                        : subjectId
-      });
-      renderDashboard(mock);
-    }, 600);
-    return;
-  }
   fetch(DASH_BASE + '/student/' + studentId + '/dashboard?subject_id=' + subjectId)
     .then(function(r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -431,9 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
   showSkeleton();
 
   loadSubjects(STUDENT_ID, function(subjects) {
-    if (!subjects || subjects.length === 0) {
-      subjects = MOCK_SUBJECTS;
-    }
+    if (!subjects || subjects.length === 0) return;
     var firstSubject = subjects[0];
     renderSubjects(subjects, firstSubject.subject_id);
     loadDashboard(STUDENT_ID, firstSubject.subject_id);
