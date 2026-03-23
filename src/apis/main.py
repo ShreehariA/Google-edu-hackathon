@@ -387,45 +387,67 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
             JOIN chapters USING (chapter_id)
             WHERE p.student_id = @student_id
           ),
-          latest AS (
-            SELECT chapter_id, chapter_cumulative_progress, subject_cumulative_progress,
+          -- Chapter-level metrics
+          latest_chap AS (
+            SELECT chapter_id, chapter_cumulative_progress,
                    ROW_NUMBER() OVER (PARTITION BY chapter_id ORDER BY timestamp DESC) AS rn
             FROM all_prog
           ),
           snap_now AS (
-            SELECT chapter_id, chapter_cumulative_progress AS now_prog,
-                   subject_cumulative_progress
-            FROM latest WHERE rn = 1
+            SELECT chapter_id, chapter_cumulative_progress AS now_prog
+            FROM latest_chap WHERE rn = 1
           ),
           snap_7d AS (
             SELECT chapter_id, chapter_cumulative_progress AS prog_7d,
-                   ROW_NUMBER() OVER (
-                     PARTITION BY chapter_id
-                     ORDER BY ABS(TIMESTAMP_DIFF(timestamp,
-                       TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY), SECOND))
-                   ) AS rn
+                   ROW_NUMBER() OVER (PARTITION BY chapter_id ORDER BY timestamp DESC) AS rn
             FROM all_prog
+            WHERE timestamp <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
           ),
           at_7d AS (SELECT chapter_id, prog_7d FROM snap_7d WHERE rn = 1),
           snap_14d AS (
             SELECT chapter_id, chapter_cumulative_progress AS prog_14d,
-                   ROW_NUMBER() OVER (
-                     PARTITION BY chapter_id
-                     ORDER BY ABS(TIMESTAMP_DIFF(timestamp,
-                       TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 14 DAY), SECOND))
-                   ) AS rn
+                   ROW_NUMBER() OVER (PARTITION BY chapter_id ORDER BY timestamp DESC) AS rn
+            FROM all_prog
+            WHERE timestamp <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 14 DAY)
+          ),
+          at_14d AS (SELECT chapter_id, prog_14d FROM snap_14d WHERE rn = 1),
+
+          -- Global Subject-level metrics
+          subj_now_rn AS (
+            SELECT subject_cumulative_progress AS val,
+                   ROW_NUMBER() OVER (ORDER BY timestamp DESC) AS rn
             FROM all_prog
           ),
-          at_14d AS (SELECT chapter_id, prog_14d FROM snap_14d WHERE rn = 1)
+          cte_subj_now AS (SELECT val FROM subj_now_rn WHERE rn = 1),
+          
+          subj_7d_rn AS (
+            SELECT subject_cumulative_progress AS val,
+                   ROW_NUMBER() OVER (ORDER BY timestamp DESC) AS rn
+            FROM all_prog
+            WHERE timestamp <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+          ),
+          cte_subj_7d AS (SELECT val FROM subj_7d_rn WHERE rn = 1),
+          
+          subj_14d_rn AS (
+            SELECT subject_cumulative_progress AS val,
+                   ROW_NUMBER() OVER (ORDER BY timestamp DESC) AS rn
+            FROM all_prog
+            WHERE timestamp <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 14 DAY)
+          ),
+          cte_subj_14d AS (SELECT val FROM subj_14d_rn WHERE rn = 1)
+          
         SELECT
           c.chapter_id,
           c.chapter_name,
           n.now_prog                      AS till_date_progress,
-          n.subject_cumulative_progress,
+          (SELECT val FROM cte_subj_now)  AS subject_cumulative_progress,
+          (SELECT val FROM cte_subj_7d)   AS subject_prog_7d,
+          (SELECT val FROM cte_subj_14d)  AS subject_prog_14d,
           (n.now_prog - a7.prog_7d)       AS prev_week_progress,
           (a7.prog_7d - a14.prog_14d)     AS week_before_progress,
-          ((n.now_prog  - a7.prog_7d) -
-           (a7.prog_7d  - a14.prog_14d)) AS growth_delta
+          CASE WHEN n.now_prog >= 0.999 THEN NULL 
+               ELSE ((n.now_prog  - a7.prog_7d) - (a7.prog_7d  - a14.prog_14d)) 
+          END AS growth_delta
         FROM chapters c
         LEFT JOIN snap_now n   USING (chapter_id)
         LEFT JOIN at_7d    a7  USING (chapter_id)
@@ -433,12 +455,18 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
         ORDER BY CAST(c.chapter_id AS INT64)
     """
 
-    # ── Score growth percentile (topic_id = chapter_id) ───────────────────────
+    # ── Score growth & percentile (topic_id = chapter_id) ─────────────────────
     score_pct_sql = f"""
         WITH
           chaps AS (SELECT chapter_id FROM {CHAPTER_TABLE} WHERE subject_id = @subject_id),
-          pw AS (
+          td AS (
             SELECT student_id, AVG(correct) AS avg
+            FROM {SCORES_TABLE}
+            WHERE topic_id IN (SELECT chapter_id FROM chaps)
+            GROUP BY student_id
+          ),
+          pw AS (
+            SELECT student_id, AVG(correct) AS avg, COUNT(*) AS cnt
             FROM {SCORES_TABLE}
             WHERE topic_id IN (SELECT chapter_id FROM chaps)
               AND DATE(timestamp) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
@@ -446,7 +474,7 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
             GROUP BY student_id
           ),
           wb AS (
-            SELECT student_id, AVG(correct) AS avg
+            SELECT student_id, AVG(correct) AS avg, COUNT(*) AS cnt
             FROM {SCORES_TABLE}
             WHERE topic_id IN (SELECT chapter_id FROM chaps)
               AND DATE(timestamp) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 14 DAY)
@@ -456,10 +484,18 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
           growth AS (
             SELECT pw.student_id, (pw.avg - wb.avg) AS g
             FROM pw JOIN wb USING (student_id)
+            WHERE pw.cnt >= 10 AND wb.cnt >= 10
           ),
-          my_g AS (SELECT g FROM growth WHERE student_id = @student_id),
+          my_td AS (SELECT avg FROM td WHERE student_id = @student_id),
+          my_pw AS (SELECT avg FROM pw WHERE student_id = @student_id),
+          my_wb AS (SELECT avg FROM wb WHERE student_id = @student_id),
+          my_g AS (SELECT (pw.avg - wb.avg) AS g FROM pw JOIN wb USING (student_id) WHERE pw.student_id = @student_id),
           total AS (SELECT COUNT(*) AS n FROM growth)
         SELECT
+          (SELECT avg FROM my_td) AS till_date_avg,
+          (SELECT avg FROM my_pw) AS prev_week_avg,
+          (SELECT avg FROM my_wb) AS week_before_avg,
+          (SELECT g FROM my_g) AS growth_delta,
           CASE
             WHEN (SELECT n FROM total) <= 1 THEN NULL
             ELSE CAST(ROUND(
@@ -538,23 +574,18 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
         for r in scores_rows
     ]
 
-    growth_pct = sc_pct_rows[0]["growth_percentile"] if sc_pct_rows else None
+    score_row = sc_pct_rows[0] if sc_pct_rows else {}
+    growth_pct = score_row.get("growth_percentile")
     prog_pct   = pr_pct_rows[0]["progress_percentile"] if pr_pct_rows else None
 
     def _round(v):
         return round(v, 4) if v is not None else None
 
     scores_overall = {
-        "till_date_avg":     _round(_avg(chapters_score, "till_date_avg")),
-        "prev_week_avg":     _round(_avg(chapters_score, "prev_week_avg")),
-        "week_before_avg":   _round(_avg(chapters_score, "week_before_avg")),
-        "growth_delta":      _round(
-            (_avg(chapters_score, "prev_week_avg") or 0) -
-            (_avg(chapters_score, "week_before_avg") or 0)
-            if _avg(chapters_score, "prev_week_avg") is not None
-               and _avg(chapters_score, "week_before_avg") is not None
-            else None
-        ),
+        "till_date_avg":     _round(score_row.get("till_date_avg")),
+        "prev_week_avg":     _round(score_row.get("prev_week_avg")),
+        "week_before_avg":   _round(score_row.get("week_before_avg")),
+        "growth_delta":      _round(score_row.get("growth_delta")),
         "growth_percentile": int(growth_pct) if growth_pct is not None else None,
     }
 
@@ -576,18 +607,24 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
          if r.get("subject_cumulative_progress") is not None),
         None,
     )
+    subject_prog_7d = next(
+        (_safe(r.get("subject_prog_7d")) for r in prog_rows
+         if r.get("subject_prog_7d") is not None),
+        None,
+    )
+    subject_prog_14d = next(
+        (_safe(r.get("subject_prog_14d")) for r in prog_rows
+         if r.get("subject_prog_14d") is not None),
+        None,
+    )
 
     progress_overall = {
         "till_date_progress":   subject_prog,
-        "prev_week_progress":   _round(_avg(chapters_progress, "prev_week_progress")),
-        "week_before_progress": _round(_avg(chapters_progress, "week_before_progress")),
+        "prev_week_progress":   _round(subject_prog - subject_prog_7d) if subject_prog is not None and subject_prog_7d is not None else None,
+        "week_before_progress": _round(subject_prog_7d - subject_prog_14d) if subject_prog_7d is not None and subject_prog_14d is not None else None,
         "growth_delta":         _round(
-            (_avg(chapters_progress, "prev_week_progress") or 0) -
-            (_avg(chapters_progress, "week_before_progress") or 0)
-            if _avg(chapters_progress, "prev_week_progress") is not None
-               and _avg(chapters_progress, "week_before_progress") is not None
-            else None
-        ),
+            (subject_prog - subject_prog_7d) - (subject_prog_7d - subject_prog_14d)
+        ) if subject_prog is not None and subject_prog_7d is not None and subject_prog_14d is not None else None,
         "growth_percentile": int(prog_pct) if prog_pct is not None else None,
     }
 
