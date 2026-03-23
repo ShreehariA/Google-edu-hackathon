@@ -137,6 +137,11 @@ function initTheme() {
 function initLogin() {
   var loginForm = document.getElementById('loginForm');
   if (!loginForm) return;
+
+  // Flush any old session memory when returning to the login page
+  sessionStorage.removeItem('deltastudentid');
+  sessionStorage.removeItem('deltaemail');
+  sessionStorage.removeItem('deltadashboard');
   var registerForm = document.getElementById('registerForm');
   var tabLogin = document.getElementById('tabLogin');
   var tabRegister = document.getElementById('tabRegister');
@@ -212,9 +217,13 @@ function initLogin() {
       if (res.ok) {
         sessionStorage.setItem('deltaemail', lEmail.value.trim());
         // Store student_id returned by the API for dashboard + agent use
-        if (data.student_id) {
-          sessionStorage.setItem('deltastudentid', data.student_id);
-        }
+        var newStudentId = data.student_id || 'unknown';
+        sessionStorage.setItem('deltastudentid', newStudentId);
+
+        // Wipe old chat cache completely so this login begins a fresh conversation
+        localStorage.removeItem('agentSession_' + newStudentId);
+        localStorage.removeItem('agentChatHistory_' + newStudentId);
+
         window.location.href = 'leaderboard.html';
       } else {
         var msg = res.status === 404 ? 'No account found with that email.'
@@ -398,6 +407,42 @@ function renderCard(entry, idx) {
 
   return li;
 }
+
+// ----------------------------------------------------------------------
+// GLOBALS / WATCHDOGS
+// ----------------------------------------------------------------------
+
+(function () {
+  // 30 minute idle auto-logout watchdog
+  var IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+  var idleTimer = null;
+
+  function resetIdleTimer() {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(forceLogout, IDLE_TIMEOUT_MS);
+  }
+
+  function forceLogout() {
+    // Total obliteration of cached credentials and chat histories across all accounts 
+    sessionStorage.clear();
+    localStorage.clear();
+
+    // Redirect unauthenticated users immediately
+    if (!window.location.pathname.endsWith('index.html') &&
+      window.location.pathname !== '/' &&
+      !window.location.pathname.endsWith('/')) {
+      window.location.href = 'index.html';
+    }
+  }
+
+  // Attach the watchdog event sink securely 
+  var events = ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'];
+  events.forEach(function (evt) {
+    document.addEventListener(evt, resetIdleTimer, true);
+  });
+
+  resetIdleTimer();
+})();
 
 function renderLeaderboard(data) {
   var list = document.getElementById('lbList');
@@ -690,6 +735,18 @@ function initDashboard() {
 // ── Agent config ──────────────────────────────────────────────────────────
 var AGENT_BASE = 'http://localhost:8001';
 
+if (window.marked) {
+  marked.use({
+    gfm: true,
+    breaks: true,
+    renderer: {
+      link: function (href, title, text) {
+        return '<a target="_blank" rel="noopener noreferrer" href="' + href + '" title="' + (title || '') + '">' + text + '</a>';
+      }
+    }
+  });
+}
+
 // Agent session state (set by agentInit on success)
 var _agentSessionId = null;
 var _agentStudentId = null;
@@ -720,11 +777,19 @@ function saveChatHistory() {
 async function agentInit() {
   var payload = null;
   try { payload = JSON.parse(sessionStorage.getItem('deltadashboard') || 'null'); } catch (e) { }
+
   if (!payload) {
-    // no dashboard data → leave static bubble, but unhide it so the UI isn't broken
-    var container = document.getElementById('openingMsgContainer');
-    if (container) container.style.display = 'flex';
-    return;
+    // If no dashboard data exists (e.g., an unmapped test user), construct a dummy context 
+    // so the backend Agent can initialize gracefully.
+    var _em = sessionStorage.getItem('deltaemail') || '';
+    var _nm = _em ? _em.split('@')[0].split(/[._-]/).map(function (p) { return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase(); }).join(' ') : 'Guest';
+
+    payload = {
+      student_id: sessionStorage.getItem('deltastudentid') || 'unknown',
+      student_name: _nm,
+      scores: {},
+      progress: {}
+    };
   }
 
   _agentStudentId = payload.student_id || sessionStorage.getItem('deltastudentid') || 'unknown';
@@ -735,7 +800,10 @@ async function agentInit() {
   if (savedSession && savedHistory) {
     _agentSessionId = savedSession;
     var log = document.getElementById('chatMessages');
-    if (log) log.innerHTML = savedHistory;
+    if (log) {
+      log.innerHTML = savedHistory;
+      if (window.MathJax) MathJax.typesetPromise([log]).catch(function (e) { console.warn(e); });
+    }
 
     var chips = document.getElementById('agentChips');
     if (chips && savedHistory.indexOf('msg-user') !== -1) {
@@ -759,17 +827,19 @@ async function agentInit() {
 
     removeTyping(); // <-- Hide loading animation
 
-    // Replace static opening bubble with the real agent greeting
+    // Replace static opening bubble with the real agent greeting (if provided)
+    var container = document.getElementById('openingMsgContainer');
     if (data.opening_message) {
-      var container = document.getElementById('openingMsgContainer');
       var bubble = document.getElementById('openingBubble');
       if (bubble) {
         bubble.innerHTML =
           (window.marked ? marked.parse(data.opening_message) : data.opening_message) +
           '<span class="msg-time">' + timeNow() + '</span>';
+        if (window.MathJax) MathJax.typesetPromise([bubble]).catch(function (e) { console.warn(e); });
       }
-      if (container) container.style.display = 'flex';
     }
+    // ALWAYS render the container so the UI isn't broken
+    if (container) container.style.display = 'flex';
 
     // Reveal the 4 ADK chips
     renderAgentChips();
@@ -929,15 +999,33 @@ async function sendAgentMessage(text, chipSelected) {
       setHeaderFace('idle');
       if (!accum.trim()) {
         textEl.textContent = 'I wasn\'t able to get a response. Please try again.';
+      } else {
+        if (window.MathJax) MathJax.typesetPromise([textEl]).catch(function (e) { console.warn(e); });
       }
     }
 
     saveChatHistory();
 
   } catch (err) {
-    console.warn('Agent run failed, falling back to mock:', err);
+    console.warn('Agent run failed:', err);
     removeTyping();
     setHeaderFace('idle');
+
+    // Auto-recover from dead backend sessions (e.g., container restart)
+    if (_agentSessionId && _agentStudentId) {
+      console.warn('Auto-recovering from dead session ID...');
+      localStorage.removeItem('agentSession_' + _agentStudentId);
+      localStorage.removeItem('agentChatHistory_' + _agentStudentId);
+      _agentSessionId = null;
+
+      var openingContainer = document.getElementById('openingMsgContainer');
+      if (openingContainer) openingContainer.style.display = 'none';
+
+      agentInit();
+      appendMsg('bot', 'My backend connection was briefly reset, but I have cleanly reconnected. Please try typing your message again!');
+      return;
+    }
+
     appendMsg('bot', getBotReply(text));
   }
 }
@@ -1110,19 +1198,33 @@ function initChat() {
     clearBtn.addEventListener('click', function () {
       var log = document.getElementById('chatMessages');
       if (!log) return;
-      // Remove all dynamic messages; keep the static opening bubble + chips
+
+      // Remove all dynamic messages; keep the static structure
       var kids = Array.prototype.slice.call(log.children);
       kids.forEach(function (el) {
-        if (el.id !== 'openingBubble' && !el.closest('#openingBubble') &&
-          el.id !== 'agentChips' && !el.classList.contains('ctx-pill')) {
-          // Only remove messages (msg divs) not the structural elements
+        if (el.id !== 'openingMsgContainer' && el.id !== 'agentChips' && !el.classList.contains('ctx-pill')) {
           if (el.classList.contains('msg') || el.classList.contains('typing-row')) {
             el.remove();
           }
         }
       });
       setHeaderFace('idle');
-      showToast('Chat cleared.', 2000);
+
+      // Flush memory so we don't throw SessionNotFoundError on container restart
+      if (_agentStudentId) {
+        localStorage.removeItem('agentSession_' + _agentStudentId);
+        localStorage.removeItem('agentChatHistory_' + _agentStudentId);
+      }
+      _agentSessionId = null;
+
+      // Ensure the old opening bubble is hidden so a fresh one is rendered
+      var openingContainer = document.getElementById('openingMsgContainer');
+      if (openingContainer) openingContainer.style.display = 'none';
+
+      // Start a brand new backend session
+      agentInit();
+
+      showToast('Chat cleared & session renewed.', 3000);
     });
   }
 

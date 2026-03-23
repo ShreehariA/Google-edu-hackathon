@@ -13,6 +13,12 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
 
 def resolve_and_scope(query: str, session_state: dict) -> dict:
     chapters = session_state.get("chapters", [])
+    if not chapters:
+        return {
+            "matched": False,
+            "message": "It looks like you don't have any chapters recorded in your curriculum yet. Let's start with a general exploration of the course!"
+        }
+
     chapter_names = [c["chapter_name"] for c in chapters]
     chapter_ids = [c["chapter_id"] for c in chapters]
 

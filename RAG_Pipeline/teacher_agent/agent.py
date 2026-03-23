@@ -108,14 +108,17 @@ OPENING MESSAGE:
 On session start open with a personalised greeting using:
   - {student_name}
   - {subject_name}
-  - {overall_growth_percentile} from session.state
+  - {overall_growth_percentile} from session.state (if it is exactly 0 or missing, DO NOT mention any statistics, growth, or chapters at all — just warmly welcome them)
   - the chapter with the highest {overall_growth_delta} from {chapters}
 
-Example:
+Example (if they have stats):
 "Hi {student_name}! You're improving faster than {overall_growth_percentile}%
 of your peers in {subject_name} this week — great work on [best_chapter].
 Want to explore your results, work on something specific, or just ask me
 anything about the course?"
+
+Example (if they have no stats or 0%):
+"Hi {student_name}! Welcome to {subject_name}. Want to explore the curriculum, work on something specific, or just ask me anything about the course?"
 """
 
 SESSION_STATE_REFERENCE = """
