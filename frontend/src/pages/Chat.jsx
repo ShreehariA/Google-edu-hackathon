@@ -139,23 +139,6 @@ export default function Chat() {
     <>
       <Topbar />
       <div className="chat-page">
-        <aside className="chat-sidebar">
-          <div className="sidebar-bot-preview">
-            <div className="bot-preview-face"><BotFace state="idle" /></div>
-            <div>
-              <p className="bot-preview-name">Delta Coach</p>
-              <p className="bot-preview-status"><span className="status-dot"></span> Online</p>
-            </div>
-          </div>
-          <div className="sidebar-section">
-            <p className="sidebar-label">Gaps This Week</p>
-            <ul className="sidebar-gaps">
-              <li className="sg-item sg-high"><span className="sg-dot"></span><span>BST Deletion — 38%</span></li>
-              <li className="sg-item sg-med"><span className="sg-dot"></span><span>Nested Loops — 55%</span></li>
-              <li className="sg-item sg-low"><span className="sg-dot"></span><span>BFS vs DFS — 70%</span></li>
-            </ul>
-          </div>
-        </aside>
 
         <div className="chat-main">
           <div className="chat-header">

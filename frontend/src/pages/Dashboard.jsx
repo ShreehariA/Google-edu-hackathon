@@ -86,13 +86,17 @@ export default function Dashboard() {
                   <span className="hero-badge-name">{name}</span>
                   <div className="hero-badge-divider"></div>
                   <span className="hero-badge-text">
-                    {pctile != null ? `Improving faster than ${pctile}% of peers this week` : 'Not enough activity this week for an improvement rank'}
+                    {pctile != null ? (
+                      <>Improving faster than <strong style={{ fontSize: '1.3em', fontWeight: 900, margin: '0 2px' }}>{pctile}%</strong> of peers this week</>
+                    ) : 'Not enough activity this week for an improvement rank'}
                   </span>
                 </div>
                 <div className="hero-badge-right" aria-hidden="true">
                   <div className="hero-badge-ring">
-                    <span className="hero-ring-number">{pctile != null ? pctile+'%' : '—'}</span>
-                    <span className="hero-ring-label">Top</span>
+                    <svg viewBox="0 0 24 24" width="54" height="54" fill="rgba(255, 255, 255, 0.95)" stroke="none">
+                      <circle cx="12" cy="8" r="4.5" />
+                      <path d="M4.5 22C4.5 17 7.5 14 12 14s7.5 3 7.5 8" />
+                    </svg>
                   </div>
                 </div>
               </div>

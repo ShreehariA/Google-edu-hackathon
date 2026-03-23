@@ -146,7 +146,7 @@ function renderHero(data) {
     var pctile = data.scores && data.scores.overall && data.scores.overall.growth_percentile;
     var ringEl = document.getElementById('heroRingNumber');
     if (pctile !== null && pctile !== undefined) {
-      badgeTxt.textContent = 'Improving faster than ' + pctile + '% of peers this week';
+      badgeTxt.innerHTML = 'Improving faster than <strong style="font-size:1.3em; font-weight:900; margin:0 2px;">' + pctile + '%</strong> of peers this week';
       badgeEl.setAttribute('aria-label', 'Improving faster than ' + pctile + ' percent of peers this week');
       if (ringEl) ringEl.textContent = pctile + '%';
     } else {
