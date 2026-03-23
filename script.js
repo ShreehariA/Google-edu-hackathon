@@ -687,6 +687,15 @@ function initDashboard() {
    CHAT PAGE  (chat.html)
 ═══════════════════════════════════════════════ */
 
+// ── Agent config ──────────────────────────────────────────────────────────
+var AGENT_BASE = 'http://localhost:8001';
+
+// Agent session state (set by agentInit on success)
+var _agentSessionId  = null;
+var _agentStudentId  = null;
+var _agentChipsShown = false;
+
+// ── Mock fallback (used when agent backend is unreachable) ────────────────
 var BOT_RESPONSES = [
   { triggers: ['weakness','weak','gap','biggest','main','worst'],
     html: 'Your biggest gap this week is <span class="inline-tag-red">BST Deletion</span> at only 38% accuracy (group avg: 62%). Fixing this will have the highest impact on your rank.' },
@@ -703,12 +712,12 @@ var BOT_RESPONSES = [
   { triggers: ['bfs','dfs','graph','traversal'],
     html: 'For <strong>BFS vs DFS</strong> (70% accuracy — nearly there!):<ul class="chat-ul"><li>Review the <strong>BFS vs DFS Flashcard Set</strong> (5 min)</li><li>BFS uses a queue; DFS uses a stack or recursion</li><li>One quick review should lock this in</li></ul>' },
   { triggers: ['hello','hi','hey','morning','help'],
-    html: 'Hello Alex! I have access to your quiz scores, study logs, and curriculum.<br/><br/>You have <strong>3 learning gaps</strong> and <strong>4 action steps</strong> ready. Where would you like to start?' },
+    html: 'Hello! I have access to your quiz scores, study logs, and curriculum.<br/><br/>Where would you like to start?' },
   { triggers: ['score','quiz','result','how','doing','progress'],
-    html: 'Your Week 12 snapshot:<ul class="chat-ul"><li>Quizzes completed: <strong>6</strong></li><li>Average score: <strong>58 / 100</strong></li><li>Growth vs last week: <strong>+14%</strong></li><li>Total study time: <strong>26 hours</strong></li></ul>One more focused session and you could push above 70 pts!' }
+    html: 'Your snapshot:<ul class="chat-ul"><li>Growth vs last week: <strong>+14%</strong></li><li>Total study time: <strong>26 hours</strong></li></ul>One more focused session and you could push above 70 pts!' }
 ];
 
-var DEFAULT_BOT = 'Based on your data this week, I\'d recommend focusing on <span class="inline-tag-red">BST Deletion</span> first — it\'s your highest-impact gap.<br/><br/>You can also ask me about your other gaps, how you compare to the group, or get a full study plan.';
+var DEFAULT_BOT = 'Based on your data I\'d recommend starting with your highest-impact gap.<br/><br/>You can also ask me about your results, what to focus on, or get tutored on any topic in your syllabus.';
 
 function getBotReply(msg) {
   var low = msg.toLowerCase();
@@ -718,6 +727,193 @@ function getBotReply(msg) {
     }
   }
   return DEFAULT_BOT;
+}
+
+// ── Agent client ─────────────────────────────────────────────────────────
+
+/**
+ * agentInit — called once when the chat page loads.
+ * Posts the dashboard payload to /agent/init, receives the session_id and
+ * opening message, then replaces the static opening bubble with the real one
+ * and shows the ADK chips.
+ */
+async function agentInit() {
+  var payload = null;
+  try { payload = JSON.parse(sessionStorage.getItem('deltadashboard') || 'null'); } catch(e) {}
+  if (!payload) return;   // no dashboard data → leave static bubble + chips hidden
+
+  _agentStudentId = payload.student_id || sessionStorage.getItem('deltastudentid') || 'unknown';
+
+  try {
+    var res = await fetch(AGENT_BASE + '/agent/init', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ student_context: payload }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    _agentSessionId = data.session_id;
+
+    // Replace static opening bubble with the real agent greeting
+    if (data.opening_message) {
+      var bubble = document.getElementById('openingBubble');
+      if (bubble) {
+        bubble.innerHTML =
+          '<p>' + data.opening_message.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br/>') + '</p>' +
+          '<span class="msg-time">' + timeNow() + '</span>';
+      }
+    }
+
+    // Reveal the 4 ADK chips
+    renderAgentChips();
+
+  } catch(err) {
+    console.warn('Agent init failed, using mock bot:', err);
+    // Static bubble + hidden chips remain — mock bot stays active
+  }
+}
+
+/**
+ * renderAgentChips — makes the #agentChips container visible and wires clicks.
+ * Chips are hidden after the first interaction.
+ */
+function renderAgentChips() {
+  var container = document.getElementById('agentChips');
+  if (!container || _agentChipsShown) return;
+  container.style.display = 'flex';
+  _agentChipsShown = true;
+
+  container.querySelectorAll('.agent-chip').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var chipValue = btn.dataset.chip;
+      var label     = btn.textContent.trim();
+      container.style.display = 'none';       // hide after first tap
+      appendMsg('user', label);
+      sendAgentMessage(label, chipValue);
+    });
+  });
+}
+
+/**
+ * createStreamingBubble — appends an empty bot message bubble and returns
+ * {bubble, textEl} so the caller can stream text into it.
+ */
+function createStreamingBubble() {
+  var log = document.getElementById('chatMessages');
+  if (!log) return null;
+
+  var div = document.createElement('div');
+  div.className = 'msg msg-bot';
+
+  var avDiv = document.createElement('div');
+  avDiv.className = 'msg-av-bot';
+  var frag = cloneFace('writing');
+  if (frag) avDiv.appendChild(frag);
+
+  var bubbleDiv  = document.createElement('div');
+  bubbleDiv.className = 'bubble bubble-bot';
+  var textEl = document.createElement('p');
+  var timeEl = document.createElement('span');
+  timeEl.className = 'msg-time';
+  timeEl.textContent = timeNow();
+  bubbleDiv.appendChild(textEl);
+  bubbleDiv.appendChild(timeEl);
+
+  div.appendChild(avDiv);
+  div.appendChild(bubbleDiv);
+  log.appendChild(div);
+  scrollToBottom(log);
+  return textEl;
+}
+
+/**
+ * sendAgentMessage — sends a message to /agent/run and streams the SSE
+ * response token-by-token into a live bubble.
+ * Falls back to the mock getBotReply() if the agent is unavailable.
+ */
+async function sendAgentMessage(text, chipSelected) {
+  if (!text.trim()) return;
+  // Clear the input if it exists (may have already been cleared by caller)
+  var inp = document.getElementById('chatInput');
+  if (inp) inp.value = '';
+
+  // Hide ADK chips on first message (belt-and-suspenders; click handler also hides)
+  var chips = document.getElementById('agentChips');
+  if (chips) chips.style.display = 'none';
+
+  // If no session yet, fall back to keyword mock
+  if (!_agentSessionId) {
+    var delay = 850 + Math.random() * 600;
+    showTyping();
+    animateBotFaceForResponse(delay);
+    setTimeout(function() {
+      removeTyping();
+      appendMsg('bot', getBotReply(text));
+    }, delay);
+    return;
+  }
+
+  // ── Real agent call ────────────────────────────────────────────────────
+  setHeaderFace('thinking');
+  showTyping();
+
+  try {
+    var res = await fetch(AGENT_BASE + '/agent/run', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        session_id:    _agentSessionId,
+        student_id:    _agentStudentId,
+        message:       text,
+        chip_selected: chipSelected || null,
+      }),
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    removeTyping();
+    setHeaderFace('writing');
+
+    var textEl  = createStreamingBubble();
+    var reader  = res.body.getReader();
+    var decoder = new TextDecoder();
+    var buffer  = '';
+    var accum   = '';
+
+    // Stream SSE lines
+    while (true) {
+      var chunk = await reader.read();
+      if (chunk.done) break;
+      buffer += decoder.decode(chunk.value, { stream: true });
+      var lines = buffer.split('\n');
+      buffer = lines.pop();          // keep incomplete last line
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (!line.startsWith('data: ')) continue;
+        var raw = line.slice(6);
+        if (raw === '[DONE]') break;
+        try {
+          var token = JSON.parse(raw).text || '';
+          accum += token;
+          if (textEl) textEl.innerHTML = accum.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br/>');
+          scrollToBottom(document.getElementById('chatMessages'));
+        } catch(e) { /* malformed SSE chunk — skip */ }
+      }
+    }
+
+    setHeaderFace('idle');
+    // If the stream arrived empty, show a friendly fallback
+    if (textEl && !accum.trim()) {
+      textEl.textContent = 'I wasn\'t able to get a response. Please try again.';
+    }
+
+  } catch(err) {
+    console.warn('Agent run failed, falling back to mock:', err);
+    removeTyping();
+    setHeaderFace('idle');
+    appendMsg('bot', getBotReply(text));
+  }
 }
 
 function appendMsg(role, content) {
@@ -780,16 +976,9 @@ function removeTyping() {
 
 function sendChat(text) {
   if (!text.trim()) return;
-  var inp = document.getElementById('chatInput');
-  if (inp) inp.value = '';
   appendMsg('user', text);
-  var delay = 850 + Math.random() * 600;
-  showTyping();
-  animateBotFaceForResponse(delay);
-  setTimeout(function() {
-    removeTyping();
-    appendMsg('bot', getBotReply(text));
-  }, delay);
+  // Route through real agent if session is initialised, else use mock
+  sendAgentMessage(text, null);
 }
 
 function initChat() {
@@ -867,14 +1056,26 @@ function initChat() {
   }());
   // ───────────────────────────────────────────────────────────────────────────
 
+  // Kick off agent session initialisation (non-blocking)
+  agentInit();
+
   chatForm.addEventListener('submit', function(e) {
     e.preventDefault();
     var inp = document.getElementById('chatInput');
-    sendChat(inp.value.trim());
+    var text = inp.value.trim();
+    if (!text) return;
+    inp.value = '';
+    appendMsg('user', text);
+    sendAgentMessage(text, null);
   });
 
+  // Sidebar Quick-Ask chips (free text, no chip_selected signal)
   document.querySelectorAll('.chip').forEach(function(c) {
-    c.addEventListener('click', function() { sendChat(c.dataset.msg || c.textContent.trim()); });
+    c.addEventListener('click', function() {
+      var text = c.dataset.msg || c.textContent.trim();
+      appendMsg('user', text);
+      sendAgentMessage(text, null);
+    });
   });
 
   var clearBtn = document.getElementById('clearBtn');
@@ -882,7 +1083,17 @@ function initChat() {
     clearBtn.addEventListener('click', function() {
       var log = document.getElementById('chatMessages');
       if (!log) return;
-      while (log.children.length > 1) log.removeChild(log.lastChild);
+      // Remove all dynamic messages; keep the static opening bubble + chips
+      var kids = Array.prototype.slice.call(log.children);
+      kids.forEach(function(el) {
+        if (el.id !== 'openingBubble' && !el.closest('#openingBubble') &&
+            el.id !== 'agentChips'   && !el.classList.contains('ctx-pill')) {
+          // Only remove messages (msg divs) not the structural elements
+          if (el.classList.contains('msg') || el.classList.contains('typing-row')) {
+            el.remove();
+          }
+        }
+      });
       setHeaderFace('idle');
       showToast('Chat cleared.', 2000);
     });

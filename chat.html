@@ -222,63 +222,19 @@
           </div>
         </div>
 
-        <div class="msg msg-user">
-          <div class="bubble bubble-user">
-            <p>Yes! What's my main weakness?</p>
-            <span class="msg-time">9:03 AM</span>
-          </div>
-          <div class="msg-av-user">AM</div>
+
+        <!-- ADK Quick-reply chips — shown below the opening message once agent init succeeds -->
+        <div class="agent-chips" id="agentChips" style="display:none">
+          <button class="agent-chip" id="aChip0"
+                  data-chip="explore_scores">📊 Explore my scores &amp; progress</button>
+          <button class="agent-chip" id="aChip1"
+                  data-chip="find_focus">🎯 Find what to focus on</button>
+          <button class="agent-chip" id="aChip2"
+                  data-chip="get_tutored">💬 Get tutored on a topic</button>
+          <button class="agent-chip" id="aChip3"
+                  data-chip="explore_world">🌍 Explore topics in the real world</button>
         </div>
 
-        <!-- Analysis message — THINKING face -->
-        <div class="msg msg-bot">
-          <div class="msg-av-bot" data-face="thinking"><!-- face injected by JS --></div>
-          <div class="bubble bubble-bot">
-            <p>Your biggest gap is <span class="inline-tag-red">BST Deletion</span>.</p>
-            <ul class="chat-ul">
-              <li>Your accuracy: <strong>38%</strong> (group avg: 62%)</li>
-              <li>3 of 8 deletion questions answered incorrectly</li>
-              <li>Only 12 min spent on this topic (recommended: 40 min)</li>
-            </ul>
-            <p style="margin-top:8px">Closing this gap is projected to boost your rank by <strong>~10 positions</strong>.</p>
-            <span class="msg-time">9:03 AM</span>
-          </div>
-        </div>
-
-        <div class="msg msg-user">
-          <div class="bubble bubble-user">
-            <p>What exactly should I do?</p>
-            <span class="msg-time">9:04 AM</span>
-          </div>
-          <div class="msg-av-user">AM</div>
-        </div>
-
-        <!-- Action plan message — WRITING face -->
-        <div class="msg msg-bot">
-          <div class="msg-av-bot" data-face="writing"><!-- face injected by JS --></div>
-          <div class="bubble bubble-bot">
-            <p>Here's your <strong>3-step plan</strong>:</p>
-            <div class="action-list">
-              <div class="action-item">
-                <span class="action-n">1</span>
-                <div><strong>Watch Lesson 4.3 — BST Deletion</strong>
-                  <p>14-min video. Focus on the two-children deletion case — that's what you're missing.</p></div>
-              </div>
-              <div class="action-item">
-                <span class="action-n">2</span>
-                <div><strong>Complete BST Drill Quiz</strong>
-                  <p>10 targeted questions. Do this immediately after the video.</p></div>
-              </div>
-              <div class="action-item">
-                <span class="action-n">3</span>
-                <div><strong>30-min session Thu or Fri</strong>
-                  <p>Use the BST Visualiser in the lesson library to practice by hand.</p></div>
-              </div>
-            </div>
-            <p style="margin-top:10px;font-size:.82rem;color:var(--ink-3)">Estimated total: ~55 minutes.</p>
-            <span class="msg-time">9:04 AM</span>
-          </div>
-        </div>
 
       </div><!-- /.chat-messages -->
 
