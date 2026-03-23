@@ -759,7 +759,7 @@ async function agentInit() {
       var bubble = document.getElementById('openingBubble');
       if (bubble) {
         bubble.innerHTML =
-          '<p>' + data.opening_message.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br/>') + '</p>' +
+          (window.marked ? marked.parse(data.opening_message) : data.opening_message) +
           '<span class="msg-time">' + timeNow() + '</span>';
       }
     }
@@ -812,7 +812,8 @@ function createStreamingBubble() {
 
   var bubbleDiv  = document.createElement('div');
   bubbleDiv.className = 'bubble bubble-bot';
-  var textEl = document.createElement('p');
+  var textEl = document.createElement('div');
+  textEl.className = 'markdown-content';
   var timeEl = document.createElement('span');
   timeEl.className = 'msg-time';
   timeEl.textContent = timeNow();
@@ -901,7 +902,7 @@ async function sendAgentMessage(text, chipSelected) {
         try {
           var token = JSON.parse(raw).text || '';
           accum += token;
-          if (textEl) textEl.innerHTML = accum.replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br/>');
+          if (textEl) textEl.innerHTML = window.marked ? marked.parse(accum) : accum;
           scrollToBottom(document.getElementById('chatMessages'));
         } catch(e) { /* malformed SSE chunk — skip */ }
       }
