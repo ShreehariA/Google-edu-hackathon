@@ -205,7 +205,6 @@ root_agent = Agent(
   - Respond with ANY message before transferring — the first action
     must always be a tool call or agent transfer, never a text response
       """,
-    after_model_callback=suppress_orchestrator_text,
     tools=[
         set_scope_gate_destination_tool,
         clear_scope_gate_state_tool,

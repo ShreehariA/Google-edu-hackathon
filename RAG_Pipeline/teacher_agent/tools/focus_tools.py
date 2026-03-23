@@ -9,8 +9,11 @@ def compute_focus_chapters(tool_context) -> dict:
     ranked = []
     for chapter in chapters:
         chapter_id            = chapter["chapter_id"]
-        score_till_date_avg   = chapter.get("score_till_date_avg", 1.0)
-        progress_till_date    = chapter.get("progress_till_date", 1.0)
+        score_till_date_avg   = chapter.get("score_till_date_avg", 0.0)
+        progress_till_date    = chapter.get("progress_till_date", 0.0)
+
+        if progress_till_date == 0.0 and score_till_date_avg == 0.0:
+            continue
 
         weakness_score = (
             (1 - score_till_date_avg) * 0.6 +
