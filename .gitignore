@@ -16,7 +16,6 @@ google-cloud-cli-darwin-arm.tar.gz
 
 # Data files
 src/GoogleEd_hackathon.xlsx
-src/apis/commands_to_deploy.md
 
 # Python
 __pycache__/
