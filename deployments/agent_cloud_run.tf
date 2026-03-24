@@ -20,7 +20,7 @@ resource "google_cloud_run_service" "deltaed_agent" {
             GOOGLE_GENAI_USE_VERTEXAI   = "true"
             BIGQUERY_SCORES_DATASET_ID  = "student_db"
             BIGQUERY_CHAPTER_DATASET_ID = "educational_resources_db"
-            GOOGLE_RAG_CORPUS           = "projects/${var.project_id}/locations/${var.region}/ragCorpora/default"
+            GOOGLE_RAG_CORPUS           = "projects/${var.project_id}/locations/${var.region}/ragCorpora/4611686018427387904"
             ENVIRONMENT                 = "production"
           }
           content {
