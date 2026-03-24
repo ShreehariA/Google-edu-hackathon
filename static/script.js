@@ -784,17 +784,41 @@ async function agentInit() {
   try { payload = JSON.parse(sessionStorage.getItem('deltadashboard') || 'null'); } catch (e) { }
 
   if (!payload) {
-    // If no dashboard data exists (e.g., an unmapped test user), construct a dummy context 
-    // so the backend Agent can initialize gracefully.
-    var _em = sessionStorage.getItem('deltaemail') || '';
-    var _nm = _em ? _em.split('@')[0].split(/[._-]/).map(function (p) { return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase(); }).join(' ') : 'Guest';
+    // No cached dashboard — fetch it live from the backend
+    var _sid = sessionStorage.getItem('deltastudentid') || 'unknown';
+    if (_sid && _sid !== 'unknown') {
+      try {
+        // 1. Get the student's subject(s)
+        var subjRes = await fetch(API_BASE + '/student/' + _sid + '/subjects');
+        if (subjRes.ok) {
+          var subjects = await subjRes.json();
+          if (subjects && subjects.length > 0) {
+            var subjectId = subjects[0].subject_id;
+            // 2. Fetch the full dashboard payload for that subject
+            var dashRes = await fetch(API_BASE + '/student/' + _sid + '/dashboard?subject_id=' + encodeURIComponent(subjectId));
+            if (dashRes.ok) {
+              payload = await dashRes.json();
+              // Cache it so subsequent visits don't re-fetch
+              sessionStorage.setItem('deltadashboard', JSON.stringify(payload));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch dashboard for agent context:', err);
+      }
+    }
 
-    payload = {
-      student_id: sessionStorage.getItem('deltastudentid') || 'unknown',
-      student_name: _nm,
-      scores: {},
-      progress: {}
-    };
+    // Final fallback if fetch failed or student has no data
+    if (!payload) {
+      var _em = sessionStorage.getItem('deltaemail') || '';
+      var _nm = _em ? _em.split('@')[0].split(/[._-]/).map(function (p) { return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase(); }).join(' ') : 'Guest';
+      payload = {
+        student_id: _sid,
+        student_name: _nm,
+        scores: {},
+        progress: {}
+      };
+    }
   }
 
   _agentStudentId = payload.student_id || sessionStorage.getItem('deltastudentid') || 'unknown';

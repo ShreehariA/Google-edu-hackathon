@@ -3,7 +3,7 @@ from google.adk.tools import AgentTool
 from google.cloud import bigquery
 import os
 
-bq_client = bigquery.Client()
+bq_client = bigquery.Client(location="EU")
 
 PROJECT_ID      = os.environ["GOOGLE_CLOUD_PROJECT"]
 SCORES_DATASET  = os.environ["BIGQUERY_SCORES_DATASET_ID"]   # contains student_scores, student_progress

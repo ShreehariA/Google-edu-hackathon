@@ -168,15 +168,21 @@ async def agent_init(req: InitRequest):
 async def agent_run(req: RunRequest):
 
     async def event_stream():
+        # Validate session still exists (in-memory sessions are lost on container restart)
+        session = await session_service.get_session(
+            app_name=APP_NAME,
+            user_id=req.student_id,
+            session_id=req.session_id,
+        )
+        if not session:
+            error_msg = json.dumps({"text": "Your session has expired (the server was restarted). Please refresh the page to start a new conversation."})
+            yield f"data: {error_msg}\n\n"
+            yield "data: [DONE]\n\n"
+            return
+
         # Write chip_selected into session state before running
         if req.chip_selected:
-            session = await session_service.get_session(
-                app_name=APP_NAME,
-                user_id=req.student_id,
-                session_id=req.session_id,
-            )
-            if session:
-                session.state["chip_selected"] = req.chip_selected
+            session.state["chip_selected"] = req.chip_selected
 
         runner = Runner(
             agent=root_agent,
@@ -184,29 +190,34 @@ async def agent_run(req: RunRequest):
             session_service=session_service,
         )
 
-        async for event in runner.run_async(
-            user_id=req.student_id,
-            session_id=req.session_id,
-            new_message=genai_types.Content(
-                role="user",
-                parts=[genai_types.Part(text=req.message)]
-            ),
-        ):
-            if event.content and event.content.parts:
-                for part in event.content.parts:
-                    if hasattr(part, "text") and part.text:
-                        chunk = json.dumps({"text": part.text})
-                        yield f"data: {chunk}\n\n"
+        try:
+            async for event in runner.run_async(
+                user_id=req.student_id,
+                session_id=req.session_id,
+                new_message=genai_types.Content(
+                    role="user",
+                    parts=[genai_types.Part(text=req.message)]
+                ),
+            ):
+                if event.content and event.content.parts:
+                    for part in event.content.parts:
+                        if hasattr(part, "text") and part.text:
+                            chunk = json.dumps({"text": part.text})
+                            yield f"data: {chunk}\n\n"
 
-            # Clear chip_selected after first event
-            if req.chip_selected:
-                session = await session_service.get_session(
-                    app_name=APP_NAME,
-                    user_id=req.student_id,
-                    session_id=req.session_id,
-                )
-                if session:
-                    session.state["chip_selected"] = None
+                # Clear chip_selected after first event
+                if req.chip_selected:
+                    session = await session_service.get_session(
+                        app_name=APP_NAME,
+                        user_id=req.student_id,
+                        session_id=req.session_id,
+                    )
+                    if session:
+                        session.state["chip_selected"] = None
+        except Exception as e:
+            logger.error("Agent run error: %s", e, exc_info=True)
+            error_msg = json.dumps({"text": "Sorry, I hit a temporary issue. Please try again."})
+            yield f"data: {error_msg}\n\n"
 
         yield "data: [DONE]\n\n"
 
