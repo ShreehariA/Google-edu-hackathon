@@ -23,7 +23,7 @@ load_dotenv()
 PROJECT_ID = os.environ["GCP_PROJECT_ID"]
 client     = bigquery.Client(project=PROJECT_ID)
 
-XLSX_PATH  = os.path.join(os.path.dirname(__file__), "..", "GoogleEd_hackathon.xlsx")
+XLSX_PATH  = os.path.join(os.path.dirname(__file__), "GoogleEd_hackathon.xlsx")
 
 # Sheet name → BigQuery dataset
 DATASET_MAP = {
