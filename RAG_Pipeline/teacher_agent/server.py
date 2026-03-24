@@ -39,6 +39,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Health check endpoint for Cloud Run ───────────────────────────────────
+@app.get("/")
+async def root():
+    return {"status": "ok", "service": "deltaed-agent"}
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "deltaed-agent"}
+
 # ── ADK session service ───────────────────────────────────────────────────
 session_service = InMemorySessionService()
 APP_NAME = "deltaedu"

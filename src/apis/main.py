@@ -21,6 +21,7 @@ from google.cloud import bigquery
 from datetime import date
 import hashlib
 import os
+from dotenv import load_dotenv
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -28,26 +29,36 @@ load_dotenv()
 # ── Config ────────────────────────────────────────────────────────────────────
 
 PROJECT_ID = os.environ["GCP_PROJECT_ID"]
-client     = bigquery.Client(project=PROJECT_ID)
+client     = bigquery.Client(project=PROJECT_ID, location="EU")
+
+# ── FastAPI App ───────────────────────────────────────────────────────────────
+
+app = FastAPI(
+    title="DeltaEd API",
+    description="Educational platform API with BigQuery integration",
+    version="1.0.0"
+)
+
+# ── CORS Configuration ────────────────────────────────────────────────────────
+# Enable CORS so frontend can make requests from any origin
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins (works from phone, desktop, etc.)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 # ── Table references ──────────────────────────────────────────────────────────
+# Table names match Terraform definitions (main.tf)
 
 AUTH_TABLE     = f"`{PROJECT_ID}.auth_creds.user_creds_db`"
 SCORES_TABLE   = f"`{PROJECT_ID}.student_db.student_scores`"
 PROGRESS_TABLE = f"`{PROJECT_ID}.student_db.student_progress`"
 NAMES_TABLE    = f"`{PROJECT_ID}.student_db.student_personal_details`"
 CHAPTER_TABLE  = f"`{PROJECT_ID}.educational_resources_db.chapter_table`"
-
-# ── App ───────────────────────────────────────────────────────────────────────
-
-app = FastAPI(title="DeltaEd API")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+SUBJECT_TABLE  = f"`{PROJECT_ID}.educational_resources_db.subject_table`"
 
 # ── Daily leaderboard cache ───────────────────────────────────────────────────
 
@@ -111,6 +122,10 @@ def _avg(lst, key):
 @app.get("/")
 def root():
     return {"status": "DeltaEd API is running ✅"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "deltaed-backend"}
 
 
 @app.post("/register", status_code=status.HTTP_201_CREATED)
@@ -656,5 +671,6 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
             "by_chapter": chapters_progress,
         },
     }
+
 
 

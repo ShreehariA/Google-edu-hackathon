@@ -120,7 +120,7 @@ function animateBotFaceForResponse(delay) {
 ═══════════════════════════════════════════════ */
 
 function initTheme() {
-  var saved = localStorage.getItem('deltaTheme') || 'light';
+  var saved = localStorage.getItem('deltaTheme') || 'dark';
   document.documentElement.setAttribute('data-theme', saved);
 
   document.querySelectorAll('#themeToggle').forEach(function (btn) {
@@ -353,7 +353,8 @@ function renderCard(entry, idx) {
   var rank = entry.rank;
   var rankClass = RANK_CLASSES[Math.min(idx, 4)];
   var avColour = AVATAR_COLOURS[Math.min(idx, 4)];
-  var avText = initials(entry.student_id);
+  var displayName = entry.name || 'Student';
+  var avText = initials(displayName);
   var dLabel = deltaLabel(entry.growth);
   var dClass = deltaClass(entry.growth);
   var prevPct = formatPct(entry.avg_score_prev_week);
@@ -368,9 +369,9 @@ function renderCard(entry, idx) {
     '</svg>'
     : '';
 
-  var ariaLabel = 'Rank ' + rank + ', Student ' + entry.student_id +
+  var ariaLabel = 'Rank ' + rank +
     ', growth ' + dLabel.replace('%', ' percent') +
-    ', last week ' + prevPct + ', better than ' + peerPct + '% of peers';
+    ', current week ' + prevPct;
 
   if (entry.student_id === 'YOU') {
     rowClass += ' lb-row-you';
@@ -398,12 +399,11 @@ function renderCard(entry, idx) {
             .map(function (p) { return p.charAt(0).toUpperCase() + p.slice(1); }).join(' ')
             : (entry.name || 'You');
         }())
-        : (entry.name || entry.student_id)
+        : displayName
     ) + '</span>' +
     '</div>' +
     '<div class="lb-stats">' +
-    '<span>Last week: <span class="lb-stat-val">' + prevPct + '</span></span>' +
-    '<span class="lb-percentile">better than ' + peerPct + '% of peers</span>' +
+    '<span>Current week: <span class="lb-stat-val">' + prevPct + '</span></span>' +
     '</div>' +
     '</div>' +
     '<span class="lb-delta ' + dClass + '" aria-hidden="true">' + dLabel + '</span>';

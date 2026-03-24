@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const API = axios.create({ baseURL: 'http://localhost:8000' })
+const API = axios.create({ 
+  baseURL: window.location.origin
+})
 
 export const register     = (email, password)      => API.post('/register', { email, password })
 export const login        = (email, password)      => API.post('/login', { email, password })

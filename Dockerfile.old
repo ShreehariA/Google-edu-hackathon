@@ -32,17 +32,7 @@ COPY . .
 ENV PORT=8080
 
 # Create a startup script to run FastAPI, Agent API, and Node.js
-RUN echo '#!/bin/bash\n\
-    # Start FastAPI backend in the background on port 8000 \n\
-    uvicorn src.apis.main:app --host 0.0.0.0 --port 8000 &\n\
-    \n\
-    # Start Agent API in the background on port 8001 \n\
-    cd /app/RAG_Pipeline && PYTHONPATH=/app/RAG_Pipeline uvicorn teacher_agent.server:app --host 0.0.0.0 --port 8001 &\n\
-    cd /app\n\
-    \n\
-    # Start Node.js server in the foreground, binding to $PORT \n\
-    exec node server.js\n\
-    ' > /app/start.sh && chmod +x /app/start.sh
+RUN printf '#!/bin/bash\nset -e\necho "Starting DeltaEd with FastAPI (8000), Agent API (8001), and Node.js (8080)..."\necho "1. Starting FastAPI..."\nuvicorn src.apis.main:app --host 0.0.0.0 --port 8000 &\necho "2. Starting RAG Agent API..."\ncd /app/RAG_Pipeline\nPYTHONPATH=/app/RAG_Pipeline uvicorn teacher_agent.server:app --host 0.0.0.0 --port 8001 &\ncd /app\necho "3. Waiting for backends..."\nsleep 6\necho "4. Starting Node.js proxy..."\nexec node server.js\n' > /app/start.sh && chmod +x /app/start.sh
 
 # Cloud Run / Docker entrypoint
 CMD ["/app/start.sh"]
