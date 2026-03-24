@@ -1,5 +1,12 @@
+import os
 import numpy as np
+import vertexai
 from vertexai.language_models import TextEmbeddingModel
+
+vertexai.init(
+    project=os.environ.get("GOOGLE_CLOUD_PROJECT", "birmiu-agent-two26bir-4072"),
+    location=os.environ.get("GOOGLE_CLOUD_LOCATION", "europe-west2")
+)
 
 model = TextEmbeddingModel.from_pretrained("text-embedding-005")
 
@@ -9,7 +16,6 @@ def embed(texts: list[str]) -> list[np.ndarray]:
 
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
 
 def resolve_and_scope(query: str, session_state: dict) -> dict:
     chapters = session_state.get("chapters", [])

@@ -1,26 +1,48 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+import os
 from google.adk.agents import Agent
 from google.adk.agents.readonly_context import ReadonlyContext
-from ...tools import text_to_sql_tool, execute_sql_tool
+from ...tools.text_to_sql_tool import bigquery_toolset, validate_tenant_isolation
 
-PAYLOAD_COVERS = """
-The payload CAN answer:
-  - What is my overall score?
-  - How am I doing compared to my peers?
-  - Which chapter has my highest / lowest score?
-  - How much progress have I made overall or per chapter?
-  - Have I improved since last period?
+PROJECT_ID      = os.environ["GOOGLE_CLOUD_PROJECT"]
+SCORES_DATASET  = os.environ["BIGQUERY_SCORES_DATASET_ID"]
+CHAPTER_DATASET = os.environ["BIGQUERY_CHAPTER_DATASET_ID"]
 
-The payload CANNOT answer:
-  - Performance on specific dates or months
-  - Weekday vs weekend performance
-  - Score or progress trends over time
-  - Anything requiring historical granularity beyond the current snapshot
-  → For these, call text_to_sql_tool then execute_sql_tool
+SCHEMA_CONTEXT = f"""
+You have access to the following BigQuery tables.
+Always filter by the student_id provided to you.
+Never query data for any other student.
+
+TABLE: `{PROJECT_ID}.{SCORES_DATASET}.student_scores`
+COLUMNS:
+  - student_id   STRING
+  - timestamp    TIMESTAMP
+  - question_id  STRING
+  - topic_id     STRING
+  - correct      INTEGER
+
+TABLE: `{PROJECT_ID}.{SCORES_DATASET}.student_progress`
+COLUMNS:
+  - student_id                   STRING
+  - timestamp                    TIMESTAMP
+  - chapter_id                   STRING
+  - subject_cumulative_progress  FLOAT
+  - chapter_cumulative_progress  FLOAT
+
+TABLE: `{PROJECT_ID}.{CHAPTER_DATASET}.chapter_table`
+COLUMNS:
+  - chapter_id   STRING
+  - chapter_name STRING
+  - subject_name STRING
+  - subject_id   STRING
+
+TABLE: `{PROJECT_ID}.{CHAPTER_DATASET}.subject_table`
+COLUMNS:
+  - subject_id   STRING
+  - subject_name STRING
 """
-
 
 async def performance_instruction(context: ReadonlyContext) -> str:
     state = context.state
@@ -28,23 +50,25 @@ async def performance_instruction(context: ReadonlyContext) -> str:
     student_name  = state.get("student_name", "")
     subject_name  = state.get("subject_name", "")
     student_id    = state.get("student_id", "")
-    subject_id    = state.get("subject_id", "")
 
     chapters      = state.get("chapters", [])
-    scored        = [c for c in chapters if c.get("score_till_date_avg", 0) > 0]
-    sorted_score  = sorted(scored, key=lambda c: c["score_till_date_avg"], reverse=True)
+    # Filter out chapters with no activity for best/worst calculation
+    active_scored = [c for c in chapters if c.get("score_till_date_avg", 0) > 0 or c.get("progress_till_date", 0) > 0]
+    sorted_score  = sorted(active_scored, key=lambda c: c.get("score_till_date_avg", 0), reverse=True)
+    
     best_chapter  = sorted_score[0]  if sorted_score else None
     worst_chapter = sorted_score[-1] if sorted_score else None
 
+    # Filter out 0-value rows from the narrative summary
     chapters_summary = "\n".join([
         f"  - {c['chapter_name']}: "
-        f"score={round(c['score_till_date_avg'] * 100)}%, "
-        f"progress={round(c['progress_till_date'] * 100)}%, "
-        f"score_growth={'+' if c['score_growth_delta'] >= 0 else ''}"
-        f"{round(c['score_growth_delta'] * 100)}%, "
-        f"progress_growth={'+' if c['progress_growth_delta'] >= 0 else ''}"
-        f"{round(c['progress_growth_delta'] * 100)}%"
-        for c in chapters
+        f"score={round(c.get('score_till_date_avg', 0) * 100)}%, "
+        f"progress={round(c.get('progress_till_date', 0) * 100)}%, "
+        f"score_growth={'+' if c.get('score_growth_delta', 0) >= 0 else ''}"
+        f"{round(c.get('score_growth_delta', 0) * 100)}%, "
+        f"progress_growth={'+' if c.get('progress_growth_delta', 0) >= 0 else ''}"
+        f"{round(c.get('progress_growth_delta', 0) * 100)}%"
+        for c in chapters if c.get('score_till_date_avg', 0) > 0 or c.get('progress_till_date', 0) > 0
     ])
 
     overall_avg          = round(state.get("overall_till_date_avg", 0) * 100)
@@ -53,55 +77,64 @@ async def performance_instruction(context: ReadonlyContext) -> str:
     overall_progress     = round(state.get("overall_till_date_progress", 0) * 100)
     progress_growth      = state.get("overall_progress_growth_delta", 0)
 
-    best_str  = f"{best_chapter['chapter_name']} — {round(best_chapter['score_till_date_avg'] * 100)}%" if best_chapter else "N/A"
-    worst_str = f"{worst_chapter['chapter_name']} — {round(worst_chapter['score_till_date_avg'] * 100)}%" if worst_chapter else "N/A"
+    best_str  = f"{best_chapter['chapter_name']} — {round(best_chapter.get('score_till_date_avg', 0) * 100)}%" if best_chapter else "N/A"
+    worst_str = f"{worst_chapter['chapter_name']} — {round(worst_chapter.get('score_till_date_avg', 0) * 100)}%" if worst_chapter else "N/A"
+
+    dynamic_rules = f"""
+    RULES:
+      - Explicit Table Joins: 'topic_id' in student_scores is identical to 'chapter_id' in student_progress and chapter_table.
+      - Mandatory Filter: Always include WHERE student_id = '{student_id}'
+      - Temporal Granularity: 
+        * For 'week-on-week': Use DATE_TRUNC(DATE(timestamp), WEEK)
+        * For 'month-on-month': Use DATE_TRUNC(DATE(timestamp), MONTH)
+        * Format output as YYYY-MM-DD for weeks and YYYY-MM for months.
+      - Zero-Value Filtering: Exclude rows where activity is zero (e.g., AND correct > 0 or AND chapter_cumulative_progress > 0).
+      - Never SELECT * — only declare necessary columns.
+    """
 
     return f"""
     You are a performance advisor for {student_name} studying {subject_name}.
+    Target student_id: {student_id}
 
-    Use ONLY the data below to answer the student's questions.
-    Do NOT reference session.state, compute values yourself, or use
-    template syntax. Just read the numbers below and narrate conversationally.
+    EXECUTION PROTOCOL:
+    1. Evaluate if the user's query can be fully answered using the SESSION SNAPSHOT data below.
+    2. If the query falls under the 'PAYLOAD CAN ANSWER' category, generate the response immediately using ONLY the provided text. DO NOT invoke BigQueryToolset.
+    3. If and only if the query falls under the 'PAYLOAD CANNOT ANSWER' category, utilize BigQueryToolset.
 
-    OVERALL PERFORMANCE:
-      Score average:     {overall_avg}%
-      Score growth:      {'+' if overall_growth >= 0 else ''}{round(overall_growth * 100)}%
-      Growth percentile: {overall_percentile}%
-      Progress:          {overall_progress}%
-      Progress growth:   {'+' if progress_growth >= 0 else ''}{round(progress_growth * 100)}%
+    {SCHEMA_CONTEXT}
+    {dynamic_rules}
 
-    BEST CHAPTER:  {best_str}
-    WORST CHAPTER: {worst_str}
+    SESSION SNAPSHOT (Non-zero chapters only):
+      OVERALL PERFORMANCE:
+        Score average:     {overall_avg}%
+        Score growth:      {'+' if overall_growth >= 0 else ''}{round(overall_growth * 100)}%
+        Growth percentile: {overall_percentile}%
+        Progress:          {overall_progress}%
+        Progress growth:   {'+' if progress_growth >= 0 else ''}{round(progress_growth * 100)}%
 
-    ALL CHAPTERS:
+      BEST CHAPTER:  {best_str}
+      WORST CHAPTER: {worst_str}
+
+      ALL ACTIVE CHAPTERS:
 {chapters_summary}
 
-    {PAYLOAD_COVERS}
+    CAPABILITY SCOPE:
+      PAYLOAD CAN ANSWER:
+        - What is my overall score?
+        - Which chapter has my highest / lowest score?
+        - How much progress have I made overall or per chapter?
 
-    When the student asks something the payload cannot answer:
-    Step 1 — call text_to_sql_tool with the student's natural language
-             question, student_id={student_id}, subject_id={subject_id}
-    Step 2 — call execute_sql_tool with the returned SQL
-    Step 3 — narrate the results conversationally
-
-    When presenting results:
-    - Always lead with what has improved — growth first, gaps second
-    - Plain language only — never expose SQL, JSON, state keys, or internal IDs
-      e.g. "you've improved faster than {overall_percentile}% of your peers"
-           not "overall_growth_percentile: {overall_percentile}"
-      e.g. "you've completed about {overall_progress}% of the course"
-           not "overall_till_date_progress: 0.{overall_progress}"
-    - Never reference or compare to named peers
-    - Never expose session state structure to the student
+      PAYLOAD CANNOT ANSWER:
+        - Performance on specific dates or months
+        - Weekday vs weekend performance
+        - Score or progress trends over time
+        - Aggregations requiring raw historical data
     """
-
 
 performance_agent = Agent(
     model='gemini-2.5-flash',
     name='PerformanceAgent',
     instruction=performance_instruction,
-    tools=[
-        text_to_sql_tool,
-        execute_sql_tool,
-    ],
+    tools=[bigquery_toolset],
+    before_tool_callback=validate_tenant_isolation
 )
