@@ -1,7 +1,0 @@
-.env
-node_modules/
-*.key
-*.json
-config.js
-.gitignore
-.gcloud_config

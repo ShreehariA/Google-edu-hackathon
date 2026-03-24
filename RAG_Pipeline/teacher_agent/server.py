@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv("./teacher_agent/.env")
+load_dotenv(Path(__file__).parent / ".env")
 import json
 import asyncio
 from fastapi import FastAPI

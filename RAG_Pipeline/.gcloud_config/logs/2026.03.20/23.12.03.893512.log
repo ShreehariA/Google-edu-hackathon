@@ -1,8 +1,0 @@
-2026-03-20 23:12:03,895 DEBUG    root            Loaded Command Group: ['gcloud', 'config']
-2026-03-20 23:12:03,902 DEBUG    root            Loaded Command Group: ['gcloud', 'config', 'get']
-2026-03-20 23:12:03,903 DEBUG    root            Running [gcloud.config.get] with arguments: [SECTION/PROPERTY: "project"]
-2026-03-20 23:12:03,904 DEBUG    root            On GCE from disk cache: False
-2026-03-20 23:12:03,904 INFO     ___FILE_ONLY___ (unset)
-
-2026-03-20 23:12:03,904 DEBUG    root            Chosen display Format:value(.)
-2026-03-20 23:12:03,904 INFO     root            Display format: "value(.)"
