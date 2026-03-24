@@ -1,5 +1,31 @@
 # main.tf
 
+# ── Service Account for Cloud Run ───────────────────────────────────────────────
+
+resource "google_service_account" "cloud_run_sa" {
+  account_id   = "cloud-run-sa"
+  display_name = "Service Account for Cloud Run Services"
+}
+
+# Grant necessary permissions to the service account
+resource "google_project_iam_member" "cloud_run_sa_bigquery" {
+  project = var.project_id
+  role    = "roles/bigquery.dataEditor"
+  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+}
+
+resource "google_project_iam_member" "cloud_run_sa_bigquery_user" {
+  project = var.project_id
+  role    = "roles/bigquery.user"
+  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+}
+
+resource "google_project_iam_member" "cloud_run_sa_aiplatform_user" {
+  project = var.project_id
+  role    = "roles/aiplatform.user"
+  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+}
+
 # ── Auth ───────────────────────────────────────────────────────────────────────
 
 resource "google_bigquery_dataset" "auth_creds" {

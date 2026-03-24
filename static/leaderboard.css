@@ -1,0 +1,294 @@
+/* ================================================
+   DeltaEd — Leaderboard
+   ================================================ */
+
+/* ── Page layout ── */
+.lb-page {
+  max-width: 680px; margin: 0 auto;
+  padding: 40px 20px 80px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+/* ── Page header ── */
+.lb-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  animation: fadeUp .4s ease both;
+}
+.lb-eyebrow {
+  font-size: .72rem; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px;
+}
+.lb-header h1 { margin-bottom: 8px; }
+.lb-sub {
+  font-size: .88rem; color: var(--ink-2);
+  max-width: 400px; line-height: 1.6;
+}
+.lb-header .btn { flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+
+/* ── List ── */
+.lb-list { display: flex; flex-direction: column; gap: 10px; padding: 0; }
+
+/* ── Card base ── */
+.lb-row {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); box-shadow: var(--shadow-sm);
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 16px;
+  transition: box-shadow var(--t), transform var(--t), background var(--t), border-color var(--t);
+  animation: fadeUp .45s ease both;
+  list-style: none;
+}
+.lb-row:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+/* Top-3 left-border accents */
+.lb-row-1 { border-left: 3px solid #F1C40F; background: linear-gradient(to right, #fffdf0, var(--surface)); }
+.lb-row-2 { border-left: 3px solid #BDC3C7; }
+.lb-row-3 { border-left: 3px solid #CD7F32; }
+
+/* ── Rank badge ── */
+.lb-rank {
+  position: relative; flex-shrink: 0;
+  width: 42px; height: 42px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+}
+.lb-rank-num {
+  font-family: var(--fh); font-weight: 800; font-size: 1.1rem;
+  line-height: 1;
+}
+.crown {
+  position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+  width: 22px; pointer-events: none;
+}
+.rank-gold   { background: rgba(241,196,15,.15); }
+.rank-gold   .lb-rank-num { color: #a37200; }
+.rank-silver { background: rgba(189,195,199,.22); }
+.rank-silver .lb-rank-num { color: #6c7a7d; }
+.rank-bronze { background: rgba(205,127,50,.15); }
+.rank-bronze .lb-rank-num { color: #8a4a00; }
+.rank-plain  { background: var(--bg); }
+.rank-plain  .lb-rank-num { color: var(--ink-3); }
+
+/* ── Avatar initials ── */
+.lb-av {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fh); font-weight: 700; font-size: .85rem; color: #fff;
+  flex-shrink: 0;
+}
+.av-1 { background: linear-gradient(135deg, #14B8A6, #0D9488); }
+.av-2 { background: linear-gradient(135deg, #3498DB, #2980B9); }
+.av-3 { background: linear-gradient(135deg, #9B59B6, #8E44AD); }
+.av-4 { background: linear-gradient(135deg, #E67E22, #D35400); }
+.av-5 { background: linear-gradient(135deg, #E74C3C, #C0392B); }
+
+/* ── Info block ── */
+.lb-info { flex: 1; min-width: 0; }
+
+.lb-name-row {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 5px;
+}
+.lb-name {
+  font-family: var(--fh); font-weight: 700;
+  font-size: .95rem; color: var(--ink-1);
+}
+
+.lb-stats {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .78rem; color: var(--ink-3); flex-wrap: wrap;
+}
+.lb-stat-val { font-weight: 600; color: var(--ink-2); }
+.lb-stat-sep { color: var(--border-2); user-select: none; }
+
+/* ── Percentile pill ── */
+.lb-percentile {
+  display: inline-flex; align-items: center;
+  background: rgba(20,184,166,.15); color: #14B8A6;
+  border-radius: 9999px; padding: 2px 10px;
+  font-family: var(--fh); font-size: .72rem; font-weight: 500;
+}
+
+/* ── Delta ── */
+.lb-delta {
+  font-family: var(--fh); font-weight: 800; font-size: 1.4rem;
+  letter-spacing: -.025em; flex-shrink: 0; min-width: 72px;
+  text-align: right;
+}
+.delta-pos  { color: #14B8A6; }
+.delta-neg  { color: var(--red); }
+.delta-zero { color: var(--ink-3); }
+
+/* ── Skeleton shimmer ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+.lb-skeleton { pointer-events: none; cursor: default; }
+.lb-skeleton:hover { transform: none; box-shadow: var(--shadow-sm); }
+
+.sk {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.sk-rank  { width: 42px; height: 42px; border-radius: var(--r-sm); flex-shrink: 0; }
+.sk-av    { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; }
+.sk-body  { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.sk-name  { height: 14px; width: 55%; border-radius: 4px; }
+.sk-stats { height: 11px; width: 80%; border-radius: 4px; }
+.sk-delta { width: 64px; height: 22px; border-radius: 4px; flex-shrink: 0; }
+
+/* ── Empty state ── */
+.lb-empty {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px; padding: 52px 24px; text-align: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); color: var(--ink-3);
+}
+.lb-empty p    { font-size: .95rem; font-weight: 600; color: var(--ink-2); }
+.lb-empty span { font-size: .82rem; color: var(--ink-3); max-width: 340px; line-height: 1.55; }
+
+/* ── Footer ── */
+.lb-footer { display: flex; flex-direction: column; gap: 12px; }
+.lb-updated { text-align: right; font-size: .74rem; color: var(--ink-3); padding-right: 4px; }
+
+/* ── Your-position row ── */
+.your-row {
+  padding: 15px 20px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  border-left: 3px solid #14B8A6;
+  background: linear-gradient(to right, rgba(20,184,166,.12), var(--surface));
+  border-radius: var(--r-lg);
+  transition: background var(--t), border-color var(--t);
+}
+.your-rank {
+  font-family: var(--fh); font-size: 1.5rem; font-weight: 800;
+  color: #14B8A6; flex-shrink: 0; min-width: 50px;
+}
+.your-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.your-name { font-family: var(--fh); font-weight: 700; font-size: .93rem; color: var(--ink-1); }
+.your-detail { font-size: .78rem; color: var(--ink-2); }
+
+/* ── Dark mode ── */
+[data-theme="dark"] .lb-row       { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .lb-row-1     { background: linear-gradient(to right, rgba(241,196,15,.05), var(--surface)); }
+[data-theme="dark"] .lb-row-2     { background: var(--surface); }
+[data-theme="dark"] .lb-row-3     { background: var(--surface); }
+[data-theme="dark"] .your-row     { background: linear-gradient(to right, rgba(20,184,166,.12), var(--surface)); }
+[data-theme="dark"] .lb-empty     { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .rank-gold    { background: rgba(241,196,15,.1); }
+[data-theme="dark"] .rank-silver  { background: rgba(189,195,199,.12); }
+[data-theme="dark"] .rank-bronze  { background: rgba(205,127,50,.1); }
+[data-theme="dark"] .rank-plain   { background: var(--border); }
+[data-theme="dark"] .rank-gold    .lb-rank-num { color: #f1c40f; }
+[data-theme="dark"] .rank-silver  .lb-rank-num { color: #bdc3c7; }
+[data-theme="dark"] .rank-bronze  .lb-rank-num { color: #cd7f32; }
+
+/* ── Responsive ── */
+@media (max-width: 540px) {
+  .lb-header { flex-direction: column; }
+  .lb-delta  { font-size: 1.15rem; min-width: 60px; }
+  .lb-stats  { flex-direction: column; gap: 2px; }
+  .lb-stat-sep { display: none; }
+}
+
+/* ════════════════════════════════════════════════
+   YOU ROW — rank-based highlight + animations
+
+   Strategy:
+   · Shimmer (::before overlay) — plays exactly 2×, then stops
+   · Glow (box-shadow on the row) — runs forever, soft & subtle
+════════════════════════════════════════════════ */
+
+/* Base YOU highlight */
+.lb-row-you {
+  border-left: 3px solid #14B8A6 !important;
+  background: linear-gradient(to right, rgba(20,184,166,.12), var(--surface)) !important;
+}
+
+/* ── Shared keyframes ── */
+
+@keyframes shimmerRow {
+  0%   { background-position: -600px 0; opacity: 1; }
+  100% { background-position:  1800px 0; opacity: 1; }
+}
+
+@keyframes goldShimmerRow {
+  0%   { background-position: -600px 0; opacity: 1; }
+  100% { background-position:  1800px 0; opacity: 1; }
+}
+
+/* Teal glow — infinite, soft */
+@keyframes pulseGlow {
+  0%,100% { box-shadow: 0 0 5px 1px rgba(20,184,166,.18), var(--shadow-sm); }
+  50%     { box-shadow: 0 0 22px 5px rgba(20,184,166,.45), var(--shadow-sm); }
+}
+
+/* Gold glow — infinite, soft */
+@keyframes goldPulseGlow {
+  0%,100% { box-shadow: 0 0 6px 2px rgba(241,196,15,.18), var(--shadow-sm); }
+  50%     { box-shadow: 0 0 28px 7px rgba(241,196,15,.50), 0 0 16px 3px rgba(20,184,166,.25), var(--shadow-sm); }
+}
+
+/* ── Rank 2 & 3 — teal ── */
+.lb-row-rank2,
+.lb-row-rank3 {
+  position: relative;
+  overflow: hidden;
+  border-left: 3px solid #14B8A6 !important;
+  /* glow: runs forever */
+  animation: pulseGlow 2.6s ease-in-out infinite !important;
+}
+
+/* Shimmer overlay: sweeps twice (2 × 1.3s = 2.6s) then stops */
+.lb-row-rank2::before,
+.lb-row-rank3::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 28%,
+    rgba(255,255,255,.06) 44%,
+    rgba(255,255,255,.18) 50%,
+    rgba(255,255,255,.06) 56%,
+    transparent 72%
+  );
+  background-size: 900px 100%;
+  animation: shimmerRow 1.3s ease-in-out 1;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* ── Rank 1 — gold ── */
+.lb-row-rank1 {
+  position: relative;
+  overflow: hidden;
+  border-left: 3px solid #F1C40F !important;
+  background: linear-gradient(to right, rgba(241,196,15,.10), rgba(20,184,166,.06), var(--surface)) !important;
+  /* gold glow: runs forever */
+  animation: goldPulseGlow 2.2s ease-in-out infinite !important;
+}
+
+/* Gold shimmer overlay: sweeps twice then stops */
+.lb-row-rank1::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 25%,
+    rgba(241,196,15,.08) 42%,
+    rgba(255,255,255,.22) 50%,
+    rgba(241,196,15,.08) 58%,
+    transparent 75%
+  );
+  background-size: 900px 100%;
+  animation: goldShimmerRow 1.3s ease-in-out 1;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}

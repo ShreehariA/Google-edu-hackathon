@@ -1,0 +1,181 @@
+/* ================================================
+   DeltaEd — Login Page
+   ================================================ */
+
+.login-body {
+  display: flex; min-height: 100vh; overflow: hidden;
+}
+
+/* ── Brand panel ── */
+.brand-panel {
+  flex: 0 0 50%;
+  background: linear-gradient(150deg, #12312a 0%, #145a32 50%, #1c3f5e 100%);
+  padding: 52px 48px;
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-inner {
+  position: relative; z-index: 2;
+  max-width: 420px; width: 100%;
+  display: flex; flex-direction: column; gap: 36px;
+}
+
+.brand-logo { display: flex; align-items: center; gap: 10px; }
+.brand-name {
+  font-family: var(--fh); font-size: 1.55rem; font-weight: 800; color: #fff;
+}
+.brand-name span { color: var(--green); }
+
+.brand-copy h1 {
+  color: #fff; font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+  font-weight: 800; margin-bottom: 12px; letter-spacing: -.02em;
+}
+.brand-copy h1 em { font-style: normal; color: var(--green); }
+.brand-copy p { color: rgba(255,255,255,.62); font-size: .93rem; line-height: 1.65; }
+
+.feat-list { display: flex; flex-direction: column; gap: 13px; }
+.feat-list li {
+  display: flex; align-items: center; gap: 12px;
+  color: rgba(255,255,255,.75); font-size: .9rem;
+}
+.feat-dot {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: rgba(255,255,255,.1); display: flex;
+  align-items: center; justify-content: center;
+  font-size: 1rem; flex-shrink: 0;
+}
+
+.brand-stats { display: flex; gap: 12px; }
+.stat-chip {
+  flex: 1; background: rgba(255,255,255,.09);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--r-md); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.stat-chip strong {
+  font-family: var(--fh); font-size: 1.45rem; font-weight: 800; color: var(--green);
+}
+.stat-chip span { font-size: .74rem; color: rgba(255,255,255,.55); }
+
+.bg-orb {
+  position: absolute; border-radius: 50%; opacity: .07; pointer-events: none;
+  background: var(--green); z-index: 1;
+}
+.orb-1 { width: 480px; height: 480px; top: -160px; right: -180px; }
+.orb-2 { width: 280px; height: 280px; bottom: -80px; left: -60px;
+          background: var(--blue); opacity: .08; }
+
+/* ── Form panel ── */
+.form-panel {
+  flex: 1; background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 28px;
+}
+.form-card {
+  width: 100%; max-width: 400px;
+  display: flex; flex-direction: column; gap: 22px;
+}
+.mob-logo { display: none; align-items: center; gap: 8px; }
+
+/* ── Tabs ── */
+.auth-tabs {
+  display: flex; background: var(--border); border-radius: var(--r-full);
+  padding: 3px; gap: 3px;
+}
+.tab {
+  flex: 1; padding: 8px 14px; border-radius: var(--r-full);
+  font-family: var(--fh); font-weight: 600; font-size: .85rem;
+  color: var(--ink-2); transition: background var(--t), color var(--t);
+}
+.tab.active { background: var(--surface); color: var(--ink-1); box-shadow: var(--shadow-sm); }
+
+/* ── API error ── */
+.api-error {
+  padding: 10px 14px; border-radius: var(--r-md);
+  background: #fde8e8; border: 1px solid #f5c6c6;
+  color: var(--red); font-size: .84rem; font-weight: 500;
+}
+
+/* ── Form ── */
+.auth-form { display: flex; flex-direction: column; gap: 18px; }
+
+.eye-btn {
+  position: absolute; right: 12px;
+  color: var(--ink-3); display: flex; align-items: center; padding: 4px;
+  border-radius: 6px; transition: color var(--t);
+}
+.eye-btn:hover { color: var(--green-dark); }
+
+.form-row { display: flex; align-items: center; justify-content: space-between; }
+
+/* Custom checkbox */
+.cb-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: .84rem; color: var(--ink-2); cursor: pointer; user-select: none;
+}
+.cb-input { position: absolute; opacity: 0; width: 0; height: 0; }
+.cb-box {
+  width: 17px; height: 17px; border-radius: 5px;
+  border: 2px solid var(--border-2); background: var(--surface);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: background var(--t), border-color var(--t);
+}
+.cb-input:checked + .cb-box { background: var(--green); border-color: var(--green); }
+.cb-input:checked + .cb-box::after {
+  content: ''; display: block;
+  width: 9px; height: 5px;
+  border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translate(0,-1px);
+}
+
+.link-blue { font-size: .84rem; color: var(--blue); font-weight: 500; }
+.link-blue:hover { color: var(--blue-dark); }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .login-body { flex-direction: column; }
+  .brand-panel { flex: none; padding: 36px 28px; }
+}
+@media (max-width: 560px) {
+  .brand-panel { display: none; }
+  .mob-logo { display: flex; }
+  .form-panel { padding: 28px 16px; align-items: flex-start; padding-top: 40px; }
+}
+
+/* ── Dark mode ── */
+[data-theme="dark"] .form-panel  { background: var(--bg); }
+[data-theme="dark"] .auth-tabs   { background: var(--border); }
+[data-theme="dark"] .tab.active  { background: var(--surface-2); }
+[data-theme="dark"] .api-error   { background: rgba(231,76,60,.12); border-color: rgba(231,76,60,.3); }
+
+/* ── Floating toggle on login page ── */
+.theme-toggle-float {
+  position: fixed; top: 18px; right: 18px; z-index: 200;
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Dark mode overrides ── */
+[data-theme="dark"] .brand-panel    { background: linear-gradient(150deg, #0a1a14 0%, #0d2a1c 50%, #0c1e2e 100%); }
+[data-theme="dark"] .form-panel     { background: var(--bg); }
+[data-theme="dark"] .api-error      { background: rgba(231,76,60,.12); border-color: rgba(231,76,60,.3); color: #f87171; }
+[data-theme="dark"] .auth-tabs      { background: var(--border); }
+[data-theme="dark"] .tab.active     { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.4); }
+[data-theme="dark"] .cb-box         { background: var(--surface); border-color: var(--border-2); }
+[data-theme="dark"] .stat-chip      { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.09); }
+[data-theme="dark"] .feat-dot       { background: rgba(255,255,255,.08); }
+
+/* Floating toggle on login — sits over the form panel */
+.theme-toggle-float {
+  position: fixed; top: 16px; right: 16px; z-index: 200;
+}
+
+/* ── v4 teal + dark grey form panel ── */
+.form-panel { background: var(--bg,#1A1A1A) !important; }
+.form-card  { background: transparent; }
+.auth-tabs  { background: var(--border,#333) !important; }
+.tab.active { background: var(--surface,#242424) !important; color: var(--ink-1,#F5F5F5) !important; }
+.brand-name span { color: #14B8A6 !important; }
+.brand-copy h1 em { color: #14B8A6 !important; }
+.stat-chip strong { color: #14B8A6 !important; }
+.cb-input:checked + .cb-box { background: #14B8A6 !important; border-color: #14B8A6 !important; }
+.link-blue { color: #14B8A6 !important; }

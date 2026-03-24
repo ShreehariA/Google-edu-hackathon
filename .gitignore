@@ -1,5 +1,27 @@
 .env
 node_modules/
-*.key
-*.json
 config.js
+
+# Terraform
+.terraform/
+deployments/.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Google Cloud SDK (large binaries, install locally)
+google-cloud-sdk/
+deployments/google-cloud-sdk/
+google-cloud-cli-darwin-arm.tar.gz
+
+# Data files
+src/GoogleEd_hackathon.xlsx
+src/apis/commands_to_deploy.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store

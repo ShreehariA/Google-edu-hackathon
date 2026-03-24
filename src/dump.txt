@@ -5,4 +5,8 @@
 {
   "email": "fatima.alhassan@example.com",
   "password": "fatimaalhassan"
+},
+{
+  "email":"wei.chen@example.com",
+  "password": "weichen"
 }

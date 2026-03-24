@@ -23,7 +23,8 @@ explore_agent = Agent(
       Rewritten: "{selected_chapter_name} real world applications 2025"
 
     After retrieving results:
-    - Present findings conversationally, not as a raw list of links
+    - Present findings conversationally, but YOU MUST strictly provide clickable citations using inline Markdown hyperlinks (e.g., [Source Name](https://example.com)) for EVERY external claim or source you reference
+    - Never just drop a raw list of links at the end
     - Never present search results as course material
     - Always frame results as "here's what's happening in the world around this topic"
     - Keep the connection to {selected_chapter_name} explicit so the student

@@ -7,7 +7,7 @@ This guide covers building, running, debugging, and deploying the monolithic Doc
 ## 1. Build the Docker Image
 Whenever you change `requirements.txt`, `package.json`, or the `Dockerfile`, you need to rebuild the image:
 ```bash
-docker build -t shreeharia/deltaed-app:latest .
+docker build -t shreeharia/deltaed-app:latest . && docker rm -f $(docker ps -q) && docker run -p 3000:8080 -p 8000:8000 -p 8001:8001 --env-file src/.env -v ~/.config/gcloud:/root/.config/gcloud:ro -d shreeharia/deltaed-app:latest
 ```
 
 ---
