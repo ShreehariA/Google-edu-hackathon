@@ -3,7 +3,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from google.adk.agents import Agent
 from google.adk.agents.readonly_context import ReadonlyContext
-from ...tools import text_to_sql_tool, execute_sql_tool
+from ...tools.text_to_sql_tool import bigquery_toolset, validate_tenant_isolation, PROJECT_ID
 
 PAYLOAD_COVERS = """
 The payload CAN answer:
@@ -108,13 +108,24 @@ async def performance_instruction(context: ReadonlyContext) -> str:
       🔧 Any question involving time, dates, or historical patterns
 
     HOW TO USE DATA SOURCE 2:
-      Step 1 → Call text_to_sql_tool with this EXACT format:
-               "Question: <student's question>. student_id={student_id}, subject_id={subject_id}"
-      Step 2 → Take the SQL string returned and call execute_sql with it
-      Step 3 → Read the rows returned and narrate them conversationally
+
+    Utilize the bigquery_toolset to answer the questions.
+    IMPORTANT: You must use project_id = '{PROJECT_ID}' for ALL tool calls.
+    RULES:
+      - Project ID: Always pass project_id = '{PROJECT_ID}' when calling execute_sql or any bigquery tool.
+      - Explicit Table Joins: 'topic_id' in student_scores is identical to 'chapter_id' in student_progress and chapter_table.
+      - Mandatory Filter: Always include WHERE student_id = '{student_id}'
+      - Temporal Granularity: 
+        * For 'week-on-week': Use DATE_TRUNC(DATE(timestamp), WEEK)
+        * For 'month-on-month': Use DATE_TRUNC(DATE(timestamp), MONTH)
+        * Format output as YYYY-MM-DD for weeks and YYYY-MM for months.
+      - Zero-Value Filtering: Exclude rows where activity is zero (e.g., AND correct > 0 or AND chapter_cumulative_progress > 0).
+      - Never SELECT * — only declare necessary columns.
+
+    
 
     CRITICAL: If the question mentions time, dates, trends, weekday, weekend,
-    month, week, history — ALWAYS call text_to_sql_tool. Do NOT refuse.
+    month, week, history — ALWAYS call bigquery_toolset. Do NOT refuse.
     Do NOT say you lack data. The database has the full history.
 
     ═══════════════════════════════════════════════════════════════
@@ -131,8 +142,6 @@ performance_agent = Agent(
     model='gemini-2.5-flash',
     name='PerformanceAgent',
     instruction=performance_instruction,
-    tools=[
-        text_to_sql_tool,
-        execute_sql_tool,
-    ],
+    tools=[bigquery_toolset],
+    before_tool_callback=validate_tenant_isolation
 )
