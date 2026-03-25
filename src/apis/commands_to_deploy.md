@@ -70,6 +70,42 @@ terraform apply -auto-approve
 
 ---
 
+## Deploy All 3 Services (One Command)
+
+```bash
+cd /Users/shreeharianbazhagan/Documents/UOB/Google-edu-hackathon && \
+docker build --platform linux/amd64 -f Dockerfile.backend  -t gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest . && \
+docker build --platform linux/amd64 -f Dockerfile.frontend -t gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest . && \
+docker build --platform linux/amd64 -f Dockerfile.agent    -t gcr.io/birmiu-agent-two26bir-4072/deltaed-agent:latest . && \
+gcloud auth configure-docker gcr.io && \
+docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest && \
+docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest && \
+docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-agent:latest && \
+cd deployments && \
+terraform apply -auto-approve
+```
+
+> **When to use:** You changed code across all services, or want a full redeploy. Builds all 3 Docker images, pushes them, and runs Terraform to update Cloud Run.
+
+---
+
+## Deploy Backend + Frontend Together (No Agent Rebuild)
+
+```bash
+cd /Users/shreeharianbazhagan/Documents/UOB/Google-edu-hackathon && \
+docker build --platform linux/amd64 -f Dockerfile.backend -t gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest . && \
+docker build --platform linux/amd64 -f Dockerfile.frontend -t gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest . && \
+gcloud auth configure-docker gcr.io && \
+docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest && \
+docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest && \
+cd deployments && \
+terraform apply -auto-approve
+```
+
+> **When to use:** You changed backend Python code and/or frontend HTML/CSS/JS but did **not** touch anything in `RAG_Pipeline/`. Skipping the agent image saves ~2 minutes of build + push time.
+
+---
+
 ## Deploy Only One Service (Faster)
 
 Use these when you've only changed code in one service and don't want to rebuild everything.

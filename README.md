@@ -4,6 +4,8 @@
 
 **Live URL:** `https://deltaed-frontend-i67acn6mvq-nw.a.run.app`
 
+**Mock Dataset:** [Google Sheets — Student Mock Data](https://docs.google.com/spreadsheets/d/1aUmnma34xuWABBQDLeSJ5bi5Y_Aca14vCPoYXyA2WfI/edit?gid=246495887#gid=246495887)
+
 ---
 
 ## Table of Contents
@@ -23,27 +25,23 @@
 
 ## Architecture Overview
 
-```
-┌──────────────┐       ┌──────────────────┐       ┌──────────────────┐
-│   Frontend   │──────▶│     Backend      │       │   Agent (RAG)    │
-│  (Node.js)   │       │   (FastAPI)      │       │   (FastAPI+ADK)  │
-│  Port 8080   │──────▶│   Port 8080      │       │   Port 8080      │
-│              │       │                  │       │                  │
-│ Express +    │       │ /register        │       │ /agent/init      │
-│ Static Files │       │ /login           │       │ /agent/run (SSE) │
-│ + Proxy      │       │ /leaderboard     │       │                  │
-│              │       │ /student/*       │       │ Gemini 2.5 Flash │
-└──────────────┘       └──────────────────┘       └──────────────────┘
-       │                       │                          │
-       │              ┌────────┴────────┐          ┌──────┴───────┐
-       │              │    BigQuery     │          │  Vertex AI   │
-       │              │  (EU region)   │          │  (Gemini)    │
-       │              └─────────────────┘          └──────────────┘
-       │
-  Public Entry Point — proxies /login, /register,
-  /leaderboard, /student/* → Backend
-  and /agent/* → Agent
-```
+### Cloud Infrastructure
+
+DeltaEd runs as **three microservices** on Google Cloud Run, deployed via Terraform with Docker containers.
+
+![Cloud Infrastructure Architecture](infra%20architecture.png)
+
+### System Architecture
+
+End-to-end flow from UI pages through the backend and agent services to BigQuery and the vector store.
+
+![System Architecture](system%20architecture.png)
+
+### Multi-Agent System (Google ADK)
+
+The AI Coach is a multi-agent system built on Google ADK. The **Learning Orchestrator** routes student queries to specialised sub-agents, each grounded in educational principles.
+
+![Agent Architecture](Agent%20Architecture.png)
 
 ### Three Cloud Run Services
 
