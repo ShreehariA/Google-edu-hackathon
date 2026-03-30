@@ -367,6 +367,14 @@ gcloud run services describe deltaed-frontend --region europe-west2 \
   --format="yaml(spec.template.spec.containers[0].env)"
 ```
 
+### Test Users
+
+| Email | Password | Student |
+|-------|----------|---------|
+| `mei.lin@example.com` | `meilin` | Mei Lin |
+| `fatima.alhassan@example.com` | `fatimaalhassan` | Fatima Al-Hassan |
+| `wei.chen@example.com` | `weichen` | Wei Chen |
+
 ### Test Endpoints Directly
 
 ```bash
