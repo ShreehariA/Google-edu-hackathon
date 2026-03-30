@@ -3,7 +3,7 @@
 
 set -e
 
-PROJECT_ID="birmiu-agent-two26bir-4072"
+PROJECT_ID="deltaed"
 REGION="europe-west2"
 
 echo "🚀 DeltaEd Cloud Run Deployment Script"

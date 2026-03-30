@@ -7,7 +7,7 @@
 
 set -e
 
-PROJECT_ID="birmiu-agent-two26bir-4072"
+PROJECT_ID="deltaed"
 BACKEND_IMAGE="gcr.io/${PROJECT_ID}/deltaed-backend:latest"
 FRONTEND_IMAGE="gcr.io/${PROJECT_ID}/deltaed-frontend:latest"
 AGENT_IMAGE="gcr.io/${PROJECT_ID}/deltaed-agent:latest"

@@ -10,7 +10,7 @@ terraform {
 }
 
 provider "google" {
-  project = "birmiu-agent-two26bir-4072"
+  project = "deltaed"
   region  = "europe-west2" # London region
   zone    = "europe-west2-a"
 }

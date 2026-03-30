@@ -6,7 +6,7 @@ This guide walks you through deploying your DeltaEd application (Node.js + FastA
 
 ## Prerequisites
 
-1. **Google Cloud Project**: `birmiu-agent-two26bir-4072` (already configured in `provider.tf`)
+1. **Google Cloud Project**: `deltaed` (already configured in `provider.tf`)
 2. **Docker Image**: `shreeharia/deltaed-app:latest` pushed to Docker Hub
 3. **Terraform**: Installed locally (`terraform --version` to verify)
 4. **gcloud CLI**: Installed and authenticated (`gcloud auth application-default login`)
@@ -28,7 +28,7 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanage
 ## Terraform Files Explanation
 
 ### 1. **provider.tf** (Already exists)
-- Sets up GCP provider for project `birmiu-agent-two26bir-4072`
+- Sets up GCP provider for project `deltaed`
 - Region: `europe-west2` (London)
 
 ### 2. **cloud_run.tf** (New - Main deployment config)
@@ -91,7 +91,7 @@ When prompted, type `yes` to confirm. Terraform will:
 **Expected Output:**
 ```
 cloudrun_url = "https://deltaed-app-xxxxxx-nw.a.run.app"
-cloudrun_service_account = "deltaed-cloudrun-sa@birmiu-agent-two26bir-4072.iam.gserviceaccount.com"
+cloudrun_service_account = "deltaed-cloudrun-sa@deltaed.iam.gserviceaccount.com"
 ```
 
 ### Step 4: Test Your Deployment

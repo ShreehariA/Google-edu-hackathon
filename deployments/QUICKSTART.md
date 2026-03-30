@@ -6,14 +6,14 @@ You only need:
 1. Docker image pushed to Docker Hub: `shreeharia/deltaed-app:latest`
 2. `gcloud` CLI installed and authenticated on your Mac
 3. Terraform installed
-4. GCP project: `birmiu-agent-two26bir-4072`
+4. GCP project: `deltaed`
 
 ## Setup (One Time)
 
 ```bash
 # Authenticate gcloud on your Mac
 gcloud auth login
-gcloud config set project birmiu-agent-two26bir-4072
+gcloud config set project deltaed
 gcloud auth application-default login
 
 # Initialize Terraform

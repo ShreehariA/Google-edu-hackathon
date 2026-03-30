@@ -2,7 +2,7 @@
 
 > **DeltaEd** ranks students by how much *they personally improve* — not by who was already the best. An AI Coach (RAG-powered) helps each student understand their gaps and guides them through targeted tutoring.
 
-**Live URL:** `https://deltaed-frontend-i67acn6mvq-nw.a.run.app`
+**Live URL:** `https://deltaed-frontend-wzlqkvs7dq-nw.a.run.app`
 
 **Mock Dataset:** [Google Sheets — Student Mock Data](https://docs.google.com/spreadsheets/d/1aUmnma34xuWABBQDLeSJ5bi5Y_Aca14vCPoYXyA2WfI/edit?gid=246495887#gid=246495887)
 
@@ -117,7 +117,7 @@ The AI Coach is a multi-agent system built on Google ADK. The **Learning Orchest
 ```bash
 # Authenticate
 gcloud auth login
-gcloud config set project birmiu-agent-two26bir-4072
+gcloud config set project deltaed
 gcloud config set run/region europe-west2
 
 # Enable required APIs
@@ -144,7 +144,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # Set environment variables
-export GCP_PROJECT_ID=birmiu-agent-two26bir-4072
+export GCP_PROJECT_ID=deltaed
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account-key.json
 
 # Run backend
@@ -156,7 +156,7 @@ uvicorn src.apis.main:app --host 0.0.0.0 --port 8000 --reload
 ```bash
 # Same venv as backend
 export GOOGLE_GENAI_USE_VERTEXAI=true
-export GOOGLE_CLOUD_PROJECT=birmiu-agent-two26bir-4072
+export GOOGLE_CLOUD_PROJECT=deltaed
 export GOOGLE_CLOUD_LOCATION=europe-west2
 
 # Run agent
@@ -208,6 +208,35 @@ npm start
 
 ---
 
+## RAG Corpus Setup (Manual)
+
+The agent uses a **Vertex AI RAG corpus** to ground its answers in the NLP textbook (*Speech and Language Processing*, Jurafsky & Martin, 3rd ed.). This is set up **manually via the GCP Console** because the Google Terraform provider (v5.x) has no native resource for Vertex AI RAG Engine.
+
+### Current Corpus
+
+| Property | Value |
+|----------|-------|
+| Corpus ID | `6917529027641081856` |
+| Resource name | `projects/deltaed/locations/europe-west2/ragCorpora/6917529027641081856` |
+| Embedding model | `text-multilingual-embedding-002` |
+| Source PDF | `Speech and Language Processing_ed3book_jan26.pdf` |
+| GCS bucket | `gs://deltaed_nlp/` |
+
+### How to recreate (e.g. on a new GCP project)
+
+1. **Create a GCS bucket** (`deltaed_nlp`, region `europe-west2`) and upload the PDF
+   ```bash
+   gsutil mb -l europe-west2 gs://deltaed_nlp/
+   gsutil cp "Speech and Language Processing_ed3book_jan26.pdf" gs://deltaed_nlp/
+   ```
+2. **Create a RAG corpus** in [Vertex AI → RAG Engine](https://console.cloud.google.com/vertex-ai/rag/corpora) — name it `NLP_Book_Corpus`, embedding model `text-multilingual-embedding-002`
+3. **Import the PDF** from `gs://deltaed_nlp/` into the corpus via the console
+4. **Update the corpus ID** in `deployments/agent_cloud_run.tf` (`GOOGLE_RAG_CORPUS` env var) and `src/.env`, then redeploy the agent
+
+> See [commands_to_deploy.md](src/apis/commands_to_deploy.md#RAG-Corpus-Setup) for detailed step-by-step instructions.
+
+---
+
 ## Deploying to Google Cloud Run
 
 ### Quick Deploy (All Three Services)
@@ -216,14 +245,14 @@ npm start
 cd /path/to/Google-edu-hackathon
 
 # 1. Build all images (must use linux/amd64 for Cloud Run)
-docker build --platform linux/amd64 -f Dockerfile.backend  -t gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest .
-docker build --platform linux/amd64 -f Dockerfile.frontend -t gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest .
-docker build --platform linux/amd64 -f Dockerfile.agent    -t gcr.io/birmiu-agent-two26bir-4072/deltaed-agent:latest .
+docker build --platform linux/amd64 -f Dockerfile.backend  -t gcr.io/deltaed/deltaed-backend:latest .
+docker build --platform linux/amd64 -f Dockerfile.frontend -t gcr.io/deltaed/deltaed-frontend:latest .
+docker build --platform linux/amd64 -f Dockerfile.agent    -t gcr.io/deltaed/deltaed-agent:latest .
 
 # 2. Push to Google Container Registry
-docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest
-docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest
-docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-agent:latest
+docker push gcr.io/deltaed/deltaed-backend:latest
+docker push gcr.io/deltaed/deltaed-frontend:latest
+docker push gcr.io/deltaed/deltaed-agent:latest
 
 # 3. Apply infrastructure + deploy
 cd deployments
@@ -234,36 +263,36 @@ terraform apply -auto-approve
 ### Deploy Frontend Only (Fastest — UI changes)
 
 ```bash
-docker build --platform linux/amd64 -f Dockerfile.frontend -t gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest .
-docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest
+docker build --platform linux/amd64 -f Dockerfile.frontend -t gcr.io/deltaed/deltaed-frontend:latest .
+docker push gcr.io/deltaed/deltaed-frontend:latest
 gcloud run deploy deltaed-frontend \
-  --image gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest \
+  --image gcr.io/deltaed/deltaed-frontend:latest \
   --region europe-west2 \
-  --project birmiu-agent-two26bir-4072 \
+  --project deltaed \
   --quiet
 ```
 
 ### Deploy Backend Only (API changes)
 
 ```bash
-docker build --platform linux/amd64 -f Dockerfile.backend -t gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest .
-docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest
+docker build --platform linux/amd64 -f Dockerfile.backend -t gcr.io/deltaed/deltaed-backend:latest .
+docker push gcr.io/deltaed/deltaed-backend:latest
 gcloud run deploy deltaed-backend \
-  --image gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest \
+  --image gcr.io/deltaed/deltaed-backend:latest \
   --region europe-west2 \
-  --project birmiu-agent-two26bir-4072 \
+  --project deltaed \
   --quiet
 ```
 
 ### Deploy Agent Only (RAG/AI changes)
 
 ```bash
-docker build --platform linux/amd64 -f Dockerfile.agent -t gcr.io/birmiu-agent-two26bir-4072/deltaed-agent:latest .
-docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-agent:latest
+docker build --platform linux/amd64 -f Dockerfile.agent -t gcr.io/deltaed/deltaed-agent:latest .
+docker push gcr.io/deltaed/deltaed-agent:latest
 gcloud run deploy deltaed-agent \
-  --image gcr.io/birmiu-agent-two26bir-4072/deltaed-agent:latest \
+  --image gcr.io/deltaed/deltaed-agent:latest \
   --region europe-west2 \
-  --project birmiu-agent-two26bir-4072 \
+  --project deltaed \
   --quiet
 ```
 
@@ -302,7 +331,7 @@ terraform state list
 
 # Import an existing resource
 terraform import google_cloud_run_service.deltaed_frontend \
-  locations/europe-west2/namespaces/birmiu-agent-two26bir-4072/services/deltaed-frontend
+  locations/europe-west2/namespaces/deltaed/services/deltaed-frontend
 ```
 
 ---
@@ -312,7 +341,7 @@ terraform import google_cloud_run_service.deltaed_frontend \
 ### Check Service Status
 
 ```bash
-gcloud run services list --region europe-west2 --project birmiu-agent-two26bir-4072
+gcloud run services list --region europe-west2 --project deltaed
 ```
 
 ### View Service Logs
@@ -320,15 +349,15 @@ gcloud run services list --region europe-west2 --project birmiu-agent-two26bir-4
 ```bash
 # Frontend logs
 gcloud logging read 'resource.labels.service_name="deltaed-frontend"' \
-  --project birmiu-agent-two26bir-4072 --limit 20
+  --project deltaed --limit 20
 
 # Backend error logs
 gcloud logging read 'resource.labels.service_name="deltaed-backend" AND severity>=ERROR' \
-  --project birmiu-agent-two26bir-4072 --limit 10
+  --project deltaed --limit 10
 
 # Agent error logs
 gcloud logging read 'resource.labels.service_name="deltaed-agent" AND severity>=ERROR' \
-  --project birmiu-agent-two26bir-4072 --limit 10
+  --project deltaed --limit 10
 ```
 
 ### Check Service Environment Variables
@@ -338,26 +367,34 @@ gcloud run services describe deltaed-frontend --region europe-west2 \
   --format="yaml(spec.template.spec.containers[0].env)"
 ```
 
+### Test Users
+
+| Email | Password | Student |
+|-------|----------|---------|
+| `mei.lin@example.com` | `meilin` | Mei Lin |
+| `fatima.alhassan@example.com` | `fatimaalhassan` | Fatima Al-Hassan |
+| `wei.chen@example.com` | `weichen` | Wei Chen |
+
 ### Test Endpoints Directly
 
 ```bash
 # Health checks
-curl https://deltaed-frontend-i67acn6mvq-nw.a.run.app/health
-curl https://deltaed-backend-i67acn6mvq-nw.a.run.app/
-curl https://deltaed-agent-i67acn6mvq-nw.a.run.app/health
+curl https://deltaed-frontend-wzlqkvs7dq-nw.a.run.app/health
+curl https://deltaed-backend-wzlqkvs7dq-nw.a.run.app/
+curl https://deltaed-agent-wzlqkvs7dq-nw.a.run.app/health
 
 # Register a user
-curl -X POST https://deltaed-frontend-i67acn6mvq-nw.a.run.app/register \
+curl -X POST https://deltaed-frontend-wzlqkvs7dq-nw.a.run.app/register \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","password":"pass123"}'
 
 # Login
-curl -X POST https://deltaed-frontend-i67acn6mvq-nw.a.run.app/login \
+curl -X POST https://deltaed-frontend-wzlqkvs7dq-nw.a.run.app/login \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","password":"pass123"}'
 
 # Leaderboard
-curl https://deltaed-frontend-i67acn6mvq-nw.a.run.app/leaderboard
+curl https://deltaed-frontend-wzlqkvs7dq-nw.a.run.app/leaderboard
 ```
 
 ---
@@ -387,7 +424,7 @@ gcloud run revisions list --service deltaed-frontend --region europe-west2
 
 # Force a new revision (same image)
 gcloud run deploy deltaed-frontend \
-  --image gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest \
+  --image gcr.io/deltaed/deltaed-frontend:latest \
   --region europe-west2
 
 # Describe full service config
@@ -444,9 +481,9 @@ Curriculum structure — chapters belonging to subjects.
 
 | Service | URL |
 |---------|-----|
-| Frontend (public) | https://deltaed-frontend-i67acn6mvq-nw.a.run.app |
-| Backend (internal) | https://deltaed-backend-i67acn6mvq-nw.a.run.app |
-| Agent (internal) | https://deltaed-agent-i67acn6mvq-nw.a.run.app |
+| Frontend (public) | https://deltaed-frontend-wzlqkvs7dq-nw.a.run.app |
+| Backend (internal) | https://deltaed-backend-wzlqkvs7dq-nw.a.run.app |
+| Agent (internal) | https://deltaed-agent-wzlqkvs7dq-nw.a.run.app |
 
 ---
 
@@ -454,10 +491,10 @@ Curriculum structure — chapters belonging to subjects.
 
 | Property | Value |
 |----------|-------|
-| Project ID | `birmiu-agent-two26bir-4072` |
+| Project ID | `deltaed` |
 | Region | `europe-west2` (London) |
-| Service Account | `cloud-run-sa@birmiu-agent-two26bir-4072.iam.gserviceaccount.com` |
-| Container Registry | `gcr.io/birmiu-agent-two26bir-4072/` |
+| Service Account | `cloud-run-sa@deltaed.iam.gserviceaccount.com` |
+| Container Registry | `gcr.io/deltaed/` |
 | BigQuery Location | `EU` |
 
 ---
