@@ -9,7 +9,7 @@ Your application is deployed on Google Cloud Run with:
 - **BigQuery** (Student data)
 - **Vertex AI** (AI models)
 
-**Project**: `birmiu-agent-two26bir-4072`  
+**Project**: `deltaed`  
 **Region**: `europe-west2` (London)  
 **Public**: ✅ Accessible worldwide
 
@@ -39,10 +39,10 @@ After making code changes in your project:
 cd /Users/shreeharianbazhagan/Documents/UOB/Google-edu-hackathon
 
 # Build for amd64 platform (Cloud Run compatible)
-docker build --platform linux/amd64 -t gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest .
+docker build --platform linux/amd64 -t gcr.io/deltaed/deltaed-app:latest .
 
 # Push to Google Container Registry
-docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest
+docker push gcr.io/deltaed/deltaed-app:latest
 ```
 
 ### Step 2: Deploy to Cloud Run
@@ -145,11 +145,11 @@ gcloud run services describe deltaed-app --region europe-west2
 1. Edit code in `frontend/src/` or root files
 2. Build Docker image:
    ```bash
-   docker build --platform linux/amd64 -t gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest .
+   docker build --platform linux/amd64 -t gcr.io/deltaed/deltaed-app:latest .
    ```
 3. Push image:
    ```bash
-   docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest
+   docker push gcr.io/deltaed/deltaed-app:latest
    ```
 4. Deploy:
    ```bash
@@ -268,8 +268,8 @@ This removes:
 
 | Task | Command |
 |------|---------|
-| Build image | `docker build --platform linux/amd64 -t gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest .` |
-| Push image | `docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest` |
+| Build image | `docker build --platform linux/amd64 -t gcr.io/deltaed/deltaed-app:latest .` |
+| Push image | `docker push gcr.io/deltaed/deltaed-app:latest` |
 | Deploy | `cd deployments/ && terraform apply` |
 | Get URL | `terraform output cloudrun_url` |
 | View logs | `gcloud run logs read deltaed-app --region europe-west2 --follow` |
@@ -284,7 +284,7 @@ This removes:
 
 Make sure you're using `--platform linux/amd64`:
 ```bash
-docker build --platform linux/amd64 -t gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest .
+docker build --platform linux/amd64 -t gcr.io/deltaed/deltaed-app:latest .
 ```
 
 ### Can't Access from Browser
@@ -308,7 +308,7 @@ terraform apply
 
 Your gcloud credentials are passed via the Docker volume mount in the startup script. Make sure:
 1. You authenticated locally: `gcloud auth application-default login`
-2. You have correct gcloud config: `gcloud config set project birmiu-agent-two26bir-4072`
+2. You have correct gcloud config: `gcloud config set project deltaed`
 
 ---
 
@@ -316,8 +316,8 @@ Your gcloud credentials are passed via the Docker volume mount in the startup sc
 
 **Deployment is easy:**
 1. Make code changes
-2. `docker build --platform linux/amd64 -t gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest .`
-3. `docker push gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest`
+2. `docker build --platform linux/amd64 -t gcr.io/deltaed/deltaed-app:latest .`
+3. `docker push gcr.io/deltaed/deltaed-app:latest`
 4. `cd deployments/ && terraform apply`
 
 Your app will be live within 1-2 minutes! 🚀

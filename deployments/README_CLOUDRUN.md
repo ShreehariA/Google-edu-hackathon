@@ -95,7 +95,7 @@ cd deployments/
 terraform init
 
 # Enable GCP APIs
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com bigquery.googleapis.com aiplatform.googleapis.com logging.googleapis.com monitoring.googleapis.com --project=birmiu-agent-two26bir-4072
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com secretmanager.googleapis.com bigquery.googleapis.com aiplatform.googleapis.com logging.googleapis.com monitoring.googleapis.com --project=deltaed
 ```
 
 ### 2. Deploy

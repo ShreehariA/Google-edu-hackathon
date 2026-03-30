@@ -4,7 +4,7 @@
 variable "project_id" {
   description = "GCP Project ID"
   type        = string
-  default     = "birmiu-agent-two26bir-4072"
+  default     = "deltaed"
 }
 
 variable "region" {
@@ -22,25 +22,25 @@ variable "app_name" {
 variable "docker_image" {
   description = "Docker image URL (deprecated - use frontend_docker_image and backend_docker_image)"
   type        = string
-  default     = "gcr.io/birmiu-agent-two26bir-4072/deltaed-app:latest"
+  default     = "gcr.io/deltaed/deltaed-app:latest"
 }
 
 variable "frontend_docker_image" {
   description = "Docker image for frontend (Node.js)"
   type        = string
-  default     = "gcr.io/birmiu-agent-two26bir-4072/deltaed-frontend:latest"
+  default     = "gcr.io/deltaed/deltaed-frontend:latest"
 }
 
 variable "backend_docker_image" {
   description = "Docker image for backend (FastAPI)"
   type        = string
-  default     = "gcr.io/birmiu-agent-two26bir-4072/deltaed-backend:latest"
+  default     = "gcr.io/deltaed/deltaed-backend:latest"
 }
 
 variable "agent_docker_image" {
   description = "Docker image for agent (RAG Teacher Agent)"
   type        = string
-  default     = "gcr.io/birmiu-agent-two26bir-4072/deltaed-agent:latest"
+  default     = "gcr.io/deltaed/deltaed-agent:latest"
 }
 
 variable "cloudrun_min_instances" {

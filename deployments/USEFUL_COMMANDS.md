@@ -58,7 +58,7 @@ terraform output -json
 ### Import Existing Resources into Terraform
 ```bash
 # If you have existing Cloud Run service or other resources
-terraform import google_cloud_run_service.deltaed_app /projects/birmiu-agent-two26bir-4072/locations/europe-west2/services/deltaed-app
+terraform import google_cloud_run_service.deltaed_app /projects/deltaed/locations/europe-west2/services/deltaed-app
 ```
 
 ---
@@ -71,7 +71,7 @@ terraform import google_cloud_run_service.deltaed_app /projects/birmiu-agent-two
 gcloud auth login
 
 # Set default project
-gcloud config set project birmiu-agent-two26bir-4072
+gcloud config set project deltaed
 
 # Authenticate for Application Default Credentials (needed by Terraform)
 gcloud auth application-default login
@@ -159,10 +159,10 @@ gcloud bq ls --dataset_id=student_db
 
 # Query a table
 gcloud bq query --use_legacy_sql=false \
-  'SELECT * FROM `birmiu-agent-two26bir-4072.student_db.student_personal_details` LIMIT 10'
+  'SELECT * FROM `deltaed.student_db.student_personal_details` LIMIT 10'
 
 # View table schema
-gcloud bq show --schema birmiu-agent-two26bir-4072:student_db.student_personal_details
+gcloud bq show --schema deltaed:student_db.student_personal_details
 ```
 
 ### Vertex AI Commands
@@ -182,19 +182,19 @@ gcloud ai models deploy MODEL_ID \
 gcloud iam service-accounts list
 
 # Get service account details
-gcloud iam service-accounts describe deltaed-cloudrun-sa@birmiu-agent-two26bir-4072.iam.gserviceaccount.com
+gcloud iam service-accounts describe deltaed-cloudrun-sa@deltaed.iam.gserviceaccount.com
 
 # Create service account key
 gcloud iam service-accounts keys create key.json \
-  --iam-account=deltaed-cloudrun-sa@birmiu-agent-two26bir-4072.iam.gserviceaccount.com
+  --iam-account=deltaed-cloudrun-sa@deltaed.iam.gserviceaccount.com
 
 # List service account keys
 gcloud iam service-accounts keys list \
-  --iam-account=deltaed-cloudrun-sa@birmiu-agent-two26bir-4072.iam.gserviceaccount.com
+  --iam-account=deltaed-cloudrun-sa@deltaed.iam.gserviceaccount.com
 
 # Delete a service account key
 gcloud iam service-accounts keys delete KEY_ID \
-  --iam-account=deltaed-cloudrun-sa@birmiu-agent-two26bir-4072.iam.gserviceaccount.com
+  --iam-account=deltaed-cloudrun-sa@deltaed.iam.gserviceaccount.com
 ```
 
 ### Secret Manager Commands
@@ -348,7 +348,7 @@ gcloud run logs read deltaed-app --region europe-west2 --limit 200 | tail -n 50
 
 ### Check service account permissions
 ```bash
-gcloud projects get-iam-policy birmiu-agent-two26bir-4072 \
+gcloud projects get-iam-policy deltaed \
   --flatten="bindings[].members" \
   --filter="bindings.members:deltaed-cloudrun-sa*"
 ```
@@ -371,7 +371,7 @@ gcloud bq query --use_legacy_sql=false \
 
 ### View metrics in Cloud Console
 ```
-https://console.cloud.google.com/monitoring/dashboards/custom/deltaed-metrics?project=birmiu-agent-two26bir-4072
+https://console.cloud.google.com/monitoring/dashboards/custom/deltaed-metrics?project=deltaed
 ```
 
 ### Create uptime monitoring alert

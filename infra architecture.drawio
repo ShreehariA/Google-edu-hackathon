@@ -1,13 +1,13 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36" version="29.6.6">
   <diagram id="deltaed-infra" name="DeltaEd Infrastructure">
-    <mxGraphModel dx="1763" dy="1183" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+    <mxGraphModel dx="2057" dy="1380" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="title" parent="1" style="text;html=1;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontColor=#1a1a2e;shadow=0;" value="DeltaEd — Cloud Infrastructure Architecture" vertex="1">
           <mxGeometry height="40" width="800" x="530" y="20" as="geometry" />
         </mxCell>
-        <mxCell id="subtitle" parent="1" style="text;html=1;fontSize=12;align=center;verticalAlign=middle;whiteSpace=wrap;fontColor=#666666;" value="GCP Project: birmiu-agent-two26bir-4072 &amp;nbsp;|&amp;nbsp; Region: europe-west2 (London)" vertex="1">
+        <mxCell id="subtitle" parent="1" style="text;html=1;fontSize=12;align=center;verticalAlign=middle;whiteSpace=wrap;fontColor=#666666;" value="GCP Project: deltaed &amp;nbsp;|&amp;nbsp; Region: europe-west2 (London)" vertex="1">
           <mxGeometry height="25" width="800" x="520" y="55" as="geometry" />
         </mxCell>
         <mxCell id="user" parent="1" style="shape=actor;whiteSpace=wrap;html=1;fontSize=12;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" value="Student&lt;br&gt;(Browser)" vertex="1">
@@ -162,7 +162,7 @@
         <mxCell id="gemini" parent="1" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e8eaf6;strokeColor=#7986CB;fontSize=11;shadow=1;size=15;" value="&lt;b&gt;Gemini 2.5 Flash&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;LLM for all agents&lt;br&gt;via Google ADK&lt;/font&gt;" vertex="1">
           <mxGeometry height="70" width="170" x="1110" y="510" as="geometry" />
         </mxCell>
-        <mxCell id="rag_corpus" parent="1" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=0.1;fillColor=#e8eaf6;strokeColor=#7986CB;fontSize=10;shadow=1;" value="&lt;b&gt;RAG Corpus&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;NLP_Book_Corpus&lt;br&gt;text-multilingual-embedding-002&lt;br&gt;ID: 4611686018427387904&lt;/font&gt;" vertex="1">
+        <mxCell id="rag_corpus" parent="1" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=0.1;fillColor=#e8eaf6;strokeColor=#7986CB;fontSize=10;shadow=1;" value="&lt;b&gt;RAG Corpus&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;NLP_Book_Corpus&lt;br&gt;text-multilingual-embedding-002&lt;br&gt;ID: 6917529027641081856&lt;/font&gt;" vertex="1">
           <mxGeometry height="80" width="200" x="1110" y="620" as="geometry" />
         </mxCell>
         <mxCell id="google_search" parent="1" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#d0e0e3;strokeColor=#56a5a5;fontSize=10;shadow=1;" value="&lt;b&gt;Google Search&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;ExploreAgent tool&lt;/font&gt;" vertex="1">
@@ -177,7 +177,7 @@
         <mxCell id="docker" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;shadow=1;" value="&lt;b&gt;Docker Build&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;--platform linux/amd64&lt;br&gt;3 Dockerfiles&lt;/font&gt;" vertex="1">
           <mxGeometry height="60" width="140" x="290" y="670" as="geometry" />
         </mxCell>
-        <mxCell id="gcr" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;shadow=1;" value="&lt;b&gt;Container Registry&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;gcr.io/birmiu-agent-two26bir-4072/&lt;br&gt;deltaed-{backend,frontend,agent}&lt;/font&gt;" vertex="1">
+        <mxCell id="gcr" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;shadow=1;" value="&lt;b&gt;Container Registry&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;gcr.io/deltaed/&lt;br&gt;deltaed-{backend,frontend,agent}&lt;/font&gt;" vertex="1">
           <mxGeometry height="60" width="220" x="490" y="670" as="geometry" />
         </mxCell>
         <mxCell id="terraform" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;shadow=1;" value="&lt;b&gt;Terraform&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px&quot;&gt;IaC: Cloud Run,&lt;br&gt;IAM, BigQuery&lt;/font&gt;" vertex="1">

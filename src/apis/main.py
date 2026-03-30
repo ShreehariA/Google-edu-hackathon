@@ -306,12 +306,12 @@ def get_leaderboard_rank(student_id: str):
 @app.get("/student/{student_id}/subjects")
 def get_subjects(student_id: str):
     """
-    All subjects in the curriculum (from chapter_table).
+    All subjects in the curriculum (from subject_table).
     student_id param accepted for route consistency but subjects are curriculum-wide.
     """
     try:
         rows = _run(
-            f"SELECT DISTINCT subject_id, subject_name FROM {CHAPTER_TABLE} ORDER BY subject_name",
+            f"SELECT subject_id, subject_name FROM {SUBJECT_TABLE} ORDER BY subject_name",
             [],
         )
     except Exception as e:
@@ -545,7 +545,7 @@ def get_dashboard(student_id: str, subject_id: str = Query(...)):
     """
 
     name_sql = f"SELECT name FROM {NAMES_TABLE} WHERE student_id = @student_id LIMIT 1"
-    subj_sql  = f"SELECT DISTINCT subject_name FROM {CHAPTER_TABLE} WHERE subject_id = @subject_id LIMIT 1"
+    subj_sql  = f"SELECT subject_name FROM {SUBJECT_TABLE} WHERE subject_id = @subject_id LIMIT 1"
 
     # ── Run all 6 queries in parallel ─────────────────────────────────────────
     from concurrent.futures import ThreadPoolExecutor, as_completed
