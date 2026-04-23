@@ -131,6 +131,22 @@
 .link-blue { font-size: .84rem; color: var(--blue); font-weight: 500; }
 .link-blue:hover { color: var(--blue-dark); }
 
+/* ── Contact footer ── */
+.contact-footer {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border, #333);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.contact-footer span {
+  font-size: .78rem; color: var(--ink-3, #888);
+}
+.contact-footer a {
+  font-size: .82rem; color: #14B8A6; font-weight: 500;
+  text-decoration: none; transition: opacity .2s;
+}
+.contact-footer a:hover { opacity: .8; text-decoration: underline; }
+
 /* ── Responsive ── */
 @media (max-width: 860px) {
   .login-body { flex-direction: column; }
