@@ -1,14 +1,18 @@
-fastapi
-uvicorn
-pydantic[email]
-google-cloud-bigquery
-python-dotenv
+# Pinned to the versions in the last working deploy (Apr 2026 images).
+# Unpinned, pip now backtracks google-adk to 1.1.1, which breaks the agent.
+fastapi==0.136.0
+uvicorn==0.45.0
+pydantic[email]==2.13.3
+google-cloud-bigquery==3.41.0
+python-dotenv==1.2.2
 
 # Future LLM integrations
-openai
-google-generativeai
-langchain
-langchain-openai
-langchain-google-genai
-google-adk
-numpy
+openai==2.32.0
+google-generativeai==0.8.6
+langchain==1.2.15
+langchain-openai==1.2.0
+langchain-google-genai==4.2.2
+google-adk==1.31.1
+google-genai==1.73.1
+google-cloud-aiplatform==1.148.1
+numpy==2.4.4

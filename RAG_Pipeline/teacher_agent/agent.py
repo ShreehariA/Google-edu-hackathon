@@ -4,6 +4,7 @@ from .tools.orchestrator_tools import clear_active_agent
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from google.adk.agents import Agent
+from .llm import gemini
 from .sub_agents import (
     performance_agent,
     focus_agent,
@@ -168,7 +169,7 @@ Per turn (temp: — discarded after each invocation automatically):
 """
 
 root_agent = Agent(
-    model='gemini-2.5-flash',
+    model=gemini(),
     name='LearningOrchestrator',
     instruction=f"""
     You are a friendly, encouraging learning assistant embedded in a student

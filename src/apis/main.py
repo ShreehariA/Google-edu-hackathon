@@ -231,7 +231,8 @@ def leaderboard():
         raise HTTPException(status_code=500, detail=f"Leaderboard query failed: {e}")
 
     result = {"last_updated": date.today().isoformat(), "leaderboard": rows}
-    _set_cached(result)
+    if rows:  # never pin an empty board for the whole day (e.g. requested before seeding)
+        _set_cached(result)
     return result
 
 

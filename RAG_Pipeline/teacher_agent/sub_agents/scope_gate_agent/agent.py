@@ -13,6 +13,19 @@ class ScopeGateAgent(BaseAgent):
 
         query = ctx.session.state.get("temp:current_query", "")
 
+        # Follow-up in an ongoing tutoring/explore session: the Orchestrator can't
+        # transfer to TutorAgent/ExploreAgent directly (they live under this agent),
+        # so it lands here without a new query — continue with the active agent.
+        active = next(
+            (a for a in self.sub_agents
+             if a.name == ctx.session.state.get("active_agent")),
+            None,
+        )
+        if not query and active is not None and ctx.session.state.get("selected_chapter_name"):
+            async for event in active.run_async(ctx):
+                yield event
+            return
+
         if not query:
             yield Event(
                 invocation_id=ctx.invocation_id,
