@@ -157,7 +157,9 @@ uvicorn src.apis.main:app --host 0.0.0.0 --port 8000 --reload
 # Same venv as backend
 export GOOGLE_GENAI_USE_VERTEXAI=true
 export GOOGLE_CLOUD_PROJECT=deltaed
-export GOOGLE_CLOUD_LOCATION=europe-west2
+export GOOGLE_CLOUD_LOCATION=global        # Gemini endpoint (europe-west2 has no gemini-3.5-flash capacity)
+export RAG_LOCATION=europe-west2           # RAG corpus + embeddings region
+export GOOGLE_RAG_CORPUS=projects/deltaed/locations/europe-west2/ragCorpora/6917529027641081856
 
 # Run agent
 uvicorn RAG_Pipeline.teacher_agent.server:app --host 0.0.0.0 --port 8001 --reload
@@ -200,7 +202,8 @@ npm start
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `GOOGLE_CLOUD_PROJECT` | ✅ | Google Cloud project ID |
-| `GOOGLE_CLOUD_LOCATION` | ✅ | GCP region (e.g. `europe-west2`) |
+| `GOOGLE_CLOUD_LOCATION` | ✅ | Gemini endpoint location — `global` (gemini-3.5-flash returns 429 in `europe-west2`) |
+| `RAG_LOCATION` | — | Region of the RAG corpus + embedding model (`europe-west2`); defaults to `GOOGLE_CLOUD_LOCATION` |
 | `GOOGLE_GENAI_USE_VERTEXAI` | ✅ | Must be `true` — tells ADK to use Vertex AI, not Gemini API key |
 | `BIGQUERY_SCORES_DATASET_ID` | ✅ | BigQuery dataset for scores (`student_db`) |
 | `BIGQUERY_CHAPTER_DATASET_ID` | ✅ | BigQuery dataset for chapters (`educational_resources_db`) |
@@ -219,18 +222,24 @@ The agent uses a **Vertex AI RAG corpus** to ground its answers in the NLP textb
 | Corpus ID | `6917529027641081856` |
 | Resource name | `projects/deltaed/locations/europe-west2/ragCorpora/6917529027641081856` |
 | Embedding model | `text-multilingual-embedding-002` |
-| Source PDF | `Speech and Language Processing_ed3book_jan26.pdf` |
-| GCS bucket | `gs://deltaed_nlp/` |
+| Source | `Speech and Language Processing_ed3book_jan26.pdf`, split into 25 per-chapter PDFs |
+| GCS location | `gs://deltaed/rag/slp3/` |
+
+> **Import per chapter, not the whole book.** Importing the full 25 MB / 626-page PDF fails with
+> `An internal error occurred` (that is why the corpus was empty after the March import);
+> chapter-sized PDFs import cleanly. The agent retrieves from the corpus itself
+> (`tools/rag_tool.py`) because the global Gemini endpoint can't ground on a regional corpus.
 
 ### How to recreate (e.g. on a new GCP project)
 
-1. **Create a GCS bucket** (`deltaed_nlp`, region `europe-west2`) and upload the PDF
+1. **Split the textbook per chapter and upload it**
    ```bash
-   gsutil mb -l europe-west2 gs://deltaed_nlp/
-   gsutil cp "Speech and Language Processing_ed3book_jan26.pdf" gs://deltaed_nlp/
+   uv run --no-project --with pypdf python RAG_Pipeline/split_textbook.py \
+     "Speech and Language Processing_ed3book_jan26.pdf" /tmp/slp3
+   gcloud storage cp /tmp/slp3/*.pdf gs://deltaed/rag/slp3/
    ```
-2. **Create a RAG corpus** in [Vertex AI → RAG Engine](https://console.cloud.google.com/vertex-ai/rag/corpora) — name it `NLP_Book_Corpus`, embedding model `text-multilingual-embedding-002`
-3. **Import the PDF** from `gs://deltaed_nlp/` into the corpus via the console
+2. **Create a RAG corpus** in [Vertex AI → RAG Engine](https://console.cloud.google.com/vertex-ai/rag/corpora) (region `europe-west2`) — embedding model `text-multilingual-embedding-002`
+3. **Import the folder** `gs://deltaed/rag/slp3/` into the corpus (chunk size 1024, overlap 256)
 4. **Update the corpus ID** in `deployments/agent_cloud_run.tf` (`GOOGLE_RAG_CORPUS` env var) and `src/.env`, then redeploy the agent
 
 > See [commands_to_deploy.md](src/apis/commands_to_deploy.md#RAG-Corpus-Setup) for detailed step-by-step instructions.
@@ -243,22 +252,12 @@ The agent uses a **Vertex AI RAG corpus** to ground its answers in the NLP textb
 
 ```bash
 cd /path/to/Google-edu-hackathon
-
-# 1. Build all images (must use linux/amd64 for Cloud Run)
-docker build --platform linux/amd64 -f Dockerfile.backend  -t gcr.io/deltaed/deltaed-backend:latest .
-docker build --platform linux/amd64 -f Dockerfile.frontend -t gcr.io/deltaed/deltaed-frontend:latest .
-docker build --platform linux/amd64 -f Dockerfile.agent    -t gcr.io/deltaed/deltaed-agent:latest .
-
-# 2. Push to Google Container Registry
-docker push gcr.io/deltaed/deltaed-backend:latest
-docker push gcr.io/deltaed/deltaed-frontend:latest
-docker push gcr.io/deltaed/deltaed-agent:latest
-
-# 3. Apply infrastructure + deploy
-cd deployments
-terraform init    # first time only
-terraform apply -auto-approve
+./deploy.sh            # build → push → terraform (image digests) → demo data
 ```
+
+See [deployment.md](deployment.md) for flags and details. `deploy.sh` deploys exact image
+digests, so re-running it after a code change always rolls out the new images (a bare
+`terraform apply` with `:latest` tags would see no change).
 
 ### Deploy Frontend Only (Fastest — UI changes)
 
@@ -311,6 +310,7 @@ gcloud run deploy deltaed-agent \
 | Backend Service | `backend_cloud_run.tf` | Public (called by frontend proxy) |
 | Agent Service | `agent_cloud_run.tf` | Public (called by frontend proxy) |
 | IAM Bindings | `*_cloud_run.tf` | `allUsers` invoker for all three services |
+| Demo-data refresh | `demo_data_refresh.tf` | Daily BigQuery scheduled query (`sql/shift_demo_dates.sql`) keeping demo dates current |
 
 ### Key Terraform Commands
 

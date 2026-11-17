@@ -2,6 +2,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from google.adk.agents import Agent
+from ...llm import gemini
 from google.adk.agents.readonly_context import ReadonlyContext
 from ...tools.text_to_sql_tool import bigquery_toolset, validate_tenant_isolation, PROJECT_ID
 
@@ -139,7 +140,7 @@ async def performance_instruction(context: ReadonlyContext) -> str:
 
 
 performance_agent = Agent(
-    model='gemini-2.5-flash',
+    model=gemini(),
     name='PerformanceAgent',
     instruction=performance_instruction,
     tools=[bigquery_toolset],

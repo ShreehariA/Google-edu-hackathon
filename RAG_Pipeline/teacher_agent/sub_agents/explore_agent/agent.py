@@ -2,10 +2,11 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from google.adk.agents import Agent
+from ...llm import gemini
 from google.adk.tools import google_search
 
 explore_agent = Agent(
-    model='gemini-2.5-flash',
+    model=gemini(),
     name='ExploreAgent',
     instruction="""
     You are a real-world exploration assistant for {student_name} studying {subject_name}.

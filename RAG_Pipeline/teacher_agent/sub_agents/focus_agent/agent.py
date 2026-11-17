@@ -2,10 +2,11 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from google.adk.agents import Agent
+from ...llm import gemini
 from ...tools import compute_focus_chapters_tool, select_chapter_tool
 
 focus_agent = Agent(
-    model='gemini-2.5-flash',
+    model=gemini(),
     name='FocusAgent',
     instruction="""
     You are a focus advisor for {student_name} studying {subject_name}.

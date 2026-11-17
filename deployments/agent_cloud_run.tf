@@ -16,7 +16,11 @@ resource "google_cloud_run_service" "deltaed_agent" {
           for_each = {
             GOOGLE_CLOUD_PROJECT        = var.project_id
             GCP_PROJECT_ID              = var.project_id
-            GOOGLE_CLOUD_LOCATION       = var.region
+            # Gemini calls use the global endpoint: gemini-3.5-flash in
+            # europe-west2 returns 429 RESOURCE_EXHAUSTED (no regional capacity).
+            # The RAG corpus and embeddings stay regional via RAG_LOCATION.
+            GOOGLE_CLOUD_LOCATION       = "global"
+            RAG_LOCATION                = var.region
             GOOGLE_GENAI_USE_VERTEXAI   = "true"
             BIGQUERY_SCORES_DATASET_ID  = "student_db"
             BIGQUERY_CHAPTER_DATASET_ID = "educational_resources_db"

@@ -201,7 +201,8 @@ async def agent_run(req: RunRequest):
             ):
                 if event.content and event.content.parts:
                     for part in event.content.parts:
-                        if hasattr(part, "text") and part.text:
+                        # "." is ScopeGateAgent's placeholder on state-only events — don't show it
+                        if hasattr(part, "text") and part.text and part.text.strip() != ".":
                             chunk = json.dumps({"text": part.text})
                             yield f"data: {chunk}\n\n"
 

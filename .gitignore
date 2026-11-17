@@ -7,7 +7,7 @@ config.js
 deployments/.terraform/
 *.tfstate
 *.tfstate.backup
-.terraform.lock.hcl
+tfplan
 
 # Google Cloud SDK (large binaries, install locally)
 google-cloud-sdk/
@@ -21,6 +21,7 @@ src/GoogleEd_hackathon.xlsx
 __pycache__/
 *.pyc
 .venv/
+.adk/
 
 # OS
 .DS_Store
